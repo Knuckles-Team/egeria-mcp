@@ -1,0 +1,6 @@
+include README.md
+include requirements.txt
+include LICENSE
+recursive-include egeria_mcp *.py
+recursive-include egeria_mcp *.json
+recursive-include docs *.md

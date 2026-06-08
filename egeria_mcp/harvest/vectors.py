@@ -1,0 +1,97 @@
+"""Vector-store harvest — the Qdrant/vector layer.
+
+Reads collections live from a Qdrant vector database and catalogs each as an Egeria
+data asset under the vector store — embedding collections join the catalog.
+Idempotent.
+
+Config-driven (``QDRANT_URL`` + optional ``QDRANT_API_KEY``); tolerant.
+"""
+
+from __future__ import annotations
+
+import os
+from typing import Any
+
+try:
+    import httpx
+
+    HTTPX_AVAILABLE = True
+except Exception:  # pragma: no cover
+    HTTPX_AVAILABLE = False
+
+
+def fetch_collections(
+    url: str, api_key: str | None, *, verify_ssl: bool = False
+) -> list[str]:
+    if not HTTPX_AVAILABLE:
+        return []
+    headers = {"api-key": api_key} if api_key else {}
+    try:
+        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+            r = c.get(f"{url.rstrip('/')}/collections", headers=headers)
+        if r.status_code != 200:
+            return []
+        cols = (((r.json() or {}).get("result") or {}).get("collections")) or []
+        return [c.get("name") for c in cols if c.get("name")]
+    except Exception:
+        return []
+
+
+def harvest_vectors(
+    api: Any,
+    url: str | None = None,
+    api_key: str | None = None,
+    *,
+    verify_ssl: bool = False,
+) -> dict[str, Any]:
+    """Catalog Qdrant vector collections into Egeria as data assets."""
+    report: dict[str, Any] = {"collections": [], "errors": []}
+
+    def record_error(what: str, res: dict) -> None:
+        if isinstance(res, dict) and res.get("error"):
+            report["errors"].append({"item": what, "error": res["error"]})
+
+    url = url or os.getenv("QDRANT_URL") or os.getenv("VECTOR_URL")
+    api_key = api_key or os.getenv("QDRANT_API_KEY") or os.getenv("VECTOR_TOKEN")
+    if not url:
+        report["skipped"] = "no vector store URL (set QDRANT_URL)"
+        return report
+
+    cols = fetch_collections(url, api_key, verify_ssl=verify_ssl)
+    report["source"] = {"url": url, "collections": len(cols)}
+    if not cols:
+        report["skipped"] = "no collections returned (unreachable or empty)"
+        return report
+
+    store = api.create_asset(
+        "SoftwareServer",
+        "DataStore::qdrant",
+        "qdrant",
+        description="Qdrant vector store.",
+        deployed_implementation_type="Qdrant",
+        confidentiality_level=1,
+    )
+    record_error("store:qdrant", store)
+    store_guid = store.get("guid")
+
+    for name in cols:
+        qn = f"Dataset::Qdrant::{name}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            name,
+            description=f"Qdrant vector collection '{name}'.",
+            deployed_implementation_type="Vector Collection",
+            confidentiality_level=1,
+            additional_properties={"collection": name, "source": "Qdrant"},
+        )
+        record_error(f"collection:{name}", res)
+        report["collections"].append({"name": name, **res})
+        if store_guid and res.get("guid"):
+            api.link_data_flow(store_guid, res["guid"], label="hosts")
+
+    report["summary"] = {
+        "collections": len([c for c in report["collections"] if c.get("guid")]),
+        "errors": len(report["errors"]),
+    }
+    return report

@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "egeria-mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "egeria-mcp"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "<YOUR_FASTMCP_LOG_LEVEL>",
+        "NO_COLOR": "<YOUR_NO_COLOR>",
+        "TERM": "<YOUR_TERM>",
+        "MCP_URL": "<YOUR_MCP_URL>",
+        "EGERIA_PLATFORM_URL": "<YOUR_EGERIA_PLATFORM_URL>",
+        "EGERIA_VIEW_SERVER": "<YOUR_EGERIA_VIEW_SERVER>",
+        "EGERIA_USER": "<YOUR_EGERIA_USER>",
+        "EGERIA_USER_PASSWORD": "<YOUR_EGERIA_USER_PASSWORD>",
+        "EGERIA_VERIFY_SSL": "<YOUR_EGERIA_VERIFY_SSL>",
+        "EGERIA_ENABLE_WRITE": "<YOUR_EGERIA_ENABLE_WRITE>",
+        "EGERIATOOL": "True"
+      }
+    }
+  }
+}

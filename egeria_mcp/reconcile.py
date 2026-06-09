@@ -64,7 +64,12 @@ _CAP_BY_PREFIX = {
 
 
 def _capability_of(rec: dict) -> str | None:
-    """Canonical capability for an asset (explicit tag → source → qn prefix)."""
+    """Canonical capability for an asset (explicit tag → source → qn prefix).
+
+    CONCEPT:EG-009 — Vendor-Neutral Capability Tagging. Resolves the canonical
+    ``capability`` so first-party and open-source adapters of the same capability
+    cross-link through a shared ``Capability::<cap>`` cohort.
+    """
     ap = rec.get("additionalProperties") or {}
     if ap.get("capability"):
         return str(ap["capability"]).lower()
@@ -190,7 +195,13 @@ def _core(qn: str, prefix: str) -> str:
 
 
 def reconcile(api: Any, *, propagate_confidentiality: bool = True) -> dict[str, Any]:
-    """Cross-link the catalogue across layers; return a per-pattern report."""
+    """Cross-link the catalogue across layers; return a per-pattern report.
+
+    CONCEPT:EG-006 — Cross-Layer Reconciliation. Weaves the independently-harvested
+    layers into one graph via deterministic matchers that create labelled
+    ``DataFlow`` edges and propagate confidentiality up hosting chains. Idempotent;
+    makes ``governed_route`` cross-layer- and cross-vendor-aware.
+    """
     if not getattr(api, "enable_write", False):
         return {"error": "writes disabled — set EGERIA_ENABLE_WRITE=true"}
 
@@ -261,16 +272,18 @@ def reconcile(api: Any, *, propagate_confidentiality: bool = True) -> dict[str, 
         qn = ds["qualifiedName"]
         if qn.startswith("Dataset::") and qn.count("::") >= 2:
             parent = qn.split("::")[1].split(".")[0]
-            store = store_by_name.get(parent)
-            if store:
-                link(store, ds, "hosts", "dataset-store")
+            match_store = store_by_name.get(parent)
+            if match_store:
+                link(match_store, ds, "hosts", "dataset-store")
 
     # P11 source-store: data asset → its source DataStore (by `source` property)
     for ds in datasets:
         source = (ds.get("additionalProperties") or {}).get("source")
-        store = store_by_name.get(_SOURCE_STORE.get(source, "")) if source else None
-        if store:
-            link(store, ds, "hosts", "source-store")
+        match_store = (
+            store_by_name.get(_SOURCE_STORE.get(source, "")) if source else None
+        )
+        if match_store:
+            link(match_store, ds, "hosts", "source-store")
 
     # P5 ingress-exposure: Route.upstream → Service
     svc_by_name = {_core(s["qualifiedName"], "Service::"): s for s in services}
@@ -360,14 +373,14 @@ def reconcile(api: Any, *, propagate_confidentiality: bool = True) -> dict[str, 
         name = (el.get("displayName") or "").lower()
         if not name:
             continue
-        tgt = real_by_name.get(name)
-        if not tgt:
+        target = real_by_name.get(name)
+        if not target:
             for rn, ra in real_by_name.items():
                 if rn and (name == rn or rn.endswith(name) or name in rn.split("_")):
-                    tgt = ra
+                    target = ra
                     break
-        if tgt:
-            link(el, tgt, "realized-by", "ea-realization")
+        if target:
+            link(el, target, "realized-by", "ea-realization")
 
     # P9 semantic-assignment: asset.displayName == Glossary Term → means Concept
     terms = {
@@ -425,18 +438,20 @@ def reconcile(api: Any, *, propagate_confidentiality: bool = True) -> dict[str, 
             qn = ds["qualifiedName"]
             if not (qn.startswith("Dataset::") and qn.count("::") >= 2):
                 continue
-            store = store_by_name.get(qn.split("::")[1].split(".")[0])
-            if not store:
+            match_store = store_by_name.get(qn.split("::")[1].split(".")[0])
+            if not match_store:
                 continue
             ds_level = api.governance_for(ds["guid"]).get("confidentialityLevel")
-            st_level = api.governance_for(store["guid"]).get("confidentialityLevel")
+            st_level = api.governance_for(match_store["guid"]).get(
+                "confidentialityLevel"
+            )
             if isinstance(ds_level, int) and (
                 not isinstance(st_level, int) or ds_level > st_level
             ):
-                api.set_confidentiality(store["guid"], ds_level)
+                api.set_confidentiality(match_store["guid"], ds_level)
                 report["confidentiality-propagation"]["links"] += 1
                 report["confidentiality-propagation"]["items"].append(
-                    f"{store['qualifiedName']} → level {ds_level} (from {ds['qualifiedName']})"
+                    f"{match_store['qualifiedName']} → level {ds_level} (from {ds['qualifiedName']})"
                 )
 
     report["summary"] = {p: report[p]["links"] for p in PATTERNS}

@@ -35,7 +35,12 @@ def _layer(qn: str) -> str:
 def audit(
     api: Any, prefixes: list[str] | None = None, *, max_islands: int = 25
 ) -> dict[str, Any]:
-    """Report island (unlinked) assets + per-layer lineage coverage."""
+    """Report island (unlinked) assets + per-layer lineage coverage.
+
+    CONCEPT:EG-008 — Completeness Audit. Reports unlinked "island" assets, per-layer
+    lineage coverage %, and a per-capability roll-up — what reconciliation/harvest
+    still misses. Loads all assets but scans only the hubs for edges. Read-only.
+    """
     index = load_assets(api, prefixes or ALL_PREFIXES)
     hub_recs = [
         r

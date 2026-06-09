@@ -1,7 +1,7 @@
 # Concept Registry — egeria-mcp
 
 > **Prefix**: `CONCEPT:EG-*`
-> **Bridge**: [`CONCEPT:KG-2.9`](../../agent-utilities/docs/concept_map.md)
+> **Bridge**: [`CONCEPT:KG-2.9`](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/concept_map.md)
 > (Vendor-Neutral Enterprise Ontology · Self-Registering Extractors)
 
 ## Project-Specific Concepts
@@ -14,7 +14,7 @@
 | `CONCEPT:EG-004` | Bottom-Up Harvest | Connectors that populate Egeria *from* the data estate in lineage order (data stores → ERPNext → Camunda → GitLab). The data-store layer is the anchor every downstream edge resolves to. |
 | `CONCEPT:EG-005` | Broad OMVS Coverage | Action-dispatch tools (`egeria_catalog`, `egeria_data_design`, `egeria_collection`, `egeria_solution`, `egeria_governance_catalog`, `egeria_actors`, `egeria_metadata`) spanning 11 View Services without a tool per noun. |
 | `CONCEPT:EG-006` | Cross-Layer Reconciliation | `reconcile()` weaves the independently-harvested layers into one graph — 15 deterministic matchers (host-hosting, service↔store, dataset/source containment, ingress exposure, monitoring, CMDB identity, access-control, repo→service deployment, datasource→store, EA→reality realization, semantic assignment, **capability-cohort + cross-vendor-identity**) create labelled `DataFlow` edges and propagate confidentiality up hosting chains. Idempotent. Makes `governed_route` cross-layer- and cross-vendor-aware. |
-| `CONCEPT:EG-009` | Vendor-Neutral Capability Tagging | Every asset carries a canonical `capability` (e.g. ERPNext `ERP`/`ITSM`/`PM`, ServiceNow `ITSM`, GitLab/GitHub `vcs`, LeanIX/ArchiMate `enterprise-architecture`). First-party and open-source adapters for the same capability cross-link through a shared `Capability::<cap>` cohort — supporting both side-by-side. See the [capability matrix](../../agent-utilities/docs/architecture/vendor_neutral_enterprise_ontology.md#capability-matrix--first-party-and-open-source). |
+| `CONCEPT:EG-009` | Vendor-Neutral Capability Tagging | Every asset carries a canonical `capability` (e.g. ERPNext `ERP`/`ITSM`/`PM`, ServiceNow `ITSM`, GitLab/GitHub `vcs`, LeanIX/ArchiMate `enterprise-architecture`). First-party and open-source adapters for the same capability cross-link through a shared `Capability::<cap>` cohort — supporting both side-by-side. See the [capability matrix](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/architecture/vendor_neutral_enterprise_ontology.md#capability-matrix--first-party-and-open-source). |
 | `CONCEPT:EG-007` | Bidirectional KG Federation | `EgeriaApi.list_data_flows()` enumerates the catalogue's lineage edges; the KG `egeria` extractor turns them into `:flowsTo` (data movement) / `:dependsOn` (structural) edges — so the reconciled cross-links flow back into the epistemic-graph and the KG sees the whole estate as one dependency graph. |
 | `CONCEPT:EG-008` | Completeness Audit | `audit()` reports unlinked "island" assets, **per-layer** lineage coverage %, and a **per-capability** roll-up (vendors, asset count, linked %, cohort presence) — what reconciliation/harvest still misses + vendor breadth per capability. Loads all assets but scans only the hubs for edges. Read-only. |
 

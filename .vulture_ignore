@@ -1,0 +1,6 @@
+# vulture allowlist — public API / framework-invoked names that static analysis
+# flags as unused. Add a bare identifier per line to suppress false positives.
+health_check
+get_client
+register_egeria_tools
+governed_route

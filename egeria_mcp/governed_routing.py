@@ -28,6 +28,10 @@ _GATING_CLASSIFICATIONS = ("retention", "criticality")
 def governed_route(api: Any, asset_guid: str) -> dict[str, Any]:
     """Return a policy-aware routing decision for acting on an Egeria asset.
 
+    CONCEPT:EG-003 — Governed Routing. Turns Egeria Confidentiality + downstream
+    lineage into an enforceable decision (proceed / review / require_approval) the
+    policy router acts on.
+
     Parameters
     ----------
     api:

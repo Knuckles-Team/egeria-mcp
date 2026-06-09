@@ -51,13 +51,13 @@ def _norm(el: dict) -> dict:
     """Flatten an Egeria OMVS element envelope into a flat record."""
     if not isinstance(el, dict):
         return {}
-    header = (
-        el.get("elementHeader") if isinstance(el.get("elementHeader"), dict) else {}
-    )
+    _header = el.get("elementHeader")
+    header = _header if isinstance(_header, dict) else {}
     props = el.get("properties") or el.get("glossaryProperties") or {}
     if not isinstance(props, dict):
         props = {}
-    type_info = header.get("type") if isinstance(header.get("type"), dict) else {}
+    _type_info = header.get("type")
+    type_info = _type_info if isinstance(_type_info, dict) else {}
     flat: dict[str, Any] = {
         "guid": el.get("guid") or header.get("guid") or header.get("GUID"),
         "typeName": props.get("typeName")
@@ -77,7 +77,12 @@ def _norm(el: dict) -> dict:
 
 
 class EgeriaApi:
-    """Tolerant raw-REST facade over Egeria's OMVS for the MCP tools + KG extractor."""
+    """Tolerant raw-REST facade over Egeria's OMVS for the MCP tools + KG extractor.
+
+    CONCEPT:EG-002 — Raw-REST OMVS Facade. A tolerant httpx client over the View
+    Server; no ``pyegeria`` runtime dep (its ``asyncio.get_event_loop()`` raises on
+    3.14). Every call degrades to ``[]`` / a clear error rather than raising.
+    """
 
     def __init__(
         self,
@@ -239,7 +244,8 @@ class EgeriaApi:
     def list_data_flows(self) -> list[dict]:
         """Enumerate ``DataFlow`` lineage edges across the catalogue.
 
-        Powers KG federation: the ``egeria`` extractor turns these into ``flowsTo`` /
+        CONCEPT:EG-007 — Bidirectional KG Federation. Powers KG federation: the
+        ``egeria`` extractor turns these into ``flowsTo`` /
         ``dependsOn`` edges. Each record is ``{source, target, label, sourceName,
         targetName, sourceType, targetType}`` (GUIDs in source/target). Scans the
         low-cardinality hubs, so it captures every cross-layer edge without walking

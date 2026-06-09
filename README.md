@@ -1,4 +1,24 @@
-# egeria-mcp
+# Egeria Mcp
+## API | MCP Server
+
+![PyPI - Version](https://img.shields.io/pypi/v/egeria-mcp)
+![MCP Server](https://badge.mcpx.dev?type=server 'MCP Server')
+![PyPI - Downloads](https://img.shields.io/pypi/dd/egeria-mcp)
+![GitHub Repo stars](https://img.shields.io/github/stars/Knuckles-Team/egeria-mcp)
+![GitHub forks](https://img.shields.io/github/forks/Knuckles-Team/egeria-mcp)
+![GitHub contributors](https://img.shields.io/github/contributors/Knuckles-Team/egeria-mcp)
+![PyPI - License](https://img.shields.io/pypi/l/egeria-mcp)
+![GitHub](https://img.shields.io/github/license/Knuckles-Team/egeria-mcp)
+![GitHub last commit (by committer)](https://img.shields.io/github/last-commit/Knuckles-Team/egeria-mcp)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/Knuckles-Team/egeria-mcp)
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/Knuckles-Team/egeria-mcp)
+![GitHub issues](https://img.shields.io/github/issues/Knuckles-Team/egeria-mcp)
+![GitHub top language](https://img.shields.io/github/languages/top/Knuckles-Team/egeria-mcp)
+![GitHub language count](https://img.shields.io/github/languages/count/Knuckles-Team/egeria-mcp)
+![GitHub repo size](https://img.shields.io/github/repo-size/Knuckles-Team/egeria-mcp)
+![GitHub repo file count (file type)](https://img.shields.io/github/directory-file-count/Knuckles-Team/egeria-mcp)
+![PyPI - Wheel](https://img.shields.io/pypi/wheel/egeria-mcp)
+![PyPI - Implementation](https://img.shields.io/pypi/implementation/egeria-mcp)
 
 Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosystem.
 
@@ -38,6 +58,13 @@ orchestrates**.
 | `EGERIA_VERIFY_SSL` | `False` | Verify TLS (self-signed homelab) |
 | `EGERIA_ENABLE_WRITE` | `False` | Gate every write/harvest tool |
 | `EGERIATOOL` | `True` | Register the Egeria tool set |
+
+The table above is the **required** set. The bottom-up harvest connectors
+(ServiceNow, ERPNext, GitLab, Camunda, Keycloak, Grafana, Portainer, …) each read
+their own optional credential vars — every variable, grouped by source system with
+required-vs-optional separation, is documented in [`.env.example`](.env.example).
+Copy it to `.env` and fill in only the connectors you use; blank connector
+credentials make that harvest a no-op.
 
 ## Install & run
 

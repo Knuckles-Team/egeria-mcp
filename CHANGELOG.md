@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Repository scaffolding parity with the agent-packages ecosystem: GitHub Actions
+  workflows (`.github/workflows/{pipeline,docs,pages}.yml` — PyPI publish, Docker
+  build, MkDocs deploy), README shields.io badge header, `mkdocs.yml`, Docker build
+  scaffolding (`docker/` — MCP-only `Dockerfile`, `debug.Dockerfile`,
+  `mcp.compose.yml`, `starship.toml`), and repo-hygiene files (`.gitattributes`,
+  `.dockerignore`, `.codespellignore`, `.vulture_ignore`, `.env.example`,
+  `pytest.ini`, `opencode.json`).
+- Full environment-variable tracking in `.env.example`: every code-referenced var
+  (112) now documented, grouped by source system with REQUIRED-vs-OPTIONAL
+  separation; README points to it for the harvest-connector credential surface.
+- Concept traceability: `CONCEPT:EG-001…009` markers added to their implementing
+  docstrings (`EgeriaApi`, `governed_route`, `reconcile`, `_capability_of`, `audit`,
+  `harvest_datastores`, `register_egeria_tools`, `list_data_flows`, package init),
+  the pytest suite, and a Concept Registry section in `AGENTS.md`.
+
+### Fixed
+- Resolved all 12 `mypy` type errors (reconcile loop-variable shadowing, optional
+  narrowing in `EgeriaApi._norm`, harvest connector default-URL chains, missing
+  `_loaded_optional_modules` annotation) — no behavioral change.
+- Converted cross-repo doc links in `docs/concepts.md` / `docs/harvesters.md` to
+  absolute GitHub URLs so the rendered MkDocs site builds under `--strict`.
+
+### Added (Egeria features)
 - Cross-layer reconciliation (`egeria_mcp.reconcile.reconcile` / `egeria_reconcile`
   MCP tool / `python -m egeria_mcp.harvest reconcile`) — weaves the independently
   harvested layers into one connected lineage/governance graph via 13 deterministic

@@ -3,6 +3,10 @@
 Granular, typed Egeria tools (lineage / glossary / asset / governance) plus the
 ``EgeriaApi`` client used as the injected ``config["client"]`` for the KG
 ``egeria`` enrichment extractor.
+
+CONCEPT:EG-001 — Egeria Metadata Federation. Apache Egeria is the
+metadata/governance/lineage system-of-record, federated with the epistemic-graph
+KG. Two invariants: the KG is never the lineage store; Egeria never orchestrates.
 """
 
 import importlib
@@ -32,7 +36,7 @@ for module_name in CORE_MODULES:
     module = importlib.import_module(module_name)
     _expose_members(module)
 
-_loaded_optional_modules = {}
+_loaded_optional_modules: dict[str, Any] = {}
 
 
 def _import_module_safely(module_name: str):

@@ -4,7 +4,11 @@ import os
 
 
 def test_api_client_import_safe_without_pyegeria():
-    """EgeriaApi constructs and degrades to [] without pyegeria / a platform."""
+    """EgeriaApi constructs and degrades to [] without pyegeria / a platform.
+
+    CONCEPT:EG-002 — Raw-REST OMVS Facade. CONCEPT:EG-007 — Bidirectional KG
+    Federation (``list_data_flows``).
+    """
     from egeria_mcp.api_client import EgeriaApi
 
     api = EgeriaApi(platform_url="https://unreachable.invalid:9443")
@@ -16,6 +20,11 @@ def test_api_client_import_safe_without_pyegeria():
 
 
 def test_write_disabled_by_default():
+    """Write tools are gated unless EGERIA_ENABLE_WRITE is set.
+
+    CONCEPT:EG-002 — Raw-REST OMVS Facade (write gating). CONCEPT:EG-004 —
+    Bottom-Up Harvest (gated behind write-enable).
+    """
     from egeria_mcp.api.api_client_egeria import EgeriaApi, EgeriaWriteDisabled
 
     api = EgeriaApi(enable_write=False)
@@ -27,6 +36,10 @@ def test_write_disabled_by_default():
 
 
 def test_get_client_from_env():
+    """get_client() builds the federated EgeriaApi from the environment.
+
+    CONCEPT:EG-001 — Egeria Metadata Federation.
+    """
     os.environ["EGERIA_VIEW_SERVER"] = "qs-view-server"
     from egeria_mcp.auth import get_client
 
@@ -36,7 +49,10 @@ def test_get_client_from_env():
 
 
 def test_mcp_tools_register():
-    """The MCP server builds and registers the expected tool surface."""
+    """The MCP server builds and registers the expected tool surface.
+
+    CONCEPT:EG-005 — Broad OMVS Coverage.
+    """
     import asyncio
     import inspect
 

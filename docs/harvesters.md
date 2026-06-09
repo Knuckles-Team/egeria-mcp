@@ -98,7 +98,7 @@ ERPNext is intentionally **multi-role** — its `capability` property (`ERP` / `
 `PM`) lets the federation reconcile it with whichever first-party tool it substitutes
 for. The canonical capability map (every capability × first-party × open-source ×
 canonical concept) lives in the agent-utilities
-[vendor-neutral ontology doc](../../../agent-utilities/docs/architecture/vendor_neutral_enterprise_ontology.md#capability-matrix--first-party-and-open-source).
+[vendor-neutral ontology doc](https://github.com/Knuckles-Team/agent-utilities/blob/main/docs/architecture/vendor_neutral_enterprise_ontology.md#capability-matrix--first-party-and-open-source).
 
 ## 2. Cross-link patterns (13) — `reconcile()`
 

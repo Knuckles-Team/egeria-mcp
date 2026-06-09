@@ -53,7 +53,7 @@ def harvest_m365(
             report["errors"].append({"item": what, "error": res["error"]})
 
     token = token or os.getenv("MSGRAPH_TOKEN") or os.getenv("MS_GRAPH_TOKEN")
-    base = base_url or os.getenv("MSGRAPH_URL", "https://graph.microsoft.com/v1.0")
+    base = base_url or os.getenv("MSGRAPH_URL") or "https://graph.microsoft.com/v1.0"
     if not token:
         report["skipped"] = "no Microsoft Graph token (set MSGRAPH_TOKEN)"
         return report

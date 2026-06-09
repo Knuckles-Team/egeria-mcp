@@ -71,6 +71,21 @@ Two hard invariants of the federation:
 - Federation key: every Egeria-sourced KG node carries `externalToolId` (the Egeria
   GUID) + `domain="egeria"` (see the KG `egeria` extractor in agent-utilities).
 
+## Concept Registry
+Stable concept IDs (prefix `CONCEPT:EG-*`) trace the federation's core ideas across
+`docs/concepts.md`, code docstrings, and pytest markers. Full descriptions live in
+[`docs/concepts.md`](docs/concepts.md); keep both in sync.
+
+<!-- CONCEPT:EG-001 --> **EG-001** Egeria Metadata Federation — `egeria_mcp/__init__.py`
+<!-- CONCEPT:EG-002 --> **EG-002** Raw-REST OMVS Facade — `EgeriaApi` (`api/api_client_egeria.py`)
+<!-- CONCEPT:EG-003 --> **EG-003** Governed Routing — `governed_route()` (`governed_routing.py`)
+<!-- CONCEPT:EG-004 --> **EG-004** Bottom-Up Harvest — `harvest_datastores()` (`harvest/datastores.py`)
+<!-- CONCEPT:EG-005 --> **EG-005** Broad OMVS Coverage — `register_egeria_tools()` (`mcp/mcp_egeria.py`)
+<!-- CONCEPT:EG-006 --> **EG-006** Cross-Layer Reconciliation — `reconcile()` (`reconcile.py`)
+<!-- CONCEPT:EG-007 --> **EG-007** Bidirectional KG Federation — `EgeriaApi.list_data_flows()`
+<!-- CONCEPT:EG-008 --> **EG-008** Completeness Audit — `audit()` (`audit.py`)
+<!-- CONCEPT:EG-009 --> **EG-009** Vendor-Neutral Capability Tagging — `_capability_of()` (`reconcile.py`)
+
 ## ⛔ Keep the Repository Root Pristine
 The repository ROOT must contain only canonical project files (packaging, config,
 docs, lockfiles). Never write debug/migration/scratch scripts, data dumps, logs, or

@@ -24,6 +24,11 @@ Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosyst
 
 *Version: 0.2.1*
 
+> 📖 **Full documentation → [knuckles-team.github.io/egeria-mcp](https://knuckles-team.github.io/egeria-mcp/)**
+> The polished docs site is the **official reference** — installation, deployment,
+> usage (API/CLI/MCP), and how to stand up the Egeria platform itself. This README
+> is just the index.
+
 Egeria is federated as the **metadata / governance / lineage system-of-record**
 alongside the epistemic-graph Knowledge Graph (the cognition/orchestration plane).
 This package provides the *typed, deterministic* Egeria tools a policy router calls,
@@ -86,8 +91,21 @@ EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
 Register in the multiplexer under nickname `eg` (tools surface as `eg__lineage`,
 `eg__governed_route`, `eg__catalog`, …). See `egeria_mcp/mcp_config.json`.
 
-## Docs
+## Documentation
 
-- [docs/overview.md](docs/overview.md) — tools, REST contract, harvest, federation.
-- [docs/concepts.md](docs/concepts.md) — concept registry (`CONCEPT:EG-*`).
-- `AGENTS.md` — canonical contributor guidance.
+**The official docs live at
+[knuckles-team.github.io/egeria-mcp](https://knuckles-team.github.io/egeria-mcp/)** —
+read those rather than the raw `docs/` Markdown; they are the same content rendered
+and searchable.
+
+| Page | What's there |
+|---|---|
+| [Installation](https://knuckles-team.github.io/egeria-mcp/installation/) | pip, source, extras, prebuilt Docker image |
+| [Deployment](https://knuckles-team.github.io/egeria-mcp/deployment/) | run the MCP server, Compose, Caddy + Technitium, env config |
+| [Usage](https://knuckles-team.github.io/egeria-mcp/usage/) | the MCP tools, the `EgeriaApi` client, the harvest CLI |
+| [Backing Platform](https://knuckles-team.github.io/egeria-mcp/platform/) | stand up Apache Egeria itself with Docker |
+| [Overview](https://knuckles-team.github.io/egeria-mcp/overview/) | tools, REST contract, harvest, federation |
+| [Architecture](https://knuckles-team.github.io/egeria-mcp/architecture/) | pipeline, layered client, KG federation diagrams |
+| [Concepts](https://knuckles-team.github.io/egeria-mcp/concepts/) | concept registry (`CONCEPT:EG-*`) |
+
+`AGENTS.md` is the canonical contributor/agent guidance.

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Documentation site overhaul (the ecosystem docs standard): polished Material theme
+  (tabs, instant nav, 3-way palette, social), new `docs/{installation,deployment,
+  usage,platform}.md` covering pip/Docker install, MCP-server deployment with
+  Caddy + Technitium, API/CLI/MCP usage, and a Compose recipe for the Apache Egeria
+  backing platform. README now points to
+  [the published site](https://knuckles-team.github.io/egeria-mcp/) as the official
+  reference.
+
+### Changed
+- Removed the redundant `docs.yml` workflow; `pages.yml` (GitHub Pages via Actions)
+  is the single docs-deploy path now that Pages is enabled with `build_type=workflow`.
+
+### Added (earlier)
 - Repository scaffolding parity with the agent-packages ecosystem: GitHub Actions
   workflows (`.github/workflows/{pipeline,docs,pages}.yml` — PyPI publish, Docker
   build, MkDocs deploy), README shields.io badge header, `mkdocs.yml`, Docker build

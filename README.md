@@ -22,7 +22,7 @@
 
 Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosystem.
 
-*Version: 0.2.0*
+*Version: 0.2.1*
 
 Egeria is federated as the **metadata / governance / lineage system-of-record**
 alongside the epistemic-graph Knowledge Graph (the cognition/orchestration plane).

@@ -22,7 +22,7 @@
 
 Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosystem.
 
-*Version: 0.2.1*
+*Version: 0.2.2*
 
 > 📖 **Full documentation → [knuckles-team.github.io/egeria-mcp](https://knuckles-team.github.io/egeria-mcp/)**
 > The polished docs site is the **official reference** — installation, deployment,

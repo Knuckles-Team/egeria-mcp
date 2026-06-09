@@ -86,5 +86,6 @@ python -m egeria_mcp.harvest audit
 
 Each connector reads its own credentials (see
 [`.env.example`](https://github.com/Knuckles-Team/egeria-mcp/blob/main/.env.example))
-and is a no-op when those are blank. The full source → Egeria-type → confidentiality
+and remains inactive when those credentials are absent. The full source →
+Egeria-type → confidentiality
 map for all 34 layers is in [Harvesters](harvesters.md).

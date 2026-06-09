@@ -24,10 +24,9 @@ Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosyst
 
 *Version: 0.2.2*
 
-> 📖 **Full documentation → [knuckles-team.github.io/egeria-mcp](https://knuckles-team.github.io/egeria-mcp/)**
-> The polished docs site is the **official reference** — installation, deployment,
-> usage (API/CLI/MCP), and how to stand up the Egeria platform itself. This README
-> is just the index.
+> **Documentation** — Installation, deployment, usage across the API, CLI, and MCP
+> interfaces, and guidance for provisioning the Apache Egeria platform are maintained
+> in the [official documentation](https://knuckles-team.github.io/egeria-mcp/).
 
 Egeria is federated as the **metadata / governance / lineage system-of-record**
 alongside the epistemic-graph Knowledge Graph (the cognition/orchestration plane).
@@ -68,8 +67,8 @@ The table above is the **required** set. The bottom-up harvest connectors
 (ServiceNow, ERPNext, GitLab, Camunda, Keycloak, Grafana, Portainer, …) each read
 their own optional credential vars — every variable, grouped by source system with
 required-vs-optional separation, is documented in [`.env.example`](.env.example).
-Copy it to `.env` and fill in only the connectors you use; blank connector
-credentials make that harvest a no-op.
+Copy it to `.env` and populate only the connectors you use; blank connector
+credentials leave the corresponding harvest inactive.
 
 ## Install & run
 
@@ -93,17 +92,16 @@ Register in the multiplexer under nickname `eg` (tools surface as `eg__lineage`,
 
 ## Documentation
 
-**The official docs live at
-[knuckles-team.github.io/egeria-mcp](https://knuckles-team.github.io/egeria-mcp/)** —
-read those rather than the raw `docs/` Markdown; they are the same content rendered
-and searchable.
+The complete documentation is published as the
+[official documentation site](https://knuckles-team.github.io/egeria-mcp/) and is the
+recommended reference for installation, deployment, and day-to-day operation.
 
-| Page | What's there |
+| Page | Contents |
 |---|---|
 | [Installation](https://knuckles-team.github.io/egeria-mcp/installation/) | pip, source, extras, prebuilt Docker image |
 | [Deployment](https://knuckles-team.github.io/egeria-mcp/deployment/) | run the MCP server, Compose, Caddy + Technitium, env config |
 | [Usage](https://knuckles-team.github.io/egeria-mcp/usage/) | the MCP tools, the `EgeriaApi` client, the harvest CLI |
-| [Backing Platform](https://knuckles-team.github.io/egeria-mcp/platform/) | stand up Apache Egeria itself with Docker |
+| [Backing Platform](https://knuckles-team.github.io/egeria-mcp/platform/) | deploy Apache Egeria with Docker |
 | [Overview](https://knuckles-team.github.io/egeria-mcp/overview/) | tools, REST contract, harvest, federation |
 | [Architecture](https://knuckles-team.github.io/egeria-mcp/architecture/) | pipeline, layered client, KG federation diagrams |
 | [Concepts](https://knuckles-team.github.io/egeria-mcp/concepts/) | concept registry (`CONCEPT:EG-*`) |

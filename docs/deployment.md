@@ -2,7 +2,7 @@
 
 This page covers running `egeria-mcp` as a long-lived server: the transports, a
 Docker Compose stack, putting it behind a Caddy reverse proxy, and giving it a DNS
-name with Technitium. To stand up the **Egeria platform** it talks to, see
+name with Technitium. To provision the **Egeria platform** it connects to, see
 [Backing Platform](platform.md).
 
 > `egeria-mcp` ships an **MCP server** (console script `egeria-mcp`). It does not

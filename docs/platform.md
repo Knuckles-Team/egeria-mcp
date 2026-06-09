@@ -1,20 +1,21 @@
 # Backing Platform — Apache Egeria
 
 `egeria-mcp` is a **client** of an Apache Egeria OMAG platform / View Server (OMVS).
-This page is a recipe for standing one up locally with Docker so you have something
-to point `EGERIA_PLATFORM_URL` at. For production topologies, follow the upstream
-[Apache Egeria docs](https://egeria-project.org/).
+This page provides a Docker recipe for deploying one locally to serve as the target
+of `EGERIA_PLATFORM_URL`. For production topologies, follow the upstream
+[Apache Egeria documentation](https://egeria-project.org/).
 
-!!! note "This is a backing-system recipe"
-    Other packages in the ecosystem follow the same pattern — a
-    `docs/platform.md` recipe for the system the connector talks to, with a sample
-    Compose stack mirroring [`services/`](https://github.com/Knuckles-Team). Some
-    backing systems are SaaS-only (e.g. ServiceNow) and have no local recipe.
+!!! note "Backing-system recipe"
+    Each connector in the ecosystem follows the same convention — a
+    `docs/platform.md` recipe for the system it integrates with, accompanied by a
+    sample Compose stack that mirrors [`services/`](https://github.com/Knuckles-Team).
+    Systems offered only as a managed service (for example, ServiceNow) have no
+    local recipe.
 
-## Quick start (single-node Compose)
+## Single-node deployment (Compose)
 
-Egeria publishes the `egeria/egeria-platform` image. This stack brings up one OMAG
-Server Platform on `:9443` with the persistent quick-start runtime:
+Egeria publishes the `egeria/egeria-platform` image. The following stack runs one
+OMAG Server Platform on `:9443` with the persistent quick-start runtime:
 
 ```yaml
 # docker/egeria-platform.compose.yml
@@ -50,7 +51,7 @@ docker compose -f docker/egeria-platform.compose.yml up -d
 curl -k https://localhost:9443/open-metadata/platform-services/users/garygeeke/server-platform/origin
 ```
 
-## Point egeria-mcp at it
+## Connect egeria-mcp
 
 ```bash
 export EGERIA_PLATFORM_URL=https://localhost:9443
@@ -62,9 +63,9 @@ export EGERIA_VERIFY_SSL=False          # self-signed quick-start cert
 egeria-mcp --transport streamable-http --host 0.0.0.0 --port 8000
 ```
 
-## Run both together
+## Combined deployment
 
-A combined stack puts the platform and the MCP server on one Docker network so the
+A combined stack places the platform and the MCP server on one Docker network, so the
 server reaches Egeria by container name:
 
 ```yaml
@@ -98,9 +99,9 @@ volumes:
 docker compose -f docker/stack.compose.yml up -d
 ```
 
-## Seed it from your estate
+## Populate Egeria from your estate
 
-With the platform up and `EGERIA_ENABLE_WRITE=true`, the
+With the platform running and `EGERIA_ENABLE_WRITE=true`, the
 [harvest CLI](usage.md#as-a-harvest-cli) populates Egeria bottom-up from your data
 stores, ERPNext, GitLab, and 30+ other sources, then `reconcile` cross-links them
 into one lineage/governance graph.

@@ -7,7 +7,7 @@ path that matches how you want to run it.
 
 - **Python 3.11 – 3.14** (the raw-`httpx` client avoids `pyegeria`'s 3.14 break).
 - A reachable **Apache Egeria OMAG platform / View Server** — see
-  [Backing Platform](platform.md) to stand one up locally.
+  [Backing Platform](platform.md) to deploy one locally.
 
 ## From PyPI (recommended)
 

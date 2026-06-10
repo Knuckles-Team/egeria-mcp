@@ -8,8 +8,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from egeria_mcp.harvest.archer import harvest_archer
 from egeria_mcp.harvest.archimate import harvest_archimate
 from egeria_mcp.harvest.archive import harvest_archive
+from egeria_mcp.harvest.aris import harvest_aris
 from egeria_mcp.harvest.automation import harvest_automation
 from egeria_mcp.harvest.chat import harvest_chat
 from egeria_mcp.harvest.containers import harvest_containers
@@ -33,6 +35,7 @@ from egeria_mcp.harvest.markets import harvest_markets
 from egeria_mcp.harvest.ml import harvest_ml
 from egeria_mcp.harvest.monitoring import harvest_monitoring
 from egeria_mcp.harvest.observability import harvest_observability
+from egeria_mcp.harvest.odoo import harvest_odoo
 from egeria_mcp.harvest.processes import harvest_processes
 from egeria_mcp.harvest.projects import harvest_projects
 from egeria_mcp.harvest.proxy import harvest_proxy
@@ -57,6 +60,7 @@ LAYERS: dict[str, Any] = {
     "finance": harvest_finance,
     "markets": harvest_markets,
     "crm": harvest_crm,
+    "odoo": harvest_odoo,
     "erpnext": harvest_erpnext,
     "mailing": harvest_mailing,
     "files": harvest_files,
@@ -64,11 +68,13 @@ LAYERS: dict[str, Any] = {
     "identity": harvest_identity,
     "secrets": harvest_secrets,
     "servicenow": harvest_servicenow,
+    "archer": harvest_archer,
     "knowledge": harvest_knowledge,
     "m365": harvest_m365,
     "iot": harvest_iot,
     "archimate": harvest_archimate,
     "leanix": harvest_leanix,
+    "aris": harvest_aris,
     "automation": harvest_automation,
     "processes": harvest_processes,
     "projects": harvest_projects,

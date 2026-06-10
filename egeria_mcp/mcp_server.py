@@ -22,18 +22,38 @@ __version__ = "0.2.3"
 logger = get_logger(name="egeria_mcp")
 
 
-def get_mcp_instance() -> tuple[Any, ...]:
+def get_mcp_instance(command_args: list[str] | None = None) -> tuple[Any, ...]:
+    """Build the Egeria MCP server.
+
+    ``command_args`` is forwarded to ``create_mcp_server`` for CLI flag parsing.
+    The default (``None``) parses ``sys.argv`` — correct for the ``mcp_server()``
+    CLI entry point. Library/test callers should pass ``command_args=[]`` so the
+    server's ``-p/--port`` parser does not consume the host process's argv (e.g.
+    pytest's ``-p`` plugin flag), which would otherwise abort with ``SystemExit``.
+    """
     load_dotenv(find_dotenv())
-    args, mcp, middlewares = create_mcp_server(
-        name="Egeria MCP",
-        version=__version__,
-        instructions=(
-            "Egeria MCP Server - granular open-metadata access over the Apache "
-            "Egeria View Server (OMVS): asset catalog search, business glossary "
-            "lookup, data lineage, and governance/classification reads, plus "
-            "write-gated classify / create-term / assert-lineage tools."
-        ),
+    instructions = (
+        "Egeria MCP Server - granular open-metadata access over the Apache "
+        "Egeria View Server (OMVS): asset catalog search, business glossary "
+        "lookup, data lineage, and governance/classification reads, plus "
+        "write-gated classify / create-term / assert-lineage tools."
     )
+    # create_mcp_server() parses CLI flags from sys.argv. When command_args is
+    # given (library/test callers), isolate sys.argv around the build so the
+    # server's -p/--port parser doesn't consume the host process's argv. Done via
+    # argv isolation (not a kwarg) so it works regardless of the installed
+    # agent_utilities version.
+    saved_argv = sys.argv
+    if command_args is not None:
+        sys.argv = [saved_argv[0] if saved_argv else "egeria-mcp", *command_args]
+    try:
+        args, mcp, middlewares = create_mcp_server(
+            name="Egeria MCP",
+            version=__version__,
+            instructions=instructions,
+        )
+    finally:
+        sys.argv = saved_argv
 
     @mcp.custom_route("/health", methods=["GET"])
     async def health_check(request: Request) -> JSONResponse:

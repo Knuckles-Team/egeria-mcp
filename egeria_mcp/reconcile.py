@@ -52,6 +52,11 @@ _CAP_BY_SOURCE = {
     "Nextcloud": "knowledge",
     "Jira": "pm",
     "Plane": "pm",
+    # First-party EA+BPM / GRC / CRM suites + their open-source cohort peers.
+    "ARIS": "bpm",
+    "Archer": "grc",
+    "Twenty": "crm",
+    "Odoo": "crm",
 }
 _CAP_BY_PREFIX = {
     "CI::ServiceNow::": "ITSM",
@@ -60,6 +65,10 @@ _CAP_BY_PREFIX = {
     "ArchiMate::": "enterprise-architecture",
     "Process::Camunda::": "bpm",
     "Process::Ansible::": "bpm",
+    "Process::ARIS::": "bpm",
+    "RiskAsset::Archer::": "grc",
+    "Dataset::Twenty::": "crm",
+    "Dataset::Odoo::": "crm",
 }
 
 

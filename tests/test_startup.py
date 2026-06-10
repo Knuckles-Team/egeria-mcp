@@ -58,7 +58,9 @@ def test_mcp_tools_register():
 
     from egeria_mcp.mcp_server import get_mcp_instance
 
-    mcp, _args, _mw = get_mcp_instance()
+    # command_args=[] so the server's CLI parser doesn't consume pytest's argv
+    # (e.g. `-p`/`--port`), which previously aborted this test with SystemExit.
+    mcp, _args, _mw = get_mcp_instance(command_args=[])
     res = mcp.list_tools() if hasattr(mcp, "list_tools") else mcp.get_tools()
     if inspect.isawaitable(res):
         res = asyncio.new_event_loop().run_until_complete(res)

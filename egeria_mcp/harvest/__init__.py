@@ -8,8 +8,10 @@ unreachable source reports ``skipped`` rather than raising, so the unified runne
 (:func:`egeria_mcp.harvest.runner.harvest_all`) runs whatever is wired.
 """
 
+from egeria_mcp.harvest.archer import harvest_archer
 from egeria_mcp.harvest.archimate import harvest_archimate
 from egeria_mcp.harvest.archive import harvest_archive
+from egeria_mcp.harvest.aris import harvest_aris
 from egeria_mcp.harvest.automation import harvest_automation
 from egeria_mcp.harvest.chat import harvest_chat
 from egeria_mcp.harvest.containers import harvest_containers
@@ -33,6 +35,7 @@ from egeria_mcp.harvest.markets import harvest_markets
 from egeria_mcp.harvest.ml import harvest_ml
 from egeria_mcp.harvest.monitoring import harvest_monitoring
 from egeria_mcp.harvest.observability import harvest_observability
+from egeria_mcp.harvest.odoo import harvest_odoo
 from egeria_mcp.harvest.processes import harvest_processes
 from egeria_mcp.harvest.projects import harvest_projects
 from egeria_mcp.harvest.proxy import harvest_proxy
@@ -77,4 +80,7 @@ __all__ = [
     "harvest_monitoring",
     "harvest_archive",
     "harvest_llmops",
+    "harvest_aris",
+    "harvest_archer",
+    "harvest_odoo",
 ]

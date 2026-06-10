@@ -391,6 +391,36 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
         return harvest_projects(get_client())
 
+    @mcp.tool(tags={"harvest", "write"})
+    async def egeria_harvest_aris() -> Any:
+        """Catalog ARIS models into Egeria — process models (BPM) + architecture
+        models (enterprise-architecture). Config: ARIS_URL + ARIS_TOKEN (optional
+        ARIS_API_PATH). Requires EGERIA_ENABLE_WRITE=true.
+        """
+        from egeria_mcp.harvest import harvest_aris
+
+        return harvest_aris(get_client())
+
+    @mcp.tool(tags={"harvest", "write"})
+    async def egeria_harvest_archer() -> Any:
+        """Catalog RSA Archer GRC records (risks/controls/findings) into Egeria.
+        Config: ARCHER_URL + ARCHER_TOKEN (optional ARCHER_APPLICATIONS). Requires
+        EGERIA_ENABLE_WRITE=true.
+        """
+        from egeria_mcp.harvest import harvest_archer
+
+        return harvest_archer(get_client())
+
+    @mcp.tool(tags={"harvest", "write"})
+    async def egeria_harvest_odoo() -> Any:
+        """Catalog Odoo CRM customers + leads into Egeria (crm cohort with Twenty).
+        Config: ODOO_URL + ODOO_DB + ODOO_USER + ODOO_PASSWORD. Requires
+        EGERIA_ENABLE_WRITE=true.
+        """
+        from egeria_mcp.harvest import harvest_odoo
+
+        return harvest_odoo(get_client())
+
     # ── Write tools (gated by EGERIA_ENABLE_WRITE) ───────────────────────────
     @mcp.tool(tags={"governance", "write"})
     async def egeria_classify(

@@ -22,7 +22,7 @@
 
 Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosystem.
 
-*Version: 0.2.3*
+*Version: 0.3.0*
 
 > **Documentation** — Installation, deployment, usage across the API, CLI, and MCP
 > interfaces, and guidance for provisioning the Apache Egeria platform are maintained

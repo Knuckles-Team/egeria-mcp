@@ -412,6 +412,16 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         return harvest_archer(get_client())
 
     @mcp.tool(tags={"harvest", "write"})
+    async def egeria_harvest_crm() -> Any:
+        """Catalog Twenty CRM companies + people into Egeria (crm cohort with Odoo).
+        Config: TWENTY_URL + TWENTY_TOKEN (optional TWENTY_API_PREFIX, default
+        '/rest'). Requires EGERIA_ENABLE_WRITE=true.
+        """
+        from egeria_mcp.harvest import harvest_crm
+
+        return harvest_crm(get_client())
+
+    @mcp.tool(tags={"harvest", "write"})
     async def egeria_harvest_odoo() -> Any:
         """Catalog Odoo CRM customers + leads into Egeria (crm cohort with Twenty).
         Config: ODOO_URL + ODOO_DB + ODOO_USER + ODOO_PASSWORD. Requires

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from egeria_mcp.harvest import archer as archer_mod
 from egeria_mcp.harvest import aris as aris_mod
+from egeria_mcp.harvest import crm as crm_mod
 from egeria_mcp.harvest import odoo as odoo_mod
 
 
@@ -46,6 +47,13 @@ def test_archer_skips_without_config(monkeypatch):
 def test_odoo_skips_without_config(monkeypatch):
     monkeypatch.delenv("ODOO_URL", raising=False)
     rep = odoo_mod.harvest_odoo(FakeApi())
+    assert "skipped" in rep and not rep["records"]
+
+
+def test_crm_skips_without_config(monkeypatch):
+    monkeypatch.delenv("TWENTY_URL", raising=False)
+    monkeypatch.delenv("TWENTY_TOKEN", raising=False)
+    rep = crm_mod.harvest_crm(FakeApi())
     assert "skipped" in rep and not rep["records"]
 
 
@@ -108,11 +116,37 @@ def test_odoo_catalogs_crm(monkeypatch):
     assert all(a["additional_properties"]["capability"] == "crm" for a in crm)
 
 
+def test_crm_catalogs_twenty(monkeypatch):
+    monkeypatch.setenv("TWENTY_URL", "https://twenty.invalid")
+    monkeypatch.setenv("TWENTY_TOKEN", "t")
+    monkeypatch.setattr(
+        crm_mod,
+        "_fetch",
+        lambda url, token, prefix, resource, verify_ssl: (
+            [{"id": "c1", "name": "Acme"}]
+            if resource == "companies"
+            else [{"id": "p1", "name": {"firstName": "Jane", "lastName": "Doe"}}]
+        ),
+    )
+    api = FakeApi()
+    rep = crm_mod.harvest_crm(api)
+    records = [
+        a for a in api.assets if a["qualifiedName"].startswith("Dataset::Twenty::")
+    ]
+    assert len(records) == 2  # Company + Person
+    assert all(a["additional_properties"]["source"] == "Twenty" for a in records)
+    assert {"Company", "Person"} == {
+        a["additional_properties"]["crmObject"] for a in records
+    }
+    assert "Dataset::Twenty::Company::c1" in {a["qualifiedName"] for a in records}
+    assert rep["source"]["records"] == 2
+
+
 # ── registry + capability resolution (cross-vendor cohorts) ──────────────────
 def test_layers_registered():
     from egeria_mcp.harvest.runner import LAYERS
 
-    assert {"aris", "archer", "odoo"} <= set(LAYERS)
+    assert {"aris", "archer", "odoo", "crm"} <= set(LAYERS)
 
 
 def test_capability_resolution_for_cohorts():

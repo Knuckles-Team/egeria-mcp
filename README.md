@@ -90,6 +90,21 @@ EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
 Register in the multiplexer under nickname `eg` (tools surface as `eg__lineage`,
 `eg__governed_route`, `eg__catalog`, …). See `egeria_mcp/mcp_config.json`.
 
+<!-- BEGIN GENERATED: additional-deployment-options -->
+### Additional Deployment Options
+
+`egeria-mcp` can also run as a **local container** (Docker / Podman / `uv`) or be
+consumed from a **remote deployment**. The
+[Deployment guide](https://knuckles-team.github.io/egeria-mcp/deployment/) has full, copy-paste
+`mcp_config.json` for all four transports — **stdio**, **streamable-http**,
+**local container / uv**, and **remote URL**:
+
+- **Local container / uv** — launch the server from `mcp_config.json` via `uvx`,
+  `docker run`, or `podman run`, or point at a local streamable-http container by `url`.
+- **Remote URL** — connect to a server deployed behind Caddy at
+  `http://egeria-mcp.arpa/mcp` using the `"url"` key.
+<!-- END GENERATED: additional-deployment-options -->
+
 ## Documentation
 
 The complete documentation is published as the

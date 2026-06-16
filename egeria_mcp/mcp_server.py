@@ -18,7 +18,7 @@ from starlette.responses import JSONResponse
 
 from egeria_mcp.mcp.mcp_egeria import register_egeria_tools
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 logger = get_logger(name="egeria_mcp")
 
 

@@ -10,8 +10,7 @@ import sys
 from typing import Any
 
 from agent_utilities.base_utilities import to_boolean
-from agent_utilities.mcp_utilities import create_mcp_server
-from dotenv import find_dotenv, load_dotenv
+from agent_utilities.mcp_utilities import create_mcp_server, load_config
 from fastmcp.utilities.logging import get_logger
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -31,7 +30,7 @@ def get_mcp_instance(command_args: list[str] | None = None) -> tuple[Any, ...]:
     server's ``-p/--port`` parser does not consume the host process's argv (e.g.
     pytest's ``-p`` plugin flag), which would otherwise abort with ``SystemExit``.
     """
-    load_dotenv(find_dotenv())
+    load_config()
     instructions = (
         "Egeria MCP Server - granular open-metadata access over the Apache "
         "Egeria View Server (OMVS): asset catalog search, business glossary "

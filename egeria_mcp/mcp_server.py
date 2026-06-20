@@ -5,17 +5,21 @@ over the pyegeria View Server surface — the deterministic routing-decision
 complement to the official Dr.Egeria command/report MCP server.
 """
 
-import os
 import sys
 from typing import Any
 
-from agent_utilities.base_utilities import to_boolean
-from agent_utilities.mcp_utilities import create_mcp_server, load_config
+from agent_utilities.mcp_utilities import (
+    create_mcp_server,
+    load_config,
+    register_tool_surface,
+)
 from fastmcp.utilities.logging import get_logger
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
-from egeria_mcp.mcp.mcp_egeria import register_egeria_tools
+from egeria_mcp.api_client import EgeriaApi
+from egeria_mcp.auth import get_client
+from egeria_mcp.mcp.mcp_egeria import register_egeria_tools  # noqa: F401
 
 __version__ = "0.7.0"
 logger = get_logger(name="egeria_mcp")
@@ -58,8 +62,13 @@ def get_mcp_instance(command_args: list[str] | None = None) -> tuple[Any, ...]:
     async def health_check(request: Request) -> JSONResponse:
         return JSONResponse({"status": "OK"})
 
-    if to_boolean(os.getenv("EGERIATOOL", "True")):
-        register_egeria_tools(mcp)
+    register_tool_surface(
+        mcp,
+        client_cls=EgeriaApi,
+        get_client=get_client,
+        service="egeria-mcp",
+        tools_module=sys.modules[__name__],
+    )
 
     for mw in middlewares:
         mcp.add_middleware(mw)

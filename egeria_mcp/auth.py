@@ -1,8 +1,7 @@
 """Identity / connection loader for the Egeria client facade."""
 
-import os
-
-from agent_utilities.base_utilities import get_logger, to_boolean
+from agent_utilities.base_utilities import get_logger
+from agent_utilities.core.config import setting
 
 from egeria_mcp.api_client import EgeriaApi
 
@@ -21,10 +20,10 @@ def get_client() -> EgeriaApi:
         ``EGERIA_ENABLE_WRITE``   Allow classify/create/lineage writes (default ``False``)
     """
     return EgeriaApi(
-        platform_url=os.getenv("EGERIA_PLATFORM_URL", "https://localhost:9443"),
-        view_server=os.getenv("EGERIA_VIEW_SERVER", "qs-view-server"),
-        user_id=os.getenv("EGERIA_USER", "erinoverview"),
-        user_pwd=os.getenv("EGERIA_USER_PASSWORD", "secret"),
-        verify_ssl=to_boolean(os.getenv("EGERIA_VERIFY_SSL", "False")),
-        enable_write=to_boolean(os.getenv("EGERIA_ENABLE_WRITE", "False")),
+        platform_url=setting("EGERIA_PLATFORM_URL", "https://localhost:9443"),
+        view_server=setting("EGERIA_VIEW_SERVER", "qs-view-server"),
+        user_id=setting("EGERIA_USER", "erinoverview"),
+        user_pwd=setting("EGERIA_USER_PASSWORD", "secret"),
+        verify_ssl=setting("EGERIA_VERIFY_SSL", False),
+        enable_write=setting("EGERIA_ENABLE_WRITE", False),
     )

@@ -51,6 +51,55 @@ orchestrates**.
   [`docs/overview.md`](docs/overview.md) for the full list and the verified Egeria
   6.0 REST contract.
 
+## Available MCP Tools
+
+_Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hook)._
+
+<!-- MCP-TOOLS-TABLE:START -->
+
+| MCP Tool | Toggle Env Var | Description |
+|----------|----------------|-------------|
+| `egeria_actors` | `ACTORTOOL` | Browse people/teams, projects, communities, locations, cohorts. |
+| `egeria_assert_lineage` | `LINEAGETOOL` | Assert a data-flow lineage edge (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_asset_search` | `ASSETTOOL` | Search the Egeria asset catalog; returns flat asset records with GUIDs. |
+| `egeria_audit` | `GOVERNANCETOOL` | Completeness audit: report unlinked 'island' assets + per-layer coverage. |
+| `egeria_catalog` | `ASSETTOOL` | Browse the technical catalog: assets, connections, endpoints, schema. |
+| `egeria_classify` | `GOVERNANCETOOL` | Apply a classification to an element (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_collection` | `COLLECTIONTOOL` | Browse collections and digital products. |
+| `egeria_create_asset` | `ASSETTOOL` | Create a data asset, optionally classified (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_create_collection` | `COLLECTIONTOOL` | Create a collection / digital-product folder (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_create_project` | `PROJECTTOOL` | Create a project (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_create_term` | `GLOSSARYTOOL` | Create a glossary term (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_data_design` | `DATA-DESIGNTOOL` | Browse data-designer artifacts: data structures, fields, value specs. |
+| `egeria_glossary_categories` | `GLOSSARYTOOL` | List the glossary category tree. |
+| `egeria_glossary_lookup` | `GLOSSARYTOOL` | Look up business glossary terms (definitions, categories, relationships). |
+| `egeria_governance_catalog` | `GOVERNANCETOOL` | Browse governance definitions, external references, valid-value sets. |
+| `egeria_governance_for` | `GOVERNANCETOOL` | Return governance definitions + classifications applying to an element. |
+| `egeria_governed_route` | `GOVERNANCETOOL` | Policy-aware routing decision for acting on an Egeria-catalogued asset. |
+| `egeria_harvest` | `HARVESTTOOL` | Run a bottom-up harvest layer (or 'all') into Egeria. |
+| `egeria_harvest_archer` | `HARVESTTOOL` | Catalog RSA Archer GRC records (risks/controls/findings) into Egeria. |
+| `egeria_harvest_aris` | `HARVESTTOOL` | Catalog ARIS models into Egeria — process models (BPM) + architecture |
+| `egeria_harvest_containers` | `HARVESTTOOL` | Catalog the Docker Swarm estate (nodes + services) into Egeria — the |
+| `egeria_harvest_crm` | `HARVESTTOOL` | Catalog Twenty CRM companies + people into Egeria (crm cohort with Odoo). |
+| `egeria_harvest_datastores` | `HARVESTTOOL` | Catalog the data-store estate into Egeria (bottom-up harvest, anchor layer). |
+| `egeria_harvest_erpnext` | `HARVESTTOOL` | Catalog ERPNext DocTypes into Egeria (ERP layer). |
+| `egeria_harvest_finance` | `HARVESTTOOL` | Catalog Firefly-III accounts into Egeria (financial data assets). |
+| `egeria_harvest_github` | `HARVESTTOOL` | Catalog GitHub repositories into Egeria (GITHUB_TOKEN [+ GITHUB_ORG]). |
+| `egeria_harvest_identity` | `HARVESTTOOL` | Catalog Keycloak realms (security domains) + clients (apps) into Egeria. |
+| `egeria_harvest_odoo` | `HARVESTTOOL` | Catalog Odoo CRM customers + leads into Egeria (crm cohort with Twenty). |
+| `egeria_harvest_processes` | `HARVESTTOOL` | Catalog Camunda BPMN process definitions into Egeria (process layer). |
+| `egeria_harvest_projects` | `HARVESTTOOL` | Catalog Plane/Jira projects into Egeria as Projects. |
+| `egeria_harvest_repositories` | `HARVESTTOOL` | Catalog GitLab projects into Egeria (code/CI layer). |
+| `egeria_harvest_servicenow` | `HARVESTTOOL` | Catalog ServiceNow CMDB configuration items into Egeria. |
+| `egeria_lineage` | `LINEAGETOOL` | Return the data-lineage graph (upstream/downstream assets + processes). |
+| `egeria_list_policies` | `GOVERNANCETOOL` | List Egeria governance policies/rules (optionally filtered by domain). |
+| `egeria_metadata` | `METADATATOOL` | Generic open-metadata access: search across all types, or get by GUID. |
+| `egeria_reconcile` | `HARVESTTOOL` | Cross-link the harvested layers into one connected lineage/governance graph. |
+| `egeria_solution` | `SOLUTION-ARCHITECTURETOOL` | Browse solution architecture: supply chains, blueprints, components. |
+
+_37 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
+<!-- MCP-TOOLS-TABLE:END -->
+
 ## Configuration (environment)
 
 | Var | Default | Meaning |

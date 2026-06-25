@@ -221,3 +221,156 @@ to just this package. Ask your agent to **"deploy `egeria-mcp` with agent-os-gen
 Secrets are read-existing + seeded via `vault_sync` — you are only prompted for what's missing.
 
 <!-- END agent-os-genesis-deploy -->
+
+## Environment Variables
+
+<!-- ENV-VARS-TABLE:START -->
+
+#### Package environment variables
+
+| Variable | Example | Description |
+|----------|---------|-------------|
+| `HOST` | `0.0.0.0` | REQUIRED — MCP server runtime |
+| `PORT` | `8000` |  |
+| `TRANSPORT` | `stdio` | stdio | streamable-http | sse |
+| `AUTH_TYPE` | `none` | none | oauth | oidc (agent-utilities auth) |
+| `EGERIA_PLATFORM_URL` | `https://localhost:9443` | REQUIRED — Apache Egeria platform / View Server (OMVS) |
+| `EGERIA_VIEW_SERVER` | `qs-view-server` |  |
+| `EGERIA_USER` | `erinoverview` |  |
+| `EGERIA_USER_PASSWORD` | `secret` |  |
+| `EGERIA_VERIFY_SSL` | `False` | self-signed homelab → False |
+| `EGERIA_ENABLE_WRITE` | `False` | gates every write/harvest tool |
+| `EGERIATOOL` | `True` | register the Egeria tool set |
+| `EGERIA_HARVEST_TOPOLOGY` | — | path to a topology.json override (blank = built-in) |
+| `HOST_INVENTORY` | — | path to an Ansible-style hosts inventory |
+| `EGERIA_HARVEST_ENV` | `/home/you/.config/agent-utilities/egeria-harvest.env` | uncomment with an ABSOLUTE path to override (a literal ~ is not expanded here). |
+| `ENABLE_OTEL` | `True` | OPTIONAL — OTEL tracing (agent-utilities framework) |
+| `LANGFUSE_BASE_URL` | — | OPTIONAL — Langfuse / LLMOps harvest connector (egeria_mcp.harvest.llmops) |
+| `LANGFUSE_PUBLIC_KEY` | — |  |
+| `LANGFUSE_SECRET_KEY` | — |  |
+| `EUNOMIA_TYPE` | `none` | none | embedded | remote |
+| `EUNOMIA_POLICY_FILE` | `mcp_policies.json` |  |
+| `ANSIBLE_TOWER_URL` | — |  |
+| `ANSIBLE_TOWER_TOKEN` | — |  |
+| `TOWER_URL` | — |  |
+| `TOWER_TOKEN` | — |  |
+| `ARCHIVEBOX_URL` | — |  |
+| `ARCHIVEBOX_TOKEN` | — |  |
+| `ARCHIVEBOX_API_KEY` | — |  |
+| `ARCHI_MODEL_PATH` | — |  |
+| `ATLASSIAN_AGENT_URL` | — |  |
+| `ATLASSIAN_AGENT_TOKEN` | — |  |
+| `ATLASSIAN_AGENT_USER` | — |  |
+| `JIRA_URL` | — |  |
+| `JIRA_TOKEN` | — |  |
+| `JIRA_USER` | — |  |
+| `CONFLUENCE_URL` | — |  |
+| `CONFLUENCE_TOKEN` | — |  |
+| `CONFLUENCE_USER` | — |  |
+| `CADDY_ADMIN_URL` | `http://localhost:2019` |  |
+| `CAMUNDA_URL` | — |  |
+| `CAMUNDA7_URL` | — |  |
+| `DATA_SCIENCE_URL` | — |  |
+| `DATA_SCIENCE_TOKEN` | — |  |
+| `DATA_SCIENCE_MCP_URL` | — |  |
+| `DATA_SCIENCE_MCP_TOKEN` | — |  |
+| `EMERALD_URL` | — |  |
+| `EMERALD_TOKEN` | — |  |
+| `EMERALD_PORTFOLIO` | — |  |
+| `ERPNEXT_URL` | — |  |
+| `ERPNEXT_TOKEN` | — |  |
+| `FIREFLY_URL` | — |  |
+| `FIREFLY_TOKEN` | — |  |
+| `GITHUB_ORG` | — |  |
+| `GITHUB_TOKEN` | — |  |
+| `GITLAB_URL` | — |  |
+| `GITLAB_HOST` | — |  |
+| `GITLAB_TOKEN` | — |  |
+| `GITLAB_PRIVATE_TOKEN` | — |  |
+| `GRAFANA_URL` | — |  |
+| `GRAFANA_TOKEN` | — |  |
+| `LGTM_TOKEN` | — |  |
+| `HOME_ASSISTANT_URL` | — |  |
+| `HOME_ASSISTANT_TOKEN` | — |  |
+| `JENA_URL` | — |  |
+| `JENA_FUSEKI_URL` | — |  |
+| `JENA_USERNAME` | — |  |
+| `JENA_PASSWORD` | — |  |
+| `JENA_TOKEN` | — |  |
+| `KAFKA_REST_URL` | — |  |
+| `KAFKA_TOKEN` | — |  |
+| `KEYCLOAK_URL` | — |  |
+| `KEYCLOAK_REALM` | `master` |  |
+| `KEYCLOAK_CLIENT_ID` | — |  |
+| `KEYCLOAK_CLIENT_SECRET` | — |  |
+| `KEYCLOAK_TOKEN` | — |  |
+| `LEANIX_URL` | — |  |
+| `LEANIX_TOKEN` | — |  |
+| `LEANIX_API_TOKEN` | — |  |
+| `LISTMONK_URL` | — |  |
+| `LISTMONK_TOKEN` | — |  |
+| `LISTMONK_USER` | — |  |
+| `MATTERMOST_URL` | — |  |
+| `MATTERMOST_TOKEN` | — |  |
+| `MONGODB_URI` | — |  |
+| `MONGODB_HOST` | — |  |
+| `MONGODB_PORT` | `27017` |  |
+| `MSGRAPH_URL` | `https://graph.microsoft.com/v1.0` |  |
+| `MSGRAPH_TOKEN` | — |  |
+| `MS_GRAPH_TOKEN` | — | alias fallback for MSGRAPH_TOKEN |
+| `NEXTCLOUD_URL` | — |  |
+| `NEXTCLOUD_USERNAME` | — |  |
+| `NEXTCLOUD_PASSWORD` | — |  |
+| `OPENAPI_USERNAME` | — |  |
+| `OPENAPI_PASSWORD` | — |  |
+| `OPENBAO_URL` | — |  |
+| `OPENBAO_TOKEN` | — |  |
+| `BAO_ADDR` | — |  |
+| `VAULT_ADDR` | — |  |
+| `VAULT_TOKEN` | — |  |
+| `PLANE_URL` | — |  |
+| `PLANE_TOKEN` | — |  |
+| `PLANE_WORKSPACE` | — |  |
+| `PORTAINER_URL` | — |  |
+| `PORTAINER_TOKEN` | — |  |
+| `PORTAINER_API_KEY` | — |  |
+| `PORTAINER_ENDPOINT_ID` | `3` |  |
+| `QDRANT_URL` | — |  |
+| `QDRANT_API_KEY` | — |  |
+| `SERVICENOW_URL` | — |  |
+| `SERVICENOW_TOKEN` | — |  |
+| `SERVICENOW_USER` | — |  |
+| `SERVICENOW_PASSWORD` | — |  |
+| `TECHNITIUM_DNS_URL` | — |  |
+| `TECHNITIUM_DNS_TOKEN` | — |  |
+| `TWENTY_URL` | — |  |
+| `TWENTY_TOKEN` | — |  |
+| `TWENTY_API_PREFIX` | `/rest` |  |
+| `UPTIME_KUMA_URL` | — |  |
+| `UPTIME_KUMA_TOKEN` | — |  |
+| `VECTOR_URL` | — |  |
+| `VECTOR_TOKEN` | — |  |
+
+#### Inherited agent-utilities variables (apply to every connector)
+
+| Variable | Example | Description |
+|----------|---------|-------------|
+| `MCP_TOOL_MODE` | `condensed` | Tool surface: `condensed` | `verbose` | `both` |
+| `MCP_ENABLED_TOOLS` | — | Comma-separated tool allow-list |
+| `MCP_DISABLED_TOOLS` | — | Comma-separated tool deny-list |
+| `MCP_ENABLED_TAGS` | — | Comma-separated tag allow-list |
+| `MCP_DISABLED_TAGS` | — | Comma-separated tag deny-list |
+| `EUNOMIA_REMOTE_URL` | — | Remote Eunomia authorization server URL |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | OTLP collector endpoint |
+| `MCP_CLIENT_AUTH` | — | Outbound MCP auth (`oidc-client-credentials` for fleet calls) |
+| `OIDC_CLIENT_ID` | — | OIDC client id (service-account auth) |
+| `OIDC_CLIENT_SECRET` | — | OIDC client secret (service-account auth) |
+| `DEBUG` | `False` | Verbose logging |
+| `PYTHONUNBUFFERED` | `1` | Unbuffered stdout (recommended in containers) |
+| `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
+| `PROVIDER` | `openai` | LLM provider for the agent |
+| `MODEL_ID` | `gpt-4o` | Model id for the agent |
+| `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
+
+_120 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+<!-- ENV-VARS-TABLE:END -->

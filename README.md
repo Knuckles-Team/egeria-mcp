@@ -121,11 +121,29 @@ credentials leave the corresponding harvest inactive.
 
 ## Install & run
 
+Pick the extra that matches what you want to run:
+
+| Extra | Installs | Use when |
+|-------|----------|----------|
+| `egeria-mcp[mcp]` | Slim MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI) | You run the **MCP server** (smallest install / image) |
+| `egeria-mcp[egeria]` | The optional `pyegeria` SDK (Python ≥ 3.12) | You want the `pyegeria` client alongside the raw-httpx facade |
+| `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | You run the data-store / connector harvests |
+| `egeria-mcp[all]` | Everything (`mcp` + `agent` + `egeria` + `harvest`) | Development / full surface |
+
 ```bash
-pip install -e .
+# MCP server only (recommended for tool hosting — slim deps)
+uv pip install "egeria-mcp[mcp]"          # or: pip install -e ".[mcp]"
+
+# Everything (development)
+uv pip install "egeria-mcp[all]"          # or: python -m pip install "egeria-mcp[all]"
+
 egeria-mcp                       # stdio MCP server (default transport)
 egeria-mcp --transport http --host 0.0.0.0 --port 8000
 ```
+
+The slim `docker/Dockerfile` builds one image (`knucklessg1/egeria-mcp:latest`) that
+installs `egeria-mcp[all]` and runs the `egeria-mcp` console script; `docker/mcp.compose.yml`
+runs it as a streamable-http service.
 
 Run the bottom-up data-store harvest (needs write enabled):
 
@@ -133,6 +151,16 @@ Run the bottom-up data-store harvest (needs write enabled):
 EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
   python -m egeria_mcp.harvest
 ```
+
+### Knowledge-graph database (`epistemic-graph`)
+
+Egeria is federated alongside the **epistemic-graph** Knowledge Graph: Egeria is the
+metadata / governance / lineage system-of-record, the KG is the cognition / orchestration
+plane (the **KG never becomes the lineage store**; **Egeria never orchestrates**). For
+production — or to share one knowledge graph across multiple agents — run **epistemic-graph
+as its own database container**. Deployment recipes (single-node + Raft HA), connection
+config, and the full database architecture (with diagrams) are documented in the
+[epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
 
 ## MCP config
 

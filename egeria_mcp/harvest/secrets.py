@@ -11,8 +11,9 @@ tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -24,11 +25,8 @@ except Exception:  # pragma: no cover
 
 def _resolve(url: str | None, token: str | None):
     return (
-        url
-        or os.getenv("OPENBAO_URL")
-        or os.getenv("BAO_ADDR")
-        or os.getenv("VAULT_ADDR"),
-        token or os.getenv("OPENBAO_TOKEN") or os.getenv("VAULT_TOKEN"),
+        url or setting("OPENBAO_URL") or setting("BAO_ADDR") or setting("VAULT_ADDR"),
+        token or setting("OPENBAO_TOKEN") or setting("VAULT_TOKEN"),
     )
 
 

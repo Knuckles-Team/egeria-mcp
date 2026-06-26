@@ -57,24 +57,16 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 
 <!-- MCP-TOOLS-TABLE:START -->
 
+#### Condensed action-routed tools (default — `MCP_TOOL_MODE=condensed`)
+
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
 | `egeria_actors` | `EGERIATOOL` | Browse people/teams, projects, communities, locations, cohorts. |
-| `egeria_assert_lineage` | `EGERIATOOL` | Assert a data-flow lineage edge (requires EGERIA_ENABLE_WRITE=true). |
-| `egeria_asset_search` | `EGERIATOOL` | Search the Egeria asset catalog; returns flat asset records with GUIDs. |
 | `egeria_audit` | `EGERIATOOL` | Completeness audit: report unlinked 'island' assets + per-layer coverage. |
 | `egeria_catalog` | `EGERIATOOL` | Browse the technical catalog: assets, connections, endpoints, schema. |
-| `egeria_classify` | `EGERIATOOL` | Apply a classification to an element (requires EGERIA_ENABLE_WRITE=true). |
 | `egeria_collection` | `EGERIATOOL` | Browse collections and digital products. |
-| `egeria_create_asset` | `EGERIATOOL` | Create a data asset, optionally classified (requires EGERIA_ENABLE_WRITE=true). |
-| `egeria_create_collection` | `EGERIATOOL` | Create a collection / digital-product folder (requires EGERIA_ENABLE_WRITE=true). |
-| `egeria_create_project` | `EGERIATOOL` | Create a project (requires EGERIA_ENABLE_WRITE=true). |
-| `egeria_create_term` | `EGERIATOOL` | Create a glossary term (requires EGERIA_ENABLE_WRITE=true). |
 | `egeria_data_design` | `EGERIATOOL` | Browse data-designer artifacts: data structures, fields, value specs. |
-| `egeria_glossary_categories` | `EGERIATOOL` | List the glossary category tree. |
-| `egeria_glossary_lookup` | `EGERIATOOL` | Look up business glossary terms (definitions, categories, relationships). |
 | `egeria_governance_catalog` | `EGERIATOOL` | Browse governance definitions, external references, valid-value sets. |
-| `egeria_governance_for` | `EGERIATOOL` | Return governance definitions + classifications applying to an element. |
 | `egeria_governed_route` | `EGERIATOOL` | Policy-aware routing decision for acting on an Egeria-catalogued asset. |
 | `egeria_harvest` | `EGERIATOOL` | Run a bottom-up harvest layer (or 'all') into Egeria. |
 | `egeria_harvest_archer` | `EGERIATOOL` | Catalog RSA Archer GRC records (risks/controls/findings) into Egeria. |
@@ -91,13 +83,75 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 | `egeria_harvest_projects` | `EGERIATOOL` | Catalog Plane/Jira projects into Egeria as Projects. |
 | `egeria_harvest_repositories` | `EGERIATOOL` | Catalog GitLab projects into Egeria (code/CI layer). |
 | `egeria_harvest_servicenow` | `EGERIATOOL` | Catalog ServiceNow CMDB configuration items into Egeria. |
-| `egeria_lineage` | `EGERIATOOL` | Return the data-lineage graph (upstream/downstream assets + processes). |
-| `egeria_list_policies` | `EGERIATOOL` | List Egeria governance policies/rules (optionally filtered by domain). |
 | `egeria_metadata` | `EGERIATOOL` | Generic open-metadata access: search across all types, or get by GUID. |
 | `egeria_reconcile` | `EGERIATOOL` | Cross-link the harvested layers into one connected lineage/governance graph. |
 | `egeria_solution` | `EGERIATOOL` | Browse solution architecture: supply chains, blueprints, components. |
 
-_37 action-routed tools (default `MCP_TOOL_MODE=condensed`). Each is enabled unless its toggle is set false; set `MCP_TOOL_MODE=verbose` (or `both`) for the 1:1 per-operation surface. Auto-generated — do not edit._
+#### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
+
+<details>
+<summary>54 per-operation tools — one per public API method (click to expand)</summary>
+
+| MCP Tool | Toggle Env Var | Description |
+|----------|----------------|-------------|
+| `egeria_assert_lineage` | `EGERIATOOL` | Assert source → process → target as two ``DataFlow`` edges. |
+| `egeria_asset_search` | `EGERIATOOL` | Invoke the asset_search operation. |
+| `egeria_classify` | `EGERIATOOL` | Invoke the classify operation. |
+| `egeria_create_asset` | `EGERIATOOL` | Create (or reuse) a data asset, optionally classified at creation. |
+| `egeria_create_collection` | `EGERIATOOL` | Create (or reuse) a collection (e.g. a digital-product folder). |
+| `egeria_create_glossary` | `EGERIA_APITOOL` | Create (or reuse) a business glossary; returns ``{guid, reused?}``. |
+| `egeria_create_project` | `EGERIATOOL` | Create (or reuse) a project. |
+| `egeria_create_term` | `EGERIATOOL` | Create (or reuse) a glossary term anchored to ``glossary`` (its GUID). |
+| `egeria_delete_element` | `EGERIA_APITOOL` | Delete an asset element by GUID. |
+| `egeria_find_actor_profiles` | `EGERIA_APITOOL` | Invoke the find_actor_profiles operation. |
+| `egeria_find_actor_roles` | `EGERIA_APITOOL` | Invoke the find_actor_roles operation. |
+| `egeria_find_asset` | `EGERIA_APITOOL` | Return the GUID of an existing asset by qualifiedName, or None. |
+| `egeria_find_cohorts` | `EGERIA_APITOOL` | Invoke the find_cohorts operation. |
+| `egeria_find_collections` | `EGERIA_APITOOL` | Invoke the find_collections operation. |
+| `egeria_find_communities` | `EGERIA_APITOOL` | Invoke the find_communities operation. |
+| `egeria_find_connections` | `EGERIA_APITOOL` | Invoke the find_connections operation. |
+| `egeria_find_connector_types` | `EGERIA_APITOOL` | Invoke the find_connector_types operation. |
+| `egeria_find_data_assets` | `EGERIA_APITOOL` | Invoke the find_data_assets operation. |
+| `egeria_find_data_fields` | `EGERIA_APITOOL` | Invoke the find_data_fields operation. |
+| `egeria_find_data_structures` | `EGERIA_APITOOL` | Invoke the find_data_structures operation. |
+| `egeria_find_data_value_specifications` | `EGERIA_APITOOL` | Invoke the find_data_value_specifications operation. |
+| `egeria_find_digital_products` | `EGERIA_APITOOL` | Invoke the find_digital_products operation. |
+| `egeria_find_endpoints` | `EGERIA_APITOOL` | Invoke the find_endpoints operation. |
+| `egeria_find_external_references` | `EGERIA_APITOOL` | Invoke the find_external_references operation. |
+| `egeria_find_glossary` | `EGERIA_APITOOL` | Return the GUID of an existing glossary by qualifiedName, or None. |
+| `egeria_find_information_supply_chains` | `EGERIA_APITOOL` | Invoke the find_information_supply_chains operation. |
+| `egeria_find_infrastructure_assets` | `EGERIA_APITOOL` | Invoke the find_infrastructure_assets operation. |
+| `egeria_find_locations` | `EGERIA_APITOOL` | Invoke the find_locations operation. |
+| `egeria_find_metadata_elements` | `EGERIA_APITOOL` | Search across all open-metadata element types (generic find). |
+| `egeria_find_projects` | `EGERIA_APITOOL` | Invoke the find_projects operation. |
+| `egeria_find_schema_attributes` | `EGERIA_APITOOL` | Invoke the find_schema_attributes operation. |
+| `egeria_find_schema_types` | `EGERIA_APITOOL` | Invoke the find_schema_types operation. |
+| `egeria_find_solution_blueprints` | `EGERIA_APITOOL` | Invoke the find_solution_blueprints operation. |
+| `egeria_find_solution_components` | `EGERIA_APITOOL` | Invoke the find_solution_components operation. |
+| `egeria_find_technology_types` | `EGERIA_APITOOL` | Invoke the find_technology_types operation. |
+| `egeria_find_term` | `EGERIA_APITOOL` | Return the GUID of an existing glossary term by qualifiedName, or None. |
+| `egeria_find_user_identities` | `EGERIA_APITOOL` | Invoke the find_user_identities operation. |
+| `egeria_find_valid_values` | `EGERIA_APITOOL` | Invoke the find_valid_values operation. |
+| `egeria_get_element` | `EGERIA_APITOOL` | Retrieve any element by GUID (with its classifications). |
+| `egeria_glossary_categories` | `EGERIATOOL` | Invoke the glossary_categories operation. |
+| `egeria_glossary_lookup` | `EGERIATOOL` | Invoke the glossary_lookup operation. |
+| `egeria_governance_for` | `EGERIATOOL` | Return classifications + confidentiality level applying to an element. |
+| `egeria_lineage` | `EGERIATOOL` | Return the asset lineage graph (``AssetLineageGraph``) for a GUID. |
+| `egeria_link_data_flow` | `EGERIA_APITOOL` | Create a ``DataFlow`` lineage edge ``source → target``. |
+| `egeria_list_assets` | `EGERIA_APITOOL` | Invoke the list_assets operation. |
+| `egeria_list_connections` | `EGERIA_APITOOL` | Invoke the list_connections operation. |
+| `egeria_list_data_flows` | `EGERIA_APITOOL` | Enumerate ``DataFlow`` lineage edges across the catalogue. |
+| `egeria_list_glossary_categories` | `EGERIA_APITOOL` | Invoke the list_glossary_categories operation. |
+| `egeria_list_glossary_terms` | `EGERIA_APITOOL` | Invoke the list_glossary_terms operation. |
+| `egeria_list_governance_definitions` | `EGERIA_APITOOL` | Invoke the list_governance_definitions operation. |
+| `egeria_list_policies` | `EGERIATOOL` | Invoke the list_policies operation. |
+| `egeria_list_software_servers` | `EGERIA_APITOOL` | Invoke the list_software_servers operation. |
+| `egeria_set_classification` | `EGERIA_APITOOL` | Apply any classification to an element (generic). |
+| `egeria_set_confidentiality` | `EGERIA_APITOOL` | Apply/refresh a ``Confidentiality`` classification at ``level`` (0–4). |
+
+</details>
+
+_25 action-routed tool(s) (default) · 54 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (`condensed` default · `verbose` 1:1 · `both`). Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 ## Configuration (environment)
@@ -258,6 +312,14 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 | `ARCHIVEBOX_TOKEN` | — |  |
 | `ARCHIVEBOX_API_KEY` | — |  |
 | `ARCHI_MODEL_PATH` | — |  |
+| `ARCHER_URL` | — |  |
+| `ARCHER_TOKEN` | — |  |
+| `ARCHER_SESSION_ID` | — | alias fallback for ARCHER_TOKEN |
+| `ARCHER_APPLICATIONS` | `risks,controls,findings` | comma-separated app list |
+| `ARIS_URL` | — |  |
+| `ARIS_TOKEN` | — |  |
+| `ARIS_API_TOKEN` | — | alias fallback for ARIS_TOKEN |
+| `ARIS_API_PATH` | `/abs/api/models` | ARIS REST API path |
 | `ATLASSIAN_AGENT_URL` | — |  |
 | `ATLASSIAN_AGENT_TOKEN` | — |  |
 | `ATLASSIAN_AGENT_USER` | — |  |
@@ -321,6 +383,11 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 | `NEXTCLOUD_URL` | — |  |
 | `NEXTCLOUD_USERNAME` | — |  |
 | `NEXTCLOUD_PASSWORD` | — |  |
+| `ODOO_URL` | — |  |
+| `ODOO_DB` | — |  |
+| `ODOO_USER` | — |  |
+| `ODOO_PASSWORD` | — |  |
+| `ODOO_API_KEY` | — | alias fallback for ODOO_PASSWORD |
 | `OPENAPI_USERNAME` | — |  |
 | `OPENAPI_PASSWORD` | — |  |
 | `OPENBAO_URL` | — |  |
@@ -372,5 +439,5 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_120 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_133 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->

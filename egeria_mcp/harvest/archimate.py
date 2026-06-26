@@ -14,6 +14,8 @@ import os
 import xml.etree.ElementTree as ET
 from typing import Any
 
+from agent_utilities.core.config import setting
+
 # ArchiMate element type (xsi:type local name) → Egeria asset type.
 _LAYER_TYPE = {
     "ApplicationComponent": "DeployedSoftwareComponent",
@@ -71,7 +73,7 @@ def harvest_archimate(api: Any, model_path: str | None = None) -> dict[str, Any]
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    path = model_path or os.getenv("ARCHI_MODEL_PATH")
+    path = model_path or setting("ARCHI_MODEL_PATH")
     if not path or not os.path.isfile(path):
         report["skipped"] = (
             "no ArchiMate model (set ARCHI_MODEL_PATH to the Open Exchange XML)"

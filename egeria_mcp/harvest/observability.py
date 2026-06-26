@@ -9,8 +9,9 @@ Config-driven (``GRAFANA_URL`` + ``LGTM_TOKEN`` / ``GRAFANA_TOKEN`` bearer); tol
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -49,8 +50,8 @@ def harvest_observability(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("GRAFANA_URL")
-    token = token or os.getenv("LGTM_TOKEN") or os.getenv("GRAFANA_TOKEN")
+    url = url or setting("GRAFANA_URL")
+    token = token or setting("LGTM_TOKEN") or setting("GRAFANA_TOKEN")
     if not url or not token:
         report["skipped"] = "no Grafana URL/token (set GRAFANA_URL / LGTM_TOKEN)"
         return report

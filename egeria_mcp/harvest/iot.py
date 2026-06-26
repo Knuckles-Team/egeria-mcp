@@ -10,8 +10,9 @@ Config-driven (``HOME_ASSISTANT_URL`` + ``HOME_ASSISTANT_TOKEN`` bearer); tolera
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -52,8 +53,8 @@ def harvest_iot(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("HOME_ASSISTANT_URL")
-    token = token or os.getenv("HOME_ASSISTANT_TOKEN")
+    url = url or setting("HOME_ASSISTANT_URL")
+    token = token or setting("HOME_ASSISTANT_TOKEN")
     if not url or not token:
         report["skipped"] = (
             "no Home Assistant URL/token (set HOME_ASSISTANT_URL / HOME_ASSISTANT_TOKEN)"

@@ -9,8 +9,9 @@ Config-driven (``MATTERMOST_URL`` + ``MATTERMOST_TOKEN`` bearer); tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -52,8 +53,8 @@ def harvest_chat(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("MATTERMOST_URL")
-    token = token or os.getenv("MATTERMOST_TOKEN")
+    url = url or setting("MATTERMOST_URL")
+    token = token or setting("MATTERMOST_TOKEN")
     if not url or not token:
         report["skipped"] = (
             "no Mattermost URL/token (set MATTERMOST_URL / MATTERMOST_TOKEN)"

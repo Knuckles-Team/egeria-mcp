@@ -9,8 +9,9 @@ tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -55,9 +56,9 @@ def harvest_files(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("NEXTCLOUD_URL")
-    user = user or os.getenv("NEXTCLOUD_USERNAME")
-    password = password or os.getenv("NEXTCLOUD_PASSWORD")
+    url = url or setting("NEXTCLOUD_URL")
+    user = user or setting("NEXTCLOUD_USERNAME")
+    password = password or setting("NEXTCLOUD_PASSWORD")
     if not url or not user or not password:
         report["skipped"] = (
             "no Nextcloud creds (set NEXTCLOUD_URL / USERNAME / PASSWORD)"

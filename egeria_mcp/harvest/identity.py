@@ -13,8 +13,9 @@ Config-driven (``KEYCLOAK_URL`` + ``KEYCLOAK_TOKEN`` admin bearer, or
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -25,14 +26,14 @@ except Exception:  # pragma: no cover
 
 
 def _resolve(base_url: str | None, token: str | None):
-    return base_url or os.getenv("KEYCLOAK_URL"), token or os.getenv("KEYCLOAK_TOKEN")
+    return base_url or setting("KEYCLOAK_URL"), token or setting("KEYCLOAK_TOKEN")
 
 
 def _bearer(base_url: str, verify_ssl: bool) -> str | None:
     """Obtain an admin bearer token via client-credentials, if configured."""
-    cid = os.getenv("KEYCLOAK_CLIENT_ID")
-    secret = os.getenv("KEYCLOAK_CLIENT_SECRET")
-    realm = os.getenv("KEYCLOAK_REALM", "master")
+    cid = setting("KEYCLOAK_CLIENT_ID")
+    secret = setting("KEYCLOAK_CLIENT_SECRET")
+    realm = setting("KEYCLOAK_REALM", "master")
     if not (cid and secret) or not HTTPX_AVAILABLE:
         return None
     url = f"{base_url.rstrip('/')}/realms/{realm}/protocol/openid-connect/token"

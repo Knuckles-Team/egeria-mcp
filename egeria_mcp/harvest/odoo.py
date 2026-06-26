@@ -12,8 +12,9 @@ tolerant — skipped when unconfigured/unreachable.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -109,10 +110,10 @@ def harvest_odoo(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("ODOO_URL")
-    db = db or os.getenv("ODOO_DB")
-    user = user or os.getenv("ODOO_USER")
-    password = password or os.getenv("ODOO_PASSWORD") or os.getenv("ODOO_API_KEY")
+    url = url or setting("ODOO_URL")
+    db = db or setting("ODOO_DB")
+    user = user or setting("ODOO_USER")
+    password = password or setting("ODOO_PASSWORD") or setting("ODOO_API_KEY")
     if not url or not db or not user or not password:
         report["skipped"] = (
             "no Odoo config (set ODOO_URL / ODOO_DB / ODOO_USER / ODOO_PASSWORD)"

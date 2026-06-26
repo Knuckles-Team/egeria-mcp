@@ -10,8 +10,9 @@ Config-driven (``MSGRAPH_TOKEN`` bearer, optional ``MSGRAPH_URL`` default
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -52,8 +53,8 @@ def harvest_m365(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    token = token or os.getenv("MSGRAPH_TOKEN") or os.getenv("MS_GRAPH_TOKEN")
-    base = base_url or os.getenv("MSGRAPH_URL") or "https://graph.microsoft.com/v1.0"
+    token = token or setting("MSGRAPH_TOKEN") or setting("MS_GRAPH_TOKEN")
+    base = base_url or setting("MSGRAPH_URL") or "https://graph.microsoft.com/v1.0"
     if not token:
         report["skipped"] = "no Microsoft Graph token (set MSGRAPH_TOKEN)"
         return report

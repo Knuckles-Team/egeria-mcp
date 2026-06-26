@@ -15,6 +15,8 @@ import json
 import os
 from typing import Any
 
+from agent_utilities.core.config import setting
+
 
 def _load(path: str) -> Any:
     try:
@@ -60,7 +62,7 @@ def harvest_hosts(api: Any, inventory_path: str | None = None) -> dict[str, Any]
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    path = inventory_path or os.getenv("HOST_INVENTORY")
+    path = inventory_path or setting("HOST_INVENTORY")
     if not path or not os.path.isfile(path):
         report["skipped"] = "no host inventory (set HOST_INVENTORY to a YAML/JSON file)"
         return report

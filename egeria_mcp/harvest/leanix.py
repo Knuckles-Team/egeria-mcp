@@ -10,8 +10,9 @@ the API token for a bearer via its MTM OAuth endpoint, then queries Pathfinder G
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -78,8 +79,8 @@ def harvest_leanix(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    base_url = base_url or os.getenv("LEANIX_URL")
-    api_token = api_token or os.getenv("LEANIX_API_TOKEN") or os.getenv("LEANIX_TOKEN")
+    base_url = base_url or setting("LEANIX_URL")
+    api_token = api_token or setting("LEANIX_API_TOKEN") or setting("LEANIX_TOKEN")
     if not base_url or not api_token:
         report["skipped"] = "no LeanIX URL/token (set LEANIX_URL / LEANIX_API_TOKEN)"
         return report

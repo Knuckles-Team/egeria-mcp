@@ -13,8 +13,9 @@ default ``risks,controls,findings``); tolerant — skipped when unconfigured.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -75,13 +76,13 @@ def harvest_archer(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("ARCHER_URL")
-    token = token or os.getenv("ARCHER_TOKEN") or os.getenv("ARCHER_SESSION_ID")
+    url = url or setting("ARCHER_URL")
+    token = token or setting("ARCHER_TOKEN") or setting("ARCHER_SESSION_ID")
     apps = applications or [
         a.strip()
-        for a in os.getenv(
-            "ARCHER_APPLICATIONS", ",".join(_DEFAULT_APPLICATIONS)
-        ).split(",")
+        for a in setting("ARCHER_APPLICATIONS", ",".join(_DEFAULT_APPLICATIONS)).split(
+            ","
+        )
         if a.strip()
     ]
     if not url or not token:

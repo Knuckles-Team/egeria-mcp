@@ -9,8 +9,9 @@ basic auth); tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -54,9 +55,9 @@ def harvest_llmops(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("LANGFUSE_BASE_URL")
-    public = public or os.getenv("LANGFUSE_PUBLIC_KEY")
-    secret = secret or os.getenv("LANGFUSE_SECRET_KEY")
+    url = url or setting("LANGFUSE_BASE_URL")
+    public = public or setting("LANGFUSE_PUBLIC_KEY")
+    secret = secret or setting("LANGFUSE_SECRET_KEY")
     if not url or not public or not secret:
         report["skipped"] = (
             "no Langfuse creds (set LANGFUSE_BASE_URL / PUBLIC_KEY / SECRET_KEY)"

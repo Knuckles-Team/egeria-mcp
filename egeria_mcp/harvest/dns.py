@@ -9,8 +9,9 @@ Config-driven (``TECHNITIUM_DNS_URL`` + ``TECHNITIUM_DNS_TOKEN``); tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -47,8 +48,8 @@ def harvest_dns(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("TECHNITIUM_DNS_URL")
-    token = token or os.getenv("TECHNITIUM_DNS_TOKEN")
+    url = url or setting("TECHNITIUM_DNS_URL")
+    token = token or setting("TECHNITIUM_DNS_TOKEN")
     if not url or not token:
         report["skipped"] = (
             "no Technitium creds (set TECHNITIUM_DNS_URL / TECHNITIUM_DNS_TOKEN)"

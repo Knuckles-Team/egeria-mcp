@@ -9,8 +9,9 @@ Config-driven (``QDRANT_URL`` + optional ``QDRANT_API_KEY``); tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -51,8 +52,8 @@ def harvest_vectors(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("QDRANT_URL") or os.getenv("VECTOR_URL")
-    api_key = api_key or os.getenv("QDRANT_API_KEY") or os.getenv("VECTOR_TOKEN")
+    url = url or setting("QDRANT_URL") or setting("VECTOR_URL")
+    api_key = api_key or setting("QDRANT_API_KEY") or setting("VECTOR_TOKEN")
     if not url:
         report["skipped"] = "no vector store URL (set QDRANT_URL)"
         return report

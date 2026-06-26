@@ -9,8 +9,9 @@ Config-driven (``TOWER_URL`` + ``TOWER_TOKEN`` bearer); tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -54,8 +55,8 @@ def harvest_automation(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("TOWER_URL") or os.getenv("ANSIBLE_TOWER_URL")
-    token = token or os.getenv("TOWER_TOKEN") or os.getenv("ANSIBLE_TOWER_TOKEN")
+    url = url or setting("TOWER_URL") or setting("ANSIBLE_TOWER_URL")
+    token = token or setting("TOWER_TOKEN") or setting("ANSIBLE_TOWER_TOKEN")
     if not url or not token:
         report["skipped"] = "no Tower URL/token (set TOWER_URL / TOWER_TOKEN)"
         return report

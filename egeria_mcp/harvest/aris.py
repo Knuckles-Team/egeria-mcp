@@ -12,8 +12,9 @@ Config-driven (``ARIS_URL`` + ``ARIS_TOKEN``, optional ``ARIS_API_PATH`` default
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -76,9 +77,9 @@ def harvest_aris(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("ARIS_URL")
-    token = token or os.getenv("ARIS_TOKEN") or os.getenv("ARIS_API_TOKEN")
-    api_path = api_path or os.getenv("ARIS_API_PATH", "/abs/api/models")
+    url = url or setting("ARIS_URL")
+    token = token or setting("ARIS_TOKEN") or setting("ARIS_API_TOKEN")
+    api_path = api_path or setting("ARIS_API_PATH", "/abs/api/models")
     if not url or not token:
         report["skipped"] = "no ARIS URL/token (set ARIS_URL / ARIS_TOKEN)"
         return report

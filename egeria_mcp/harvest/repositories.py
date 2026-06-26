@@ -14,8 +14,9 @@ raised).
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -30,8 +31,8 @@ _VISIBILITY_LEVEL = {"private": 1, "internal": 1, "public": 0}
 
 def _resolve(base_url: str | None, token: str | None) -> tuple[str | None, str | None]:
     return (
-        base_url or os.getenv("GITLAB_URL") or os.getenv("GITLAB_HOST"),
-        token or os.getenv("GITLAB_TOKEN") or os.getenv("GITLAB_PRIVATE_TOKEN"),
+        base_url or setting("GITLAB_URL") or setting("GITLAB_HOST"),
+        token or setting("GITLAB_TOKEN") or setting("GITLAB_PRIVATE_TOKEN"),
     )
 
 
@@ -208,8 +209,8 @@ def harvest_github(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    token = token or os.getenv("GITHUB_TOKEN")
-    org = org or os.getenv("GITHUB_ORG")
+    token = token or setting("GITHUB_TOKEN")
+    org = org or setting("GITHUB_ORG")
     if not token:
         report["skipped"] = "no GitHub token (set GITHUB_TOKEN)"
         return report

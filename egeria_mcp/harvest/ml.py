@@ -9,8 +9,9 @@ Config-driven (``DATA_SCIENCE_MCP_URL`` + ``DATA_SCIENCE_MCP_TOKEN``); tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -50,10 +51,8 @@ def harvest_ml(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("DATA_SCIENCE_MCP_URL") or os.getenv("DATA_SCIENCE_URL")
-    token = (
-        token or os.getenv("DATA_SCIENCE_MCP_TOKEN") or os.getenv("DATA_SCIENCE_TOKEN")
-    )
+    url = url or setting("DATA_SCIENCE_MCP_URL") or setting("DATA_SCIENCE_URL")
+    token = token or setting("DATA_SCIENCE_MCP_TOKEN") or setting("DATA_SCIENCE_TOKEN")
     if not url:
         report["skipped"] = "no data-science URL (set DATA_SCIENCE_MCP_URL)"
         return report

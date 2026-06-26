@@ -23,6 +23,8 @@ import json
 import os
 from typing import Any
 
+from agent_utilities.core.config import setting
+
 # ── Business glossary backbone (the ``:Concept`` layer the KG federates) ──────
 GLOSSARY: dict[str, str] = {
     "name": "Data Governance Glossary",
@@ -152,7 +154,7 @@ def load_topology() -> dict[str, Any]:
     override the generic :data:`DEFAULT_TOPOLOGY`. Otherwise the built-in example is
     returned. Keep the override file out of any public repository.
     """
-    path = os.getenv("EGERIA_HARVEST_TOPOLOGY")
+    path = setting("EGERIA_HARVEST_TOPOLOGY")
     topology = {
         k: list(v) if isinstance(v, list) else dict(v)
         for k, v in DEFAULT_TOPOLOGY.items()

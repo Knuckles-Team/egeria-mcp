@@ -10,8 +10,9 @@ default ``/rest``); tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -63,9 +64,9 @@ def harvest_crm(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("TWENTY_URL")
-    token = token or os.getenv("TWENTY_TOKEN")
-    prefix = os.getenv("TWENTY_API_PREFIX", "/rest")
+    url = url or setting("TWENTY_URL")
+    token = token or setting("TWENTY_TOKEN")
+    prefix = setting("TWENTY_API_PREFIX", "/rest")
     if not url or not token:
         report["skipped"] = "no Twenty URL/token (set TWENTY_URL / TWENTY_TOKEN)"
         return report

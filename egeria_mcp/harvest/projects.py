@@ -13,8 +13,9 @@ Tolerant — skipped when nothing is configured/reachable.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -25,9 +26,9 @@ except Exception:  # pragma: no cover
 
 
 def _plane_projects(verify_ssl: bool) -> list[dict]:
-    url = os.getenv("PLANE_URL")
-    token = os.getenv("PLANE_TOKEN")
-    workspace = os.getenv("PLANE_WORKSPACE")
+    url = setting("PLANE_URL")
+    token = setting("PLANE_TOKEN")
+    workspace = setting("PLANE_WORKSPACE")
     if not (url and token and workspace and HTTPX_AVAILABLE):
         return []
     try:
@@ -54,9 +55,9 @@ def _plane_projects(verify_ssl: bool) -> list[dict]:
 
 
 def _jira_projects(verify_ssl: bool) -> list[dict]:
-    url = os.getenv("JIRA_URL")
-    user = os.getenv("JIRA_USER")
-    token = os.getenv("JIRA_TOKEN")
+    url = setting("JIRA_URL")
+    user = setting("JIRA_USER")
+    token = setting("JIRA_TOKEN")
     if not (url and user and token and HTTPX_AVAILABLE):
         return []
     try:

@@ -10,8 +10,9 @@ tolerant.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -57,8 +58,8 @@ def harvest_archive(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("ARCHIVEBOX_URL")
-    token = token or os.getenv("ARCHIVEBOX_API_KEY") or os.getenv("ARCHIVEBOX_TOKEN")
+    url = url or setting("ARCHIVEBOX_URL")
+    token = token or setting("ARCHIVEBOX_API_KEY") or setting("ARCHIVEBOX_TOKEN")
     if not url or not token:
         report["skipped"] = (
             "no ArchiveBox URL/token (set ARCHIVEBOX_URL / ARCHIVEBOX_API_KEY)"

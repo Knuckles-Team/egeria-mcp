@@ -9,8 +9,9 @@ Config-driven (``JENA_FUSEKI_URL`` / ``JENA_URL`` + optional ``JENA_USERNAME`` /
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -46,9 +47,9 @@ def harvest_semantic(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("JENA_FUSEKI_URL") or os.getenv("JENA_URL")
-    user, password = os.getenv("JENA_USERNAME"), os.getenv("JENA_PASSWORD")
-    token = os.getenv("JENA_TOKEN")
+    url = url or setting("JENA_FUSEKI_URL") or setting("JENA_URL")
+    user, password = setting("JENA_USERNAME"), setting("JENA_PASSWORD")
+    token = setting("JENA_TOKEN")
     if not url:
         report["skipped"] = "no Jena Fuseki URL (set JENA_FUSEKI_URL)"
         return report

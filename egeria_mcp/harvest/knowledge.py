@@ -9,8 +9,9 @@ Config-driven (``CONFLUENCE_URL`` / ``ATLASSIAN_AGENT_URL`` + ``CONFLUENCE_USER`
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -22,9 +23,9 @@ except Exception:  # pragma: no cover
 
 def _resolve():
     return (
-        os.getenv("CONFLUENCE_URL") or os.getenv("ATLASSIAN_AGENT_URL"),
-        os.getenv("CONFLUENCE_USER") or os.getenv("ATLASSIAN_AGENT_USER"),
-        os.getenv("CONFLUENCE_TOKEN") or os.getenv("ATLASSIAN_AGENT_TOKEN"),
+        setting("CONFLUENCE_URL") or setting("ATLASSIAN_AGENT_URL"),
+        setting("CONFLUENCE_USER") or setting("ATLASSIAN_AGENT_USER"),
+        setting("CONFLUENCE_TOKEN") or setting("ATLASSIAN_AGENT_TOKEN"),
     )
 
 

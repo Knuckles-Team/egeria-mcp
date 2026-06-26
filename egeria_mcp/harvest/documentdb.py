@@ -9,8 +9,9 @@ dependency) — skipped cleanly otherwise.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 _SYSTEM_DBS = {"admin", "local", "config"}
 
@@ -18,12 +19,12 @@ _SYSTEM_DBS = {"admin", "local", "config"}
 def _resolve(uri: str | None) -> str | None:
     if uri:
         return uri
-    direct = os.getenv("MONGODB_URI")
+    direct = setting("MONGODB_URI")
     if direct:
         return direct
-    host = os.getenv("MONGODB_HOST")
+    host = setting("MONGODB_HOST")
     if host:
-        return f"mongodb://{host}:{os.getenv('MONGODB_PORT', '27017')}"
+        return f"mongodb://{host}:{setting('MONGODB_PORT', '27017')}"
     return None
 
 

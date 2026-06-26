@@ -11,8 +11,9 @@ Config-driven (``SERVICENOW_URL`` + ``SERVICENOW_USER`` + ``SERVICENOW_PASSWORD`
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -29,10 +30,10 @@ def _resolve(
     base_url: str | None, user: str | None, password: str | None, token: str | None
 ):
     return (
-        base_url or os.getenv("SERVICENOW_URL"),
-        user or os.getenv("SERVICENOW_USER"),
-        password or os.getenv("SERVICENOW_PASSWORD"),
-        token or os.getenv("SERVICENOW_TOKEN"),
+        base_url or setting("SERVICENOW_URL"),
+        user or setting("SERVICENOW_USER"),
+        password or setting("SERVICENOW_PASSWORD"),
+        token or setting("SERVICENOW_TOKEN"),
     )
 
 

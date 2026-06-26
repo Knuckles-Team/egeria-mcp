@@ -13,8 +13,9 @@ when unconfigured/unreachable.
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -28,8 +29,8 @@ def _resolve(
     base_url: str | None, api_key: str | None
 ) -> tuple[str | None, str | None]:
     return (
-        base_url or os.getenv("PORTAINER_URL"),
-        api_key or os.getenv("PORTAINER_API_KEY") or os.getenv("PORTAINER_TOKEN"),
+        base_url or setting("PORTAINER_URL"),
+        api_key or setting("PORTAINER_API_KEY") or setting("PORTAINER_TOKEN"),
     )
 
 
@@ -66,7 +67,7 @@ def harvest_containers(
         )
         return report
 
-    eid = endpoint_id or os.getenv("PORTAINER_ENDPOINT_ID", "3")
+    eid = endpoint_id or setting("PORTAINER_ENDPOINT_ID", "3")
     nodes = (
         _get(base_url, api_key, f"/api/endpoints/{eid}/docker/nodes", verify_ssl) or []
     )

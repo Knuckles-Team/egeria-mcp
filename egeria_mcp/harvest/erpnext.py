@@ -13,8 +13,9 @@ package. If unset/unreachable, the harvest is skipped (reported, not raised).
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -95,8 +96,8 @@ def _capability(doctype: str) -> str:
 
 def _resolve(base_url: str | None, token: str | None) -> tuple[str | None, str | None]:
     return (
-        base_url or os.getenv("ERPNEXT_URL"),
-        token or os.getenv("ERPNEXT_TOKEN"),
+        base_url or setting("ERPNEXT_URL"),
+        token or setting("ERPNEXT_TOKEN"),
     )
 
 

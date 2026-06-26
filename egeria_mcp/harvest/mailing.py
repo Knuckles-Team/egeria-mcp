@@ -8,8 +8,9 @@ Config-driven (``LISTMONK_URL`` + ``LISTMONK_USER`` + ``LISTMONK_TOKEN``); toler
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -56,9 +57,9 @@ def harvest_mailing(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("LISTMONK_URL")
-    user = user or os.getenv("LISTMONK_USER") or os.getenv("OPENAPI_USERNAME")
-    token = token or os.getenv("LISTMONK_TOKEN") or os.getenv("OPENAPI_PASSWORD")
+    url = url or setting("LISTMONK_URL")
+    user = user or setting("LISTMONK_USER") or setting("OPENAPI_USERNAME")
+    token = token or setting("LISTMONK_TOKEN") or setting("OPENAPI_PASSWORD")
     if not url or not token:
         report["skipped"] = "no Listmonk URL/token (set LISTMONK_URL / LISTMONK_TOKEN)"
         return report

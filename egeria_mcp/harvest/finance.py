@@ -10,8 +10,9 @@ Config-driven (``FIREFLY_URL`` + ``FIREFLY_TOKEN`` personal access token); toler
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -22,7 +23,7 @@ except Exception:  # pragma: no cover
 
 
 def _resolve(base_url: str | None, token: str | None):
-    return base_url or os.getenv("FIREFLY_URL"), token or os.getenv("FIREFLY_TOKEN")
+    return base_url or setting("FIREFLY_URL"), token or setting("FIREFLY_TOKEN")
 
 
 def fetch_accounts(

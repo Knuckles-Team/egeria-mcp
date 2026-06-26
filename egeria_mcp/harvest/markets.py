@@ -15,6 +15,8 @@ import json
 import os
 from typing import Any
 
+from agent_utilities.core.config import setting
+
 try:
     import httpx
 
@@ -67,9 +69,9 @@ def harvest_markets(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("EMERALD_URL")
-    token = token or os.getenv("EMERALD_TOKEN")
-    portfolio_path = portfolio_path or os.getenv("EMERALD_PORTFOLIO")
+    url = url or setting("EMERALD_URL")
+    token = token or setting("EMERALD_TOKEN")
+    portfolio_path = portfolio_path or setting("EMERALD_PORTFOLIO")
     holdings = _fetch_api(url, token, verify_ssl) if url else []
     if not holdings and portfolio_path and os.path.isfile(portfolio_path):
         holdings = _load_file(portfolio_path)

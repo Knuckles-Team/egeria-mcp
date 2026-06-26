@@ -14,8 +14,9 @@ when an explicit ``process_flows`` mapping is supplied (see
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -28,7 +29,7 @@ from egeria_mcp.harvest import topology
 
 
 def _camunda_base_url(base_url: str | None) -> str | None:
-    return base_url or os.getenv("CAMUNDA7_URL") or os.getenv("CAMUNDA_URL") or None
+    return base_url or setting("CAMUNDA7_URL") or setting("CAMUNDA_URL") or None
 
 
 def fetch_process_definitions(

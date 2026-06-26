@@ -23,12 +23,14 @@ import json
 import os
 import sys
 
+from agent_utilities.core.config import setting
+
 DEFAULT_ENV = os.path.expanduser("~/.config/agent-utilities/egeria-harvest.env")
 
 
 def _load_env_file() -> str | None:
     """Load KEY=VALUE lines from the private env file into os.environ (no override)."""
-    path = os.getenv("EGERIA_HARVEST_ENV", DEFAULT_ENV)
+    path = setting("EGERIA_HARVEST_ENV", DEFAULT_ENV)
     if not os.path.isfile(path):
         return None
     try:

@@ -9,8 +9,9 @@ Config-driven (``CADDY_ADMIN_URL``, default ``http://localhost:2019``); tolerant
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -59,7 +60,7 @@ def harvest_proxy(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    admin_url = admin_url or os.getenv("CADDY_ADMIN_URL") or "http://localhost:2019"
+    admin_url = admin_url or setting("CADDY_ADMIN_URL") or "http://localhost:2019"
     routes = fetch_routes(admin_url, verify_ssl=verify_ssl)
     report["source"] = {"admin_url": admin_url, "routes": len(routes)}
     if not routes:

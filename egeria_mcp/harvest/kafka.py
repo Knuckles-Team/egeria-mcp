@@ -9,8 +9,9 @@ is required because Kafka's native topic admin is not HTTP.)
 
 from __future__ import annotations
 
-import os
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -60,8 +61,8 @@ def harvest_kafka(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    rest_url = rest_url or os.getenv("KAFKA_REST_URL")
-    token = token or os.getenv("KAFKA_TOKEN")
+    rest_url = rest_url or setting("KAFKA_REST_URL")
+    token = token or setting("KAFKA_TOKEN")
     if not rest_url:
         report["skipped"] = "no Kafka REST proxy (set KAFKA_REST_URL)"
         return report

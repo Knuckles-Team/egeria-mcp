@@ -11,9 +11,10 @@ tolerant.
 
 from __future__ import annotations
 
-import os
 import re
 from typing import Any
+
+from agent_utilities.core.config import setting
 
 try:
     import httpx
@@ -62,8 +63,8 @@ def harvest_monitoring(
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or os.getenv("UPTIME_KUMA_URL")
-    token = token or os.getenv("UPTIME_KUMA_TOKEN")
+    url = url or setting("UPTIME_KUMA_URL")
+    token = token or setting("UPTIME_KUMA_TOKEN")
     if not url or not token:
         report["skipped"] = (
             "no Uptime Kuma URL/token (set UPTIME_KUMA_URL / UPTIME_KUMA_TOKEN)"

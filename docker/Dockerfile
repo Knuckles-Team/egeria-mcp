@@ -17,7 +17,9 @@ RUN apt-get update \
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system --upgrade --break-system-packages --prerelease=allow egeria-mcp[all]>=0.2.0
 
-FROM python:3.11-slim
+# egeria-mcp is an MCP-only package (no agent surface); the pipeline's agent leg is
+# auto-skipped since this Dockerfile has no `AS agent` stage.
+FROM python:3.11-slim AS mcp
 
 ARG HOST=0.0.0.0
 ARG PORT=8000

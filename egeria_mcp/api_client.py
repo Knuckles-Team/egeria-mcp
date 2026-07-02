@@ -8,7 +8,7 @@ parity with the other agent-packages.
 
 from egeria_mcp.api.api_client_egeria import EgeriaApi
 
-__version__ = "0.1.0"
+__version__ = "1.0.2"
 
 Api = EgeriaApi
 

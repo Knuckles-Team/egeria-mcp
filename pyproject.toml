@@ -34,6 +34,12 @@ egeria-mcp = "egeria_mcp.skills"
 [project.entry-points."agent_utilities.prompt_providers"]
 egeria-mcp = "egeria_mcp.prompts"
 
+# CONCEPT:KG-2.325 — federate this package's OWL/RDF ontology module into the
+# agent-utilities hub (open-metadata assets, glossaries, governance). Resolved
+# via iter_provider_dirs like the skill/prompt providers.
+[project.entry-points."agent_utilities.ontology_providers"]
+egeria-mcp = "egeria_mcp.ontology"
+
 [tool.setuptools]
 include-package-data = true
 
@@ -50,7 +56,7 @@ check_untyped_defs = true
 dev = [ "pytest-timeout>=2.4.0",]
 
 [tool.setuptools.package-data]
-egeria_mcp = [ "mcp_config.json", "prompts/**", "skills/**",]
+egeria_mcp = [ "mcp_config.json", "prompts/**", "skills/**", "ontology/**",]
 
 [tool.ruff.lint]
 select = [ "E", "F", "I", "UP", "B",]

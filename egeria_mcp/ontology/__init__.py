@@ -1,4 +1,4 @@
-"""Apache Egeria open-metadata ontology contribution (CONCEPT:KG-2.325).
+"""Apache Egeria open-metadata ontology contribution (CONCEPT:AU-KG.ontology.package-federation-migration).
 
 Data-only subpackage: it carries ``egeria.ttl`` (the ``owl:Ontology``
 ``http://knuckles.team/kg/egeria`` module — open-metadata assets, glossaries and

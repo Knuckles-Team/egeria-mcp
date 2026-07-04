@@ -26,6 +26,33 @@
     Egeria: GlossaryCategory. ArchiMate: Strategy → (taxonomy of) Concept.""" ;
     rdfs:subClassOf :Concept .
 
+:GlossaryTerm a owl:Class ;
+    rdfs:label "Glossary Term" ;
+    rdfs:comment """An Egeria GlossaryTerm — a defined business/semantic concept in a
+    glossary (name + summary/description + qualifiedName). Typed distinctly from
+    :GlossaryCategory (the grouping) so the native egeria-mcp extractor can push
+    terms as first-class nodes carrying their definition text, while still
+    federating with the broader :Concept vocabulary. Egeria: GlossaryTerm.""" ;
+    rdfs:subClassOf :Concept .
+
+:GovernanceRule a owl:Class ;
+    rdfs:label "Governance Rule" ;
+    rdfs:comment """An Egeria GovernanceDefinition of a rule/policy nature
+    (GovernancePolicy, GovernanceRule, GovernanceObligation, …) — a governing
+    statement that assets are :governedBy. Typed here so the native extractor can
+    ingest governance definitions as nodes the confidentiality/routing layer can
+    reason over. Egeria: GovernanceDefinition (rule subtypes). Complements :Policy.""" ;
+    rdfs:subClassOf :Policy .
+
+:DataAsset a owl:Class ;
+    rdfs:label "Data Asset" ;
+    rdfs:comment """An Egeria Asset catalogued in the open-metadata repository (a
+    DataStore, DataSet, database, file, API, server capability, …). Carries the
+    Egeria GUID as :externalToolId and the :qualifiedName federation key; the
+    endpoints of :flowsTo / :dependsOn lineage edges. Egeria: Asset (and subtypes).
+    Folds into the enterprise :DataConnector / :DataObject vocabulary.""" ;
+    rdfs:subClassOf :DataConnector .
+
 :confidentialityLevel a owl:DatatypeProperty ;
     rdfs:label "confidentiality level" ;
     rdfs:comment """Confidentiality classification applied to an asset (e.g.

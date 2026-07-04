@@ -158,6 +158,22 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
         return audit(get_client())
 
+    @mcp.tool(tags={"kg", "ingest"})
+    async def egeria_ingest_catalog() -> Any:
+        """Natively ingest the Egeria catalog into epistemic-graph as typed OWL nodes.
+
+        Lists glossary terms, glossary categories, governance definitions, assets,
+        and DataFlow lineage edges via the Egeria client and pushes them into the
+        KG as ``:GlossaryTerm`` / ``:GovernanceRule`` / ``:DataAsset`` /
+        ``:GlossaryCategory`` nodes, ``:flowsTo`` lineage edges, and definition
+        ``:Document`` nodes. Best-effort: returns ``{"ingested": null}`` when no KG
+        engine is reachable. Read-only against Egeria.
+        CONCEPT:AU-KG.ingest.enterprise-source-extractor.
+        """
+        from egeria_mcp.kg_ingest import ingest_catalog
+
+        return {"ingested": ingest_catalog(get_client())}
+
     # ── Broad OMVS coverage (action-dispatch domain tools) ───────────────────
     # Each tool fans an ``action`` out to the matching EgeriaApi find method,
     # keeping the catalogue browsable without a separate tool per noun.

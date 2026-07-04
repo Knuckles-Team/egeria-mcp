@@ -1,0 +1,25 @@
+{
+  "_comment": "Tier-1 mcp_tool source presets for egeria-mcp (AU-KG.ingest.mcp-tool-connector). Syncs Egeria open-metadata records into the KG as documents via this package's MCP server. Contributed presets win over the central MCP_TOOL_PRESETS. The typed-node + lineage path is the native egeria_ingest_catalog tool (egeria_mcp.kg_ingest); these presets cover the hub-driven document sync.",
+  "egeria-glossary-terms": {
+    "server": "egeria-mcp",
+    "tool": "egeria_glossary_lookup",
+    "action": "list",
+    "records_path": "",
+    "id_field": "guid",
+    "title_field": "displayName",
+    "text_field": "summary",
+    "updated_field": "updateTime",
+    "doc_type": "glossary_term"
+  },
+  "egeria-governance-definitions": {
+    "server": "egeria-mcp",
+    "tool": "egeria_list_policies",
+    "action": "list",
+    "records_path": "",
+    "id_field": "guid",
+    "title_field": "displayName",
+    "text_field": "summary",
+    "updated_field": "updateTime",
+    "doc_type": "governance_rule"
+  }
+}

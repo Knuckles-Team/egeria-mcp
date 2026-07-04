@@ -6,6 +6,7 @@ rather than raising, so ``harvest_all`` runs whatever is wired and skips the res
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from egeria_mcp.harvest.archer import harvest_archer
@@ -89,7 +90,14 @@ LAYERS: dict[str, Any] = {
 
 
 def harvest_all(api: Any, layers: list[str] | None = None) -> dict[str, Any]:
-    """Run all (or the named) harvest layers; return ``{layer: report}``."""
+    """Run all (or the named) harvest layers; return ``{layer: report}``.
+
+    After harvesting sources into Egeria, natively mirror the resulting catalog
+    (glossary terms, governance rules, assets, lineage) into the epistemic-graph
+    KG as typed OWL nodes (CONCEPT:AU-KG.ingest.enterprise-source-extractor).
+    Default-on; set ``EGERIA_KG_INGEST=false`` to skip. Best-effort: a missing KG
+    engine no-ops without affecting the harvest report.
+    """
     out: dict[str, Any] = {}
     for name, fn in LAYERS.items():
         if layers and name not in layers:
@@ -98,4 +106,11 @@ def harvest_all(api: Any, layers: list[str] | None = None) -> dict[str, Any]:
             out[name] = fn(api)
         except Exception as exc:  # never let one layer abort the rest
             out[name] = {"error": str(exc)}
+    if os.getenv("EGERIA_KG_INGEST", "true").lower() not in ("false", "0", "no"):
+        try:
+            from egeria_mcp.kg_ingest import ingest_catalog
+
+            out["_kg_ingest"] = ingest_catalog(api)
+        except Exception as exc:  # never let KG ingest abort the harvest
+            out["_kg_ingest"] = {"error": str(exc)}
     return out

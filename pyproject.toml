@@ -40,6 +40,11 @@ egeria-mcp = "egeria_mcp.prompts"
 [project.entry-points."agent_utilities.ontology_providers"]
 egeria-mcp = "egeria_mcp.ontology"
 
+# Tier-1 mcp_tool source-preset leg (AU-KG.ingest.mcp-tool-connector): declares how
+# the KG hub can sync Egeria glossary terms via this package's MCP server.
+[project.entry-points."agent_utilities.source_connector_providers"]
+egeria-mcp = "egeria_mcp.connectors"
+
 [tool.setuptools]
 include-package-data = true
 
@@ -56,7 +61,7 @@ check_untyped_defs = true
 dev = [ "pytest-timeout>=2.4.0",]
 
 [tool.setuptools.package-data]
-egeria_mcp = [ "mcp_config.json", "prompts/**", "skills/**", "ontology/**",]
+egeria_mcp = [ "mcp_config.json", "prompts/**", "skills/**", "ontology/**", "connectors/**",]
 
 [tool.ruff.lint]
 select = [ "E", "F", "I", "UP", "B",]

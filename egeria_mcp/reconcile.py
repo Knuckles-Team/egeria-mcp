@@ -75,7 +75,7 @@ _CAP_BY_PREFIX = {
 def _capability_of(rec: dict) -> str | None:
     """Canonical capability for an asset (explicit tag → source → qn prefix).
 
-    CONCEPT:EG-009 — Vendor-Neutral Capability Tagging. Resolves the canonical
+    CONCEPT:AU-KG.ingest.then-by-its-node — Vendor-Neutral Capability Tagging. Resolves the canonical
     ``capability`` so first-party and open-source adapters of the same capability
     cross-link through a shared ``Capability::<cap>`` cohort.
     """
@@ -206,7 +206,7 @@ def _core(qn: str, prefix: str) -> str:
 def reconcile(api: Any, *, propagate_confidentiality: bool = True) -> dict[str, Any]:
     """Cross-link the catalogue across layers; return a per-pattern report.
 
-    CONCEPT:EG-006 — Cross-Layer Reconciliation. Weaves the independently-harvested
+    CONCEPT:EA-KG.compute.cross-reconciliation-weaves-independently — Cross-Layer Reconciliation. Weaves the independently-harvested
     layers into one graph via deterministic matchers that create labelled
     ``DataFlow`` edges and propagate confidentiality up hosting chains. Idempotent;
     makes ``governed_route`` cross-layer- and cross-vendor-aware.

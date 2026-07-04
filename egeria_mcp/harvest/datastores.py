@@ -20,7 +20,7 @@ from egeria_mcp.harvest import topology
 def harvest_datastores(api: Any) -> dict[str, Any]:
     """Catalog the declared data-store estate into Egeria; return a report.
 
-    CONCEPT:EG-004 — Bottom-Up Harvest. The data-store layer is the anchor every
+    CONCEPT:EA-KG.domains.bottom-up-harvest-data — Bottom-Up Harvest. The data-store layer is the anchor every
     downstream lineage edge (ERPNext → Camunda → GitLab) resolves to.
 
     Parameters

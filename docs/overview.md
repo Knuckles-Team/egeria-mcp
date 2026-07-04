@@ -112,7 +112,7 @@ hostnames/addresses are never published.
 ## Integration with agent-utilities
 
 - **Extractor:** `agent_utilities/knowledge_graph/enrichment/extractors/egeria.py`
-  (CONCEPT:KG-2.9) — pure transform; `EgeriaApi` injected as `config["client"]`.
+  (CONCEPT:AU-KG.ingest.enterprise-source-extractor) — pure transform; `EgeriaApi` injected as `config["client"]`.
 - **Ontology:** `agent_utilities/knowledge_graph/ontology_egeria.ttl` — ArchiMate
   crosswalk reusing the enterprise classes (GlossaryTerm→`:Concept`,
   Asset/Connection→`:DataConnector`, Policy→`:Policy`, DataFlow→`:flowsTo`).

@@ -79,7 +79,7 @@ def _norm(el: dict) -> dict:
 class EgeriaApi:
     """Tolerant raw-REST facade over Egeria's OMVS for the MCP tools + KG extractor.
 
-    CONCEPT:EG-002 — Raw-REST OMVS Facade. A tolerant httpx client over the View
+    CONCEPT:EA-KG.compute.raw-rest-omvs-facade — Raw-REST OMVS Facade. A tolerant httpx client over the View
     Server; no ``pyegeria`` runtime dep (its ``asyncio.get_event_loop()`` raises on
     3.14). Every call degrades to ``[]`` / a clear error rather than raising.
     """
@@ -244,7 +244,7 @@ class EgeriaApi:
     def list_data_flows(self) -> list[dict]:
         """Enumerate ``DataFlow`` lineage edges across the catalogue.
 
-        CONCEPT:EG-007 — Bidirectional KG Federation. Powers KG federation: the
+        CONCEPT:EA-KG.compute.bidirectional-kg-federation-powers — Bidirectional KG Federation. Powers KG federation: the
         ``egeria`` extractor turns these into ``flowsTo`` /
         ``dependsOn`` edges. Each record is ``{source, target, label, sourceName,
         targetName, sourceType, targetType}`` (GUIDs in source/target). Scans the

@@ -76,15 +76,15 @@ Stable concept IDs (prefix `CONCEPT:EG-*`) trace the federation's core ideas acr
 `docs/concepts.md`, code docstrings, and pytest markers. Full descriptions live in
 [`docs/concepts.md`](docs/concepts.md); keep both in sync.
 
-<!-- CONCEPT:EG-001 --> **EG-001** Egeria Metadata Federation — `egeria_mcp/__init__.py`
-<!-- CONCEPT:EG-002 --> **EG-002** Raw-REST OMVS Facade — `EgeriaApi` (`api/api_client_egeria.py`)
-<!-- CONCEPT:EG-003 --> **EG-003** Governed Routing — `governed_route()` (`governed_routing.py`)
-<!-- CONCEPT:EG-004 --> **EG-004** Bottom-Up Harvest — `harvest_datastores()` (`harvest/datastores.py`)
-<!-- CONCEPT:EG-005 --> **EG-005** Broad OMVS Coverage — `register_egeria_tools()` (`mcp/mcp_egeria.py`)
-<!-- CONCEPT:EG-006 --> **EG-006** Cross-Layer Reconciliation — `reconcile()` (`reconcile.py`)
-<!-- CONCEPT:EG-007 --> **EG-007** Bidirectional KG Federation — `EgeriaApi.list_data_flows()`
-<!-- CONCEPT:EG-008 --> **EG-008** Completeness Audit — `audit()` (`audit.py`)
-<!-- CONCEPT:EG-009 --> **EG-009** Vendor-Neutral Capability Tagging — `_capability_of()` (`reconcile.py`)
+<!-- CONCEPT:EA-KG.compute.egeria-metadata-federation-apache --> **EA-KG.compute.egeria-metadata-federation-apache** Egeria Metadata Federation — `egeria_mcp/__init__.py`
+<!-- CONCEPT:EA-KG.compute.raw-rest-omvs-facade --> **EA-KG.compute.raw-rest-omvs-facade** Raw-REST OMVS Facade — `EgeriaApi` (`api/api_client_egeria.py`)
+<!-- CONCEPT:EA-KG.compute.governed-routing-turns-egeria --> **EA-KG.compute.governed-routing-turns-egeria** Governed Routing — `governed_route()` (`governed_routing.py`)
+<!-- CONCEPT:EA-KG.domains.bottom-up-harvest-data --> **EA-KG.domains.bottom-up-harvest-data** Bottom-Up Harvest — `harvest_datastores()` (`harvest/datastores.py`)
+<!-- CONCEPT:EA-KG.maintenance.broad-omvs-coverage-action --> **EA-KG.maintenance.broad-omvs-coverage-action** Broad OMVS Coverage — `register_egeria_tools()` (`mcp/mcp_egeria.py`)
+<!-- CONCEPT:EA-KG.compute.cross-reconciliation-weaves-independently --> **EA-KG.compute.cross-reconciliation-weaves-independently** Cross-Layer Reconciliation — `reconcile()` (`reconcile.py`)
+<!-- CONCEPT:EA-KG.compute.bidirectional-kg-federation-powers --> **EA-KG.compute.bidirectional-kg-federation-powers** Bidirectional KG Federation — `EgeriaApi.list_data_flows()`
+<!-- CONCEPT:EA-KG.compute.completeness-audit-reports-unlinked --> **EA-KG.compute.completeness-audit-reports-unlinked** Completeness Audit — `audit()` (`audit.py`)
+<!-- CONCEPT:AU-KG.ingest.then-by-its-node --> **AU-KG.ingest.then-by-its-node** Vendor-Neutral Capability Tagging — `_capability_of()` (`reconcile.py`)
 
 ## ⛔ Keep the Repository Root Pristine
 The repository ROOT must contain only canonical project files (packaging, config,
@@ -173,7 +173,7 @@ alone).
 Working in parallel with other sessions/worktrees? **Reserve a concept id before you write its `CONCEPT:` marker** so two sessions never collide:
 
 ```bash
-agent-utilities --json concept reserve --ns KG-2   # or a package prefix, e.g. KEY
+agent-utilities --json concept reserve --ns EG-KG.compute.backend   # or a package prefix, e.g. KEY
 ```
 
 Full protocol (ledger, merge=union, reconcile, MCP/REST): <https://knuckles-team.github.io/agent-utilities/concept_coordination/>

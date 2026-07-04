@@ -37,7 +37,7 @@ def audit(
 ) -> dict[str, Any]:
     """Report island (unlinked) assets + per-layer lineage coverage.
 
-    CONCEPT:EG-008 — Completeness Audit. Reports unlinked "island" assets, per-layer
+    CONCEPT:EA-KG.compute.completeness-audit-reports-unlinked — Completeness Audit. Reports unlinked "island" assets, per-layer
     lineage coverage %, and a per-capability roll-up — what reconciliation/harvest
     still misses. Loads all assets but scans only the hubs for edges. Read-only.
     """

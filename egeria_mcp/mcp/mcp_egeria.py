@@ -24,7 +24,7 @@ def _p(params_json: str) -> dict[str, Any]:
 def register_egeria_tools(mcp: FastMCP) -> None:
     """Register Egeria open-metadata / glossary / lineage / governance tools.
 
-    CONCEPT:EG-005 — Broad OMVS Coverage. Action-dispatch tools (``egeria_catalog``,
+    CONCEPT:EA-KG.maintenance.broad-omvs-coverage-action — Broad OMVS Coverage. Action-dispatch tools (``egeria_catalog``,
     ``egeria_data_design``, ``egeria_collection``, ``egeria_solution``,
     ``egeria_governance_catalog``, ``egeria_actors``, ``egeria_metadata``) span 11
     View Services without a tool per noun.

@@ -1,4 +1,4 @@
-"""ARIS / RSA Archer / Odoo harvesters (CONCEPT:EG-004, EG-009).
+"""ARIS / RSA Archer / Odoo harvesters (CONCEPT:EA-KG.domains.bottom-up-harvest-data, CONCEPT:AU-KG.ingest.then-by-its-node).
 
 Asserts the tolerant skip path (no config → skipped, no raise), the asset mapping
 + vendor-neutral capability tag (via monkeypatched fetch, no network), and that

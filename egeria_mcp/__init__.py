@@ -4,7 +4,7 @@ Granular, typed Egeria tools (lineage / glossary / asset / governance) plus the
 ``EgeriaApi`` client used as the injected ``config["client"]`` for the KG
 ``egeria`` enrichment extractor.
 
-CONCEPT:EG-001 — Egeria Metadata Federation. Apache Egeria is the
+CONCEPT:EA-KG.compute.egeria-metadata-federation-apache — Egeria Metadata Federation. Apache Egeria is the
 metadata/governance/lineage system-of-record, federated with the epistemic-graph
 KG. Two invariants: the KG is never the lineage store; Egeria never orchestrates.
 """

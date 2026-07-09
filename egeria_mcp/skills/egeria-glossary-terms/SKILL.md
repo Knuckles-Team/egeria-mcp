@@ -1,5 +1,6 @@
 ---
 name: egeria-glossary-terms
+skill_type: skill
 description: >-
   Business-glossary operations on Apache Egeria via the egeria-mcp MCP server —
   look up GlossaryTerms and GlossaryCategories, and author new terms in the

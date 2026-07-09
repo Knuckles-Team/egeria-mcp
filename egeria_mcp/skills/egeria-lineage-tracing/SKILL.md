@@ -1,5 +1,6 @@
 ---
 name: egeria-lineage-tracing
+skill_type: skill
 description: >-
   Data-lineage and asset-catalog operations on Apache Egeria via the egeria-mcp
   MCP server — search the open-metadata asset catalog, trace an asset's upstream

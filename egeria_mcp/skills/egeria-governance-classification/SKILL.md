@@ -1,5 +1,6 @@
 ---
 name: egeria-governance-classification
+skill_type: skill
 description: >-
   Governance, classification, and confidentiality-based routing on Apache Egeria
   via the egeria-mcp MCP server — read the classifications + confidentiality level

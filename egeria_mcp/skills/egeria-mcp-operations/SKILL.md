@@ -1,5 +1,6 @@
 ---
 name: egeria-mcp-operations
+skill_type: skill
 description: >-
   Operate egeria-mcp through its governed MCP and GraphOS capabilities, including egeria glossary terms, egeria governance classification, egeria lineage tracing. Use when a request requires this provider's read, change, automation, ingestion, troubleshooting, or evidence workflows.
 ---

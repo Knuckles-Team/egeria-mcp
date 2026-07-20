@@ -16,6 +16,10 @@ import os
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -25,13 +29,13 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _fetch_api(url: str, token: str | None, verify_ssl: bool) -> list[dict]:
+def _fetch_api(url: str, token: str | None, tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     for path in ("/api/portfolios", "/api/positions", "/api/accounts"):
         try:
-            with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+            with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
                 r = c.get(f"{url.rstrip('/')}{path}", headers=headers)
             if r.status_code == 200:
                 data = r.json()
@@ -60,7 +64,7 @@ def harvest_markets(
     token: str | None = None,
     *,
     portfolio_path: str | None = None,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog financial instruments / holdings into Egeria."""
     report: dict[str, Any] = {"instruments": [], "errors": []}
@@ -72,7 +76,7 @@ def harvest_markets(
     url = url or setting("EMERALD_URL")
     token = token or setting("EMERALD_TOKEN")
     portfolio_path = portfolio_path or setting("EMERALD_PORTFOLIO")
-    holdings = _fetch_api(url, token, verify_ssl) if url else []
+    holdings = _fetch_api(url, token, tls_profile) if url else []
     if not holdings and portfolio_path and os.path.isfile(portfolio_path):
         holdings = _load_file(portfolio_path)
     if not url and not portfolio_path:

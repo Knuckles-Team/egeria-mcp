@@ -12,6 +12,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -21,11 +25,11 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _fetch(url: str, token: str, path: str, verify_ssl: bool) -> list[dict]:
+def _fetch(url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/v2/{path}/",
                 headers={
@@ -46,7 +50,7 @@ def harvest_automation(
     url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog AWX/Tower job templates (Process) + inventories (Collection)."""
     report: dict[str, Any] = {"job_templates": [], "inventories": [], "errors": []}
@@ -61,8 +65,8 @@ def harvest_automation(
         report["skipped"] = "no Tower URL/token (set TOWER_URL / TOWER_TOKEN)"
         return report
 
-    inventories = _fetch(url, token, "inventories", verify_ssl)
-    templates = _fetch(url, token, "job_templates", verify_ssl)
+    inventories = _fetch(url, token, "inventories", tls_profile)
+    templates = _fetch(url, token, "job_templates", tls_profile)
     report["source"] = {
         "url": url,
         "inventories": len(inventories),

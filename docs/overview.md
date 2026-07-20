@@ -126,8 +126,8 @@ hostnames/addresses are never published.
 |---|---|---|
 | `EGERIA_PLATFORM_URL` | `https://localhost:9443` | OMAG platform URL |
 | `EGERIA_VIEW_SERVER` | `qs-view-server` | View server name |
-| `EGERIA_USER` | `erinoverview` | User id |
-| `EGERIA_USER_PASSWORD` | `secret` | Password / token |
-| `EGERIA_VERIFY_SSL` | `False` | Verify TLS (self-signed homelab) |
+| `EGERIA_USER` | _(unset)_ | User id |
+| `EGERIA_USER_PASSWORD` | _(unset)_ | Password / token, injected at runtime |
+| `EGERIA_TLS_PROFILE` | _(unset)_ | Optional runtime TLS profile selector; verification is mandatory |
 | `EGERIA_ENABLE_WRITE` | `False` | Gate every write/harvest tool |
 | `EGERIATOOL` | `True` | Register the Egeria tool set |

@@ -17,6 +17,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -35,7 +39,7 @@ def _camunda_base_url(base_url: str | None) -> str | None:
 def fetch_process_definitions(
     base_url: str,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
     latest_only: bool = True,
     timeout: float = 15.0,
 ) -> list[dict]:
@@ -45,7 +49,7 @@ def fetch_process_definitions(
     url = f"{base_url.rstrip('/')}/process-definition"
     params = {"latestVersion": "true"} if latest_only else {}
     try:
-        with httpx.Client(verify=verify_ssl, timeout=timeout) as c:
+        with httpx.Client(timeout=timeout, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(url, params=params)
         if r.status_code != 200:
             return []
@@ -59,7 +63,7 @@ def harvest_processes(
     api: Any,
     base_url: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Camunda process definitions into Egeria; return a report.
 
@@ -82,7 +86,7 @@ def harvest_processes(
         report["skipped"] = "no Camunda URL (set CAMUNDA7_URL / CAMUNDA_URL)"
         return report
 
-    defs = fetch_process_definitions(url, verify_ssl=verify_ssl)
+    defs = fetch_process_definitions(url, tls_profile=tls_profile)
     report["source"] = {"base_url": url, "definitions": len(defs)}
     if not defs:
         report["skipped"] = (

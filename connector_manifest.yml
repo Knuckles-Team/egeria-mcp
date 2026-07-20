@@ -90,6 +90,7 @@ sync:
   updated_field: updateTime
   pagination: null
   doc_type: glossary_term
+  tool_schema_sha256: 55f797757add396ac31a2f9ed9ec7ed7ecacd8f831178e0ab807722e1d17c85f
   raw:
     server: egeria-mcp
     tool: egeria_glossary_lookup
@@ -111,6 +112,7 @@ sync:
   updated_field: updateTime
   pagination: null
   doc_type: governance_rule
+  tool_schema_sha256: 5fa78151ad2794cfdd67d4ed3a297b7115385c6ed2981e260e76934a52598bf2
   raw:
     server: egeria-mcp
     tool: egeria_list_policies
@@ -123,16 +125,19 @@ sync:
     doc_type: governance_rule
 provenance:
   generated_by: scripts/generate_connector_manifests.py
-  generated_at: '2026-07-09T00:00:00Z'
+  generated_at: '2026-07-18T00:00:00Z'
   source_artifacts:
   - egeria_mcp/connectors/mcp_source_presets.json
+  - egeria_mcp/connectors/tool_schema_fingerprints.json
   - egeria_mcp/ontology/egeria.ttl
   integrity:
     algorithm: urdna2015-sha256
     hash: 5d931c77b58f7ab65cc66234306e84bcb79b46a72c0d1a933577c462ca00fe61
     triple_count: 33
   signer: ontology-manifest-generator
-  signature: 3965e9fffd94d790cc35e2c5a24a2584200ec0be69e83bf24d11997227224538
+  signature_algorithm: ed25519
+  signing_public_key: q0Cp7bmQMqJhbofGKKw8xXC6KbFzukBDDke0UYVi8y4
+  signature: Ya5rvh2XIVhQiexkAe5rkq-8MGA6jwhlppIeAKWqR6Hi1hTpFcAjZqEDbR_odvBP__A3VqCSrAmYQuTP08GIDA
 policy:
   pii_fields: {}
   tenant_boundary: null

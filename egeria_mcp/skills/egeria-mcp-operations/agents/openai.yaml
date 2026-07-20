@@ -1,0 +1,4 @@
+interface:
+  display_name: "Egeria MCP Operations"
+  short_description: "Help with Egeria MCP Operations tasks"
+  default_prompt: "Use $egeria-mcp-operations to complete a governed provider workflow."

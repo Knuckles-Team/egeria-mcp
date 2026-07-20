@@ -12,6 +12,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -21,11 +25,11 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _get(url: str, token: str, path: str, params, verify_ssl: bool) -> Any:
+def _get(url: str, token: str, path: str, params, tls_profile: ResolvedTLSProfile | None) -> Any:
     if not HTTPX_AVAILABLE:
         return None
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}{path}",
                 headers={"Authorization": f"Bearer {token}"},
@@ -41,7 +45,7 @@ def harvest_observability(
     url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Grafana data sources + dashboards into Egeria."""
     report: dict[str, Any] = {"datasources": [], "dashboards": [], "errors": []}
@@ -56,9 +60,9 @@ def harvest_observability(
         report["skipped"] = "no Grafana URL/token (set GRAFANA_URL / LGTM_TOKEN)"
         return report
 
-    datasources = _get(url, token, "/api/datasources", None, verify_ssl) or []
+    datasources = _get(url, token, "/api/datasources", None, tls_profile) or []
     dashboards = (
-        _get(url, token, "/api/search", {"type": "dash-db", "limit": 200}, verify_ssl)
+        _get(url, token, "/api/search", {"type": "dash-db", "limit": 200}, tls_profile)
         or []
     )
     report["source"] = {

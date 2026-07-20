@@ -95,8 +95,8 @@ def harvest_all(api: Any, layers: list[str] | None = None) -> dict[str, Any]:
     After harvesting sources into Egeria, natively mirror the resulting catalog
     (glossary terms, governance rules, assets, lineage) into the epistemic-graph
     KG as typed OWL nodes (CONCEPT:AU-KG.ingest.enterprise-source-extractor).
-    Default-on; set ``EGERIA_KG_INGEST=false`` to skip. Best-effort: a missing KG
-    engine no-ops without affecting the harvest report.
+    Default-on; set ``EGERIA_KG_INGEST=false`` to skip. When enabled, native
+    ingestion is authoritative and failures propagate.
     """
     out: dict[str, Any] = {}
     for name, fn in LAYERS.items():
@@ -104,13 +104,10 @@ def harvest_all(api: Any, layers: list[str] | None = None) -> dict[str, Any]:
             continue
         try:
             out[name] = fn(api)
-        except Exception as exc:  # never let one layer abort the rest
-            out[name] = {"error": str(exc)}
+        except Exception:  # never let one layer abort the rest
+            out[name] = {"error": "Operation failed"}
     if os.getenv("EGERIA_KG_INGEST", "true").lower() not in ("false", "0", "no"):
-        try:
-            from egeria_mcp.kg_ingest import ingest_catalog
+        from egeria_mcp.kg_ingest import ingest_catalog
 
-            out["_kg_ingest"] = ingest_catalog(api)
-        except Exception as exc:  # never let KG ingest abort the harvest
-            out["_kg_ingest"] = {"error": str(exc)}
+        out["_kg_ingest"] = ingest_catalog(api)
     return out

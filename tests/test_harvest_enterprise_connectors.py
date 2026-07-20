@@ -122,7 +122,7 @@ def test_crm_catalogs_twenty(monkeypatch):
     monkeypatch.setattr(
         crm_mod,
         "_fetch",
-        lambda url, token, prefix, resource, verify_ssl: (
+        lambda url, token, prefix, resource, tls_profile: (
             [{"id": "c1", "name": "Acme"}]
             if resource == "companies"
             else [{"id": "p1", "name": {"firstName": "Jane", "lastName": "Doe"}}]

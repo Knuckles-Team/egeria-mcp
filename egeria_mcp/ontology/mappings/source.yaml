@@ -1,0 +1,31 @@
+schema_version: '1'
+connector: egeria-mcp
+ontology_source: egeria
+sync:
+- preset: egeria-glossary-terms
+  server: egeria-mcp
+  tool: egeria_glossary_lookup
+  action: list
+  records_path: ''
+  id_field: guid
+  title_field: displayName
+  text_field: summary
+  updated_field: updateTime
+  doc_type: glossary_term
+  tool_schema_sha256: 55f797757add396ac31a2f9ed9ec7ed7ecacd8f831178e0ab807722e1d17c85f
+- preset: egeria-governance-definitions
+  server: egeria-mcp
+  tool: egeria_list_policies
+  action: list
+  records_path: ''
+  id_field: guid
+  title_field: displayName
+  text_field: summary
+  updated_field: updateTime
+  doc_type: governance_rule
+  tool_schema_sha256: 5fa78151ad2794cfdd67d4ed3a297b7115385c6ed2981e260e76934a52598bf2
+governance:
+  default_acl: quarantine
+  identity: opaque-reference
+  tenant: required-at-materialization
+  provenance: required-at-materialization

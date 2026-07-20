@@ -22,6 +22,11 @@ from __future__ import annotations
 import json as _json
 from typing import Any
 
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
+
 try:  # httpx is always present (agent-utilities dep); guard anyway
     import httpx
 
@@ -88,18 +93,20 @@ class EgeriaApi:
         self,
         platform_url: str = "https://localhost:9443",
         view_server: str = "view-server",
-        user_id: str = "erinoverview",
-        user_pwd: str = "secret",
+        user_id: str | None = None,
+        user_pwd: str | None = None,
         *,
-        verify_ssl: bool = False,
+        tls_profile: ResolvedTLSProfile | None = None,
         enable_write: bool = False,
         timeout: float = 30.0,
     ) -> None:
         self.platform_url = platform_url.rstrip("/")
         self.view_server = view_server
+        if not user_id or not user_pwd:
+            raise ValueError("Egeria user credentials are required")
         self.user_id = user_id
         self.user_pwd = user_pwd
-        self.verify_ssl = verify_ssl
+        self.tls_profile = tls_profile or resolve_tls_profile("EGERIA")
         self.enable_write = enable_write
         self.timeout = timeout
         self._client: Any = None
@@ -110,7 +117,10 @@ class EgeriaApi:
         if self._client is None:
             if not HTTPX_AVAILABLE:
                 raise RuntimeError("httpx is required for egeria-mcp.")
-            self._client = httpx.Client(verify=self.verify_ssl, timeout=self.timeout)
+            self._client = httpx.Client(
+                timeout=self.timeout,
+                **self.tls_profile.httpx_kwargs(),
+            )
         return self._client
 
     def _bearer(self) -> str:
@@ -419,8 +429,8 @@ class EgeriaApi:
                 el.setdefault("guid", asset_guid)
                 return el
             return {"guid": asset_guid, "httpCode": r.status_code, "lineageLinkage": []}
-        except Exception as exc:
-            return {"error": str(exc), "guid": asset_guid}
+        except Exception:
+            return {"error": "Operation failed", "guid": asset_guid}
 
     def _retrieve_element(self, guid: str) -> dict:
         """Retrieve a full asset element (incl. its classifications).
@@ -435,8 +445,8 @@ class EgeriaApi:
                 self._omvs("asset-maker", f"assets/{guid}/retrieve"),
                 {"class": "AnyTimeRequestBody"},
             )
-        except Exception as exc:
-            return {"error": str(exc)}
+        except Exception:
+            return {"error": "Operation failed"}
         if r.status_code != 200:
             return {"httpCode": r.status_code}
         try:
@@ -536,8 +546,8 @@ class EgeriaApi:
         self._require_write()
         try:
             r = self._post(self._omvs(service, sub_path), body)
-        except Exception as exc:
-            return {"error": str(exc)}
+        except Exception:
+            return {"error": "Operation failed"}
         out: dict[str, Any] = {"httpCode": r.status_code}
         try:
             j = r.json() or {}

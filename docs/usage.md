@@ -28,14 +28,17 @@ Example agent prompts that map onto these tools:
 error rather than raising, so it is safe to use without a reachable platform.
 
 ```python
+import os
+
 from egeria_mcp.api.api_client_egeria import EgeriaApi
+from agent_utilities.core.transport_security import resolve_configured_tls_profile
 
 api = EgeriaApi(
     platform_url="https://your-egeria:9443",
     view_server="qs-view-server",
-    user_id="erinoverview",
-    user_pwd="secret",
-    verify_ssl=False,
+    user_id=os.environ["EGERIA_USER"],
+    user_pwd=os.environ["EGERIA_USER_PASSWORD"],
+    tls_profile=resolve_configured_tls_profile("EGERIA"),
 )
 
 # Reads

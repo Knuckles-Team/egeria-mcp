@@ -13,6 +13,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -22,11 +26,11 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _get(base: str, token: str, path: str, params, verify_ssl: bool) -> list[dict]:
+def _get(base: str, token: str, path: str, params, tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{base.rstrip('/')}{path}",
                 headers={"Authorization": f"Bearer {token}"},
@@ -44,7 +48,7 @@ def harvest_m365(
     token: str | None = None,
     *,
     base_url: str | None = None,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog M365 SharePoint sites + groups into Egeria as Collections."""
     report: dict[str, Any] = {"sites": [], "groups": [], "errors": []}
@@ -59,13 +63,13 @@ def harvest_m365(
         report["skipped"] = "no Microsoft Graph token (set MSGRAPH_TOKEN)"
         return report
 
-    sites = _get(base, token, "/sites", {"search": "*", "$top": 100}, verify_ssl)
+    sites = _get(base, token, "/sites", {"search": "*", "$top": 100}, tls_profile)
     groups = _get(
         base,
         token,
         "/groups",
         {"$top": 100, "$select": "displayName,id,visibility"},
-        verify_ssl,
+        tls_profile,
     )
     report["source"] = {"sites": len(sites), "groups": len(groups)}
     if not sites and not groups:

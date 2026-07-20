@@ -11,6 +11,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -21,14 +25,18 @@ except Exception:  # pragma: no cover
 
 
 def fetch_lists(
-    url: str, user: str | None, token: str, *, verify_ssl: bool = False
+    url: str,
+    user: str | None,
+    token: str,
+    *,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     auth = (user, token) if user else None
     headers = {} if user else {"Authorization": f"token {token}"}
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/lists",
                 auth=auth,
@@ -48,7 +56,7 @@ def harvest_mailing(
     user: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Listmonk mailing lists into Egeria as PII data assets."""
     report: dict[str, Any] = {"lists": [], "errors": []}
@@ -64,7 +72,7 @@ def harvest_mailing(
         report["skipped"] = "no Listmonk URL/token (set LISTMONK_URL / LISTMONK_TOKEN)"
         return report
 
-    lists = fetch_lists(url, user, token, verify_ssl=verify_ssl)
+    lists = fetch_lists(url, user, token, tls_profile=tls_profile)
     report["source"] = {"url": url, "lists": len(lists)}
     if not lists:
         report["skipped"] = "no lists returned (unreachable or unauthorized)"

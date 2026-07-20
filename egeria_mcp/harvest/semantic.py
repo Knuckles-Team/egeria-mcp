@@ -12,6 +12,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -22,13 +26,17 @@ except Exception:  # pragma: no cover
 
 
 def fetch_datasets(
-    url: str, *, auth=None, token: str | None = None, verify_ssl: bool = False
+    url: str,
+    *,
+    auth=None,
+    token: str | None = None,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(f"{url.rstrip('/')}/$/datasets", auth=auth, headers=headers)
         if r.status_code != 200:
             return []
@@ -38,7 +46,7 @@ def fetch_datasets(
 
 
 def harvest_semantic(
-    api: Any, url: str | None = None, *, verify_ssl: bool = False
+    api: Any, url: str | None = None, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> dict[str, Any]:
     """Catalog Apache Jena Fuseki datasets into Egeria as data assets."""
     report: dict[str, Any] = {"datasets": [], "errors": []}
@@ -58,7 +66,7 @@ def harvest_semantic(
         url,
         auth=(user, password) if user and password else None,
         token=token,
-        verify_ssl=verify_ssl,
+        tls_profile=tls_profile,
     )
     report["source"] = {"url": url, "datasets": len(datasets)}
     if not datasets:

@@ -16,6 +16,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -25,14 +29,14 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _plane_projects(verify_ssl: bool) -> list[dict]:
+def _plane_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     url = setting("PLANE_URL")
     token = setting("PLANE_TOKEN")
     workspace = setting("PLANE_WORKSPACE")
     if not (url and token and workspace and HTTPX_AVAILABLE):
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/v1/workspaces/{workspace}/projects/",
                 headers={"X-API-Key": token, "Accept": "application/json"},
@@ -54,14 +58,14 @@ def _plane_projects(verify_ssl: bool) -> list[dict]:
         return []
 
 
-def _jira_projects(verify_ssl: bool) -> list[dict]:
+def _jira_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     url = setting("JIRA_URL")
     user = setting("JIRA_USER")
     token = setting("JIRA_TOKEN")
     if not (url and user and token and HTTPX_AVAILABLE):
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}/rest/api/3/project/search",
                 auth=(user, token),
@@ -83,7 +87,9 @@ def _jira_projects(verify_ssl: bool) -> list[dict]:
         return []
 
 
-def harvest_projects(api: Any, *, verify_ssl: bool = False) -> dict[str, Any]:
+def harvest_projects(
+    api: Any, *, tls_profile: ResolvedTLSProfile | None = None
+) -> dict[str, Any]:
     """Catalog Plane and/or Jira projects into Egeria as Projects."""
     report: dict[str, Any] = {"projects": [], "errors": []}
 
@@ -91,7 +97,7 @@ def harvest_projects(api: Any, *, verify_ssl: bool = False) -> dict[str, Any]:
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
-    projects = _plane_projects(verify_ssl) + _jira_projects(verify_ssl)
+    projects = _plane_projects(tls_profile) + _jira_projects(tls_profile)
     report["source"] = {"projects": len(projects)}
     if not projects:
         report["skipped"] = (

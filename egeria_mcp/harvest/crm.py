@@ -13,6 +13,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -23,12 +27,12 @@ except Exception:  # pragma: no cover
 
 
 def _fetch(
-    url: str, token: str, prefix: str, resource: str, verify_ssl: bool
+    url: str, token: str, prefix: str, resource: str, tls_profile: ResolvedTLSProfile | None
 ) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}{prefix}/{resource}",
                 headers={
@@ -55,7 +59,7 @@ def harvest_crm(
     url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Twenty CRM companies + people into Egeria."""
     report: dict[str, Any] = {"records": [], "errors": []}
@@ -83,7 +87,7 @@ def harvest_crm(
 
     total = 0
     for resource, level, kind in (("companies", 2, "Company"), ("people", 3, "Person")):
-        recs = _fetch(url, token, prefix, resource, verify_ssl)
+        recs = _fetch(url, token, prefix, resource, tls_profile)
         total += len(recs)
         for rec in recs:
             name = rec.get("name")

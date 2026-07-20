@@ -16,6 +16,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -29,7 +33,7 @@ def _resolve(base_url: str | None, token: str | None):
     return base_url or setting("KEYCLOAK_URL"), token or setting("KEYCLOAK_TOKEN")
 
 
-def _bearer(base_url: str, verify_ssl: bool) -> str | None:
+def _bearer(base_url: str, tls_profile: ResolvedTLSProfile | None) -> str | None:
     """Obtain an admin bearer token via client-credentials, if configured."""
     cid = setting("KEYCLOAK_CLIENT_ID")
     secret = setting("KEYCLOAK_CLIENT_SECRET")
@@ -38,7 +42,7 @@ def _bearer(base_url: str, verify_ssl: bool) -> str | None:
         return None
     url = f"{base_url.rstrip('/')}/realms/{realm}/protocol/openid-connect/token"
     try:
-        with httpx.Client(verify=verify_ssl, timeout=15.0) as c:
+        with httpx.Client(timeout=15.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.post(
                 url,
                 data={
@@ -52,11 +56,11 @@ def _bearer(base_url: str, verify_ssl: bool) -> str | None:
         return None
 
 
-def _get(base_url: str, token: str, path: str, verify_ssl: bool) -> Any:
+def _get(base_url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None) -> Any:
     if not HTTPX_AVAILABLE:
         return None
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{base_url.rstrip('/')}{path}",
                 headers={"Authorization": f"Bearer {token}"},
@@ -71,7 +75,7 @@ def harvest_identity(
     base_url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Keycloak realms (security domains) + clients (apps) into Egeria."""
     report: dict[str, Any] = {"realms": [], "clients": [], "errors": []}
@@ -81,14 +85,14 @@ def harvest_identity(
             report["errors"].append({"item": what, "error": res["error"]})
 
     base_url, token = _resolve(base_url, token)
-    token = token or (_bearer(base_url, verify_ssl) if base_url else None)
+    token = token or (_bearer(base_url, tls_profile) if base_url else None)
     if not base_url or not token:
         report["skipped"] = (
             "no Keycloak URL/token (set KEYCLOAK_URL + KEYCLOAK_TOKEN or CLIENT_ID/SECRET)"
         )
         return report
 
-    realms = _get(base_url, token, "/admin/realms", verify_ssl) or []
+    realms = _get(base_url, token, "/admin/realms", tls_profile) or []
     report["source"] = {"base_url": base_url, "realms": len(realms)}
     if not realms:
         report["skipped"] = "no realms returned (unreachable or unauthorized)"
@@ -106,7 +110,7 @@ def harvest_identity(
         record_error(f"realm:{rname}", col)
         report["realms"].append({"realm": rname, **col})
         for client in (
-            _get(base_url, token, f"/admin/realms/{rname}/clients", verify_ssl) or []
+            _get(base_url, token, f"/admin/realms/{rname}/clients", tls_profile) or []
         ):
             cid = client.get("clientId")
             if not cid:

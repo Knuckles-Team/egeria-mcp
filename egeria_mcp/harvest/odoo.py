@@ -15,6 +15,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -30,12 +34,12 @@ _MODELS = [
 ]
 
 
-def _rpc(url: str, payload: dict, verify_ssl: bool) -> Any:
+def _rpc(url: str, payload: dict, tls_profile: ResolvedTLSProfile | None) -> Any:
     """One Odoo JSON-RPC call; returns the ``result`` or ``None`` on any failure."""
     if not HTTPX_AVAILABLE:
         return None
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.post(
                 f"{url.rstrip('/')}/jsonrpc",
                 json={"jsonrpc": "2.0", "method": "call", "params": payload},
@@ -48,7 +52,12 @@ def _rpc(url: str, payload: dict, verify_ssl: bool) -> Any:
 
 
 def authenticate(
-    url: str, db: str, user: str, password: str, *, verify_ssl: bool = False
+    url: str,
+    db: str,
+    user: str,
+    password: str,
+    *,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> int | None:
     """Resolve an Odoo uid via the ``common.authenticate`` JSON-RPC method."""
     uid = _rpc(
@@ -58,7 +67,7 @@ def authenticate(
             "method": "authenticate",
             "args": [db, user, password, {}],
         },
-        verify_ssl,
+        tls_profile,
     )
     return int(uid) if isinstance(uid, int) and uid else None
 
@@ -70,7 +79,7 @@ def fetch_records(
     password: str,
     model: str,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
     limit: int = 200,
 ) -> list[dict]:
     """``search_read`` a model via the ``object.execute_kw`` JSON-RPC method."""
@@ -89,7 +98,7 @@ def fetch_records(
                 {"fields": ["id", "name", "display_name"], "limit": limit},
             ],
         },
-        verify_ssl,
+        tls_profile,
     )
     return res if isinstance(res, list) else []
 
@@ -101,7 +110,7 @@ def harvest_odoo(
     user: str | None = None,
     password: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Odoo CRM customers + leads into Egeria."""
     report: dict[str, Any] = {"records": [], "errors": []}
@@ -120,7 +129,7 @@ def harvest_odoo(
         )
         return report
 
-    uid = authenticate(url, db, user, password, verify_ssl=verify_ssl)
+    uid = authenticate(url, db, user, password, tls_profile=tls_profile)
     if not uid:
         report["skipped"] = (
             "Odoo authentication failed (unreachable or bad credentials)"
@@ -139,7 +148,7 @@ def harvest_odoo(
 
     total = 0
     for model, kind, level in _MODELS:
-        recs = fetch_records(url, db, uid, password, model, verify_ssl=verify_ssl)
+        recs = fetch_records(url, db, uid, password, model, tls_profile=tls_profile)
         total += len(recs)
         for rec in recs:
             name = rec.get("display_name") or rec.get("name") or rec.get("id")

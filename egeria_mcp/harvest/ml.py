@@ -12,6 +12,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -21,12 +25,12 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _fetch(url: str, token: str | None, path: str, verify_ssl: bool) -> list[dict]:
+def _fetch(url: str, token: str | None, path: str, tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(f"{url.rstrip('/')}{path}", headers=headers)
         if r.status_code != 200:
             return []
@@ -42,7 +46,7 @@ def harvest_ml(
     url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog ML models + datasets into Egeria."""
     report: dict[str, Any] = {"models": [], "datasets": [], "errors": []}
@@ -57,8 +61,8 @@ def harvest_ml(
         report["skipped"] = "no data-science URL (set DATA_SCIENCE_MCP_URL)"
         return report
 
-    models = _fetch(url, token, "/api/models", verify_ssl)
-    datasets = _fetch(url, token, "/api/datasets", verify_ssl)
+    models = _fetch(url, token, "/api/models", tls_profile)
+    datasets = _fetch(url, token, "/api/datasets", tls_profile)
     report["source"] = {"url": url, "models": len(models), "datasets": len(datasets)}
     if not models and not datasets:
         report["skipped"] = "no models/datasets returned (unreachable or unauthorized)"

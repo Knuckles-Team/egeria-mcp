@@ -16,6 +16,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -102,14 +106,18 @@ def _resolve(base_url: str | None, token: str | None) -> tuple[str | None, str |
 
 
 def fetch_doctype(
-    base_url: str, token: str, name: str, *, verify_ssl: bool = False
+    base_url: str,
+    token: str,
+    name: str,
+    *,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict | None:
     """Fetch a single DocType definition (module, fields count) from Frappe REST."""
     if not HTTPX_AVAILABLE:
         return None
     url = f"{base_url.rstrip('/')}/api/resource/DocType/{name.replace(' ', '%20')}"
     try:
-        with httpx.Client(verify=verify_ssl, timeout=15.0) as c:
+        with httpx.Client(timeout=15.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(url, headers={"Authorization": f"token {token}"})
         if r.status_code != 200:
             return None
@@ -124,7 +132,7 @@ def harvest_erpnext(
     token: str | None = None,
     *,
     doctypes: list[str] | None = None,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog ERPNext DocTypes into Egeria; return a report.
 
@@ -173,7 +181,7 @@ def harvest_erpnext(
 
     names = doctypes or _DEFAULT_DOCTYPES
     for name in names:
-        meta = fetch_doctype(base_url, token, name, verify_ssl=verify_ssl)
+        meta = fetch_doctype(base_url, token, name, tls_profile=tls_profile)
         if meta is None:
             report["errors"].append(
                 {"item": f"doctype:{name}", "error": "not found / unauthorized"}

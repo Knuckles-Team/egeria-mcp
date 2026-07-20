@@ -12,6 +12,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -21,12 +25,14 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def fetch_routes(admin_url: str, *, verify_ssl: bool = False) -> list[dict]:
+def fetch_routes(
+    admin_url: str, *, tls_profile: ResolvedTLSProfile | None = None
+) -> list[dict]:
     """Return [{host, upstream}] from Caddy's http servers config."""
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=15.0) as c:
+        with httpx.Client(timeout=15.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(f"{admin_url.rstrip('/')}/config/apps/http/servers")
         if r.status_code != 200:
             return []
@@ -51,7 +57,10 @@ def fetch_routes(admin_url: str, *, verify_ssl: bool = False) -> list[dict]:
 
 
 def harvest_proxy(
-    api: Any, admin_url: str | None = None, *, verify_ssl: bool = False
+    api: Any,
+    admin_url: str | None = None,
+    *,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Caddy routed hosts into Egeria as exposed-service endpoints."""
     report: dict[str, Any] = {"routes": [], "errors": []}
@@ -61,7 +70,7 @@ def harvest_proxy(
             report["errors"].append({"item": what, "error": res["error"]})
 
     admin_url = admin_url or setting("CADDY_ADMIN_URL") or "http://localhost:2019"
-    routes = fetch_routes(admin_url, verify_ssl=verify_ssl)
+    routes = fetch_routes(admin_url, tls_profile=tls_profile)
     report["source"] = {"admin_url": admin_url, "routes": len(routes)}
     if not routes:
         report["skipped"] = "no routes (Caddy admin unreachable; set CADDY_ADMIN_URL)"

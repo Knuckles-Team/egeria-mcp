@@ -16,6 +16,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -34,11 +38,11 @@ def _resolve(
     )
 
 
-def _get(base_url: str, api_key: str, path: str, verify_ssl: bool) -> Any:
+def _get(base_url: str, api_key: str, path: str, tls_profile: ResolvedTLSProfile | None) -> Any:
     if not HTTPX_AVAILABLE:
         return None
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(f"{base_url.rstrip('/')}{path}", headers={"X-API-Key": api_key})
         return r.json() if r.status_code == 200 else None
     except Exception:
@@ -51,7 +55,7 @@ def harvest_containers(
     api_key: str | None = None,
     *,
     endpoint_id: str | int | None = None,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog the Docker Swarm estate (nodes + services) into Egeria."""
     report: dict[str, Any] = {"nodes": [], "services": [], "errors": []}
@@ -69,10 +73,10 @@ def harvest_containers(
 
     eid = endpoint_id or setting("PORTAINER_ENDPOINT_ID", "3")
     nodes = (
-        _get(base_url, api_key, f"/api/endpoints/{eid}/docker/nodes", verify_ssl) or []
+        _get(base_url, api_key, f"/api/endpoints/{eid}/docker/nodes", tls_profile) or []
     )
     services = (
-        _get(base_url, api_key, f"/api/endpoints/{eid}/docker/services", verify_ssl)
+        _get(base_url, api_key, f"/api/endpoints/{eid}/docker/services", tls_profile)
         or []
     )
     report["source"] = {

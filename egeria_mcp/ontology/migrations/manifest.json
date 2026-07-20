@@ -1,0 +1,6 @@
+{
+  "connector": "egeria-mcp",
+  "current_ontology_source": "egeria",
+  "migrations": [],
+  "schema_version": "1"
+}

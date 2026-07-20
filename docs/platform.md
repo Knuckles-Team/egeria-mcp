@@ -54,11 +54,12 @@ curl -k https://localhost:9443/open-metadata/platform-services/users/garygeeke/s
 ## Connect egeria-mcp
 
 ```bash
-export EGERIA_PLATFORM_URL=https://localhost:9443
+export EGERIA_PLATFORM_URL=https://egeria.example.invalid:9443
 export EGERIA_VIEW_SERVER=qs-view-server
-export EGERIA_USER=erinoverview
-export EGERIA_USER_PASSWORD=secret
-export EGERIA_VERIFY_SSL=False          # self-signed quick-start cert
+export EGERIA_USER="${EGERIA_USER:?inject a service identity}"
+export EGERIA_USER_PASSWORD="${EGERIA_USER_PASSWORD:?inject a runtime secret}"
+export EGERIA_TLS_PROFILE=private-pki
+export SSL_CERT_FILE=/run/secrets/private-ca-bundle.pem
 
 egeria-mcp --transport streamable-http --host 0.0.0.0 --port 8000
 ```
@@ -80,12 +81,13 @@ services:
     volumes: ["egeria_data:/deployments/data"]
 
   egeria-mcp:
-    image: knucklessg1/egeria-mcp:latest
+    image: example/egeria-mcp@sha256:<digest>
     depends_on: [egeria-platform]
     environment:
       - EGERIA_PLATFORM_URL=https://egeria-platform:9443
       - EGERIA_VIEW_SERVER=qs-view-server
-      - EGERIA_VERIFY_SSL=False
+      - EGERIA_TLS_PROFILE=private-pki
+      - SSL_CERT_FILE=/run/secrets/private-ca-bundle.pem
       - TRANSPORT=streamable-http
       - HOST=0.0.0.0
       - PORT=8000

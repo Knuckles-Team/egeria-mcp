@@ -13,6 +13,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -27,13 +31,17 @@ def _resolve(base_url: str | None, token: str | None):
 
 
 def fetch_accounts(
-    base_url: str, token: str, *, verify_ssl: bool = False, limit: int = 100
+    base_url: str,
+    token: str,
+    *,
+    tls_profile: ResolvedTLSProfile | None = None,
+    limit: int = 100,
 ) -> list[dict]:
     """Fetch accounts from Firefly-III (v1 API)."""
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{base_url.rstrip('/')}/api/v1/accounts",
                 headers={
@@ -54,7 +62,7 @@ def harvest_finance(
     base_url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Firefly-III accounts into Egeria (financial data assets)."""
     report: dict[str, Any] = {"accounts": [], "errors": []}
@@ -68,7 +76,7 @@ def harvest_finance(
         report["skipped"] = "no Firefly URL/token (set FIREFLY_URL / FIREFLY_TOKEN)"
         return report
 
-    accounts = fetch_accounts(base_url, token, verify_ssl=verify_ssl)
+    accounts = fetch_accounts(base_url, token, tls_profile=tls_profile)
     report["source"] = {"base_url": base_url, "accounts": len(accounts)}
     if not accounts:
         report["skipped"] = "no accounts returned (unreachable or unauthorized)"

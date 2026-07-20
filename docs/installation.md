@@ -24,7 +24,6 @@ The base install is intentionally minimal. Install the extra for what you need:
 | `mcp` | `pip install "egeria-mcp[mcp]"` | FastMCP MCP-server runtime (`agent-utilities[mcp]`) |
 | `agent` | `pip install "egeria-mcp[agent]"` | Pydantic-AI agent + Logfire tracing |
 | `harvest` | `pip install "egeria-mcp[harvest]"` | `pymongo`, `pyyaml` for the bottom-up harvest |
-| `egeria` | `pip install "egeria-mcp[egeria]"` | `pyegeria` (only on Python ≥ 3.12) |
 | `all` | `pip install "egeria-mcp[all]"` | Everything above |
 
 ```bash
@@ -49,16 +48,16 @@ uv run egeria-mcp
 
 ## Prebuilt Docker image
 
-A multi-stage, slim image is published on every release (installs
+A multi-stage runtime image is published on every release (installs
 `egeria-mcp[all]`, entrypoint `egeria-mcp`):
 
 ```bash
-docker pull knucklessg1/egeria-mcp:latest
+docker pull example/egeria-mcp@sha256:<digest>
 
 docker run --rm -i \
   -e EGERIA_PLATFORM_URL=https://your-egeria:9443 \
   -e EGERIA_VIEW_SERVER=qs-view-server \
-  knucklessg1/egeria-mcp:latest        # stdio transport (default)
+  example/egeria-mcp@sha256:<digest>        # stdio transport (default)
 ```
 
 For an HTTP server with a published port, see [Deployment](deployment.md).

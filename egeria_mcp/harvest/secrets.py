@@ -14,6 +14,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -30,11 +34,11 @@ def _resolve(url: str | None, token: str | None):
     )
 
 
-def _get(url: str, token: str, path: str, verify_ssl: bool, params=None) -> Any:
+def _get(url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None, params=None) -> Any:
     if not HTTPX_AVAILABLE:
         return None
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}{path}",
                 headers={"X-Vault-Token": token},
@@ -50,7 +54,7 @@ def harvest_secrets(
     url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog OpenBao/Vault secret-engine mounts + policy names into Egeria."""
     report: dict[str, Any] = {"mounts": [], "policies": [], "errors": []}
@@ -64,13 +68,13 @@ def harvest_secrets(
         report["skipped"] = "no OpenBao URL/token (set OPENBAO_URL / OPENBAO_TOKEN)"
         return report
 
-    mounts_resp = _get(url, token, "/v1/sys/mounts", verify_ssl) or {}
+    mounts_resp = _get(url, token, "/v1/sys/mounts", tls_profile) or {}
     mounts = mounts_resp.get("data") or {
         k: v for k, v in mounts_resp.items() if isinstance(v, dict) and "type" in v
     }
     policies = (
         (
-            _get(url, token, "/v1/sys/policies/acl", verify_ssl, {"list": "true"}) or {}
+            _get(url, token, "/v1/sys/policies/acl", tls_profile, {"list": "true"}) or {}
         ).get("data")
         or {}
     ).get("keys") or []

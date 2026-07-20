@@ -17,6 +17,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -42,7 +46,7 @@ def fetch_projects(
     *,
     membership: bool = True,
     max_projects: int = 100,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     """Fetch projects from GitLab REST v4 (paginated, up to ``max_projects``)."""
     if not HTTPX_AVAILABLE:
@@ -51,7 +55,7 @@ def fetch_projects(
     headers = {"PRIVATE-TOKEN": token}
     per_page = min(100, max_projects)
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             page = 1
             while len(out) < max_projects:
                 r = c.get(
@@ -85,7 +89,7 @@ def harvest_repositories(
     token: str | None = None,
     *,
     max_projects: int = 100,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog GitLab projects into Egeria; return a report.
 
@@ -109,7 +113,7 @@ def harvest_repositories(
         return report
 
     projects = fetch_projects(
-        base_url, token, max_projects=max_projects, verify_ssl=verify_ssl
+        base_url, token, max_projects=max_projects, tls_profile=tls_profile
     )
     report["source"] = {"base_url": base_url, "projects": len(projects)}
     if not projects:
@@ -154,6 +158,7 @@ def fetch_github_repos(
     org: str | None = None,
     max_repos: int = 100,
     base_url: str = "https://api.github.com",
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     """Fetch repos from GitHub (an org's, or the token owner's)."""
     if not HTTPX_AVAILABLE:
@@ -165,7 +170,10 @@ def fetch_github_repos(
     }
     out: list[dict] = []
     try:
-        with httpx.Client(timeout=20.0) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             page = 1
             while len(out) < max_repos:
                 r = c.get(
@@ -197,6 +205,7 @@ def harvest_github(
     *,
     org: str | None = None,
     max_repos: int = 100,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog GitHub repositories into Egeria as ``DeployedSoftwareComponent`` assets.
 
@@ -215,7 +224,12 @@ def harvest_github(
         report["skipped"] = "no GitHub token (set GITHUB_TOKEN)"
         return report
 
-    repos = fetch_github_repos(token, org=org, max_repos=max_repos)
+    repos = fetch_github_repos(
+        token,
+        org=org,
+        max_repos=max_repos,
+        tls_profile=tls_profile,
+    )
     report["source"] = {"org": org or "(user)", "repos": len(repos)}
     if not repos:
         report["skipped"] = "no repos returned (unreachable or unauthorized)"

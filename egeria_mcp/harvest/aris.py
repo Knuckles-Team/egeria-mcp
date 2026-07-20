@@ -15,6 +15,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -34,13 +38,13 @@ def _is_process(model_type: str) -> bool:
 
 
 def fetch_models(
-    url: str, token: str, path: str, *, verify_ssl: bool = False
+    url: str, token: str, path: str, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[dict]:
     """Fetch models from the ARIS REST API (tolerant; ``[]`` on any failure)."""
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}{path}",
                 headers={
@@ -68,7 +72,7 @@ def harvest_aris(
     token: str | None = None,
     *,
     api_path: str | None = None,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog ARIS models into Egeria (process + architecture)."""
     report: dict[str, Any] = {"models": [], "errors": []}
@@ -84,7 +88,7 @@ def harvest_aris(
         report["skipped"] = "no ARIS URL/token (set ARIS_URL / ARIS_TOKEN)"
         return report
 
-    models = fetch_models(url, token, api_path, verify_ssl=verify_ssl)
+    models = fetch_models(url, token, api_path, tls_profile=tls_profile)
     report["source"] = {"url": url, "models": len(models)}
     if not models:
         report["skipped"] = "no models returned (unreachable or unauthorized)"

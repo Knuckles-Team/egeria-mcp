@@ -166,8 +166,8 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         and DataFlow lineage edges via the Egeria client and pushes them into the
         KG as ``:GlossaryTerm`` / ``:GovernanceRule`` / ``:DataAsset`` /
         ``:GlossaryCategory`` nodes, ``:flowsTo`` lineage edges, and definition
-        ``:Document`` nodes. Best-effort: returns ``{"ingested": null}`` when no KG
-        engine is reachable. Read-only against Egeria.
+        ``:Document`` nodes. Native engine and transaction failures propagate.
+        Read-only against Egeria.
         CONCEPT:AU-KG.ingest.enterprise-source-extractor.
         """
         from egeria_mcp.kg_ingest import ingest_catalog

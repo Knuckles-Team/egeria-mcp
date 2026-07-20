@@ -50,7 +50,7 @@ def harvest_documentdb(api: Any, uri: str | None = None) -> dict[str, Any]:
         client = MongoClient(uri, serverSelectionTimeoutMS=5000)
         db_names = [d for d in client.list_database_names() if d not in _SYSTEM_DBS]
     except Exception as exc:
-        report["skipped"] = f"connection failed: {str(exc)[:80]}"
+        report["skipped"] = f"connection failed: {type(exc).__name__[:80]}"
         return report
 
     report["source"] = {"databases": len(db_names)}

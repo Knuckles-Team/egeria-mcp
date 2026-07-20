@@ -13,6 +13,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -24,9 +28,9 @@ except Exception:  # pragma: no cover
 _QUERY = "{allFactSheets(first:500){edges{node{id name type}}}}"
 
 
-def _bearer(base_url: str, api_token: str, verify_ssl: bool) -> str | None:
+def _bearer(base_url: str, api_token: str, tls_profile: ResolvedTLSProfile | None) -> str | None:
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.post(
                 f"{base_url.rstrip('/')}/services/mtm/v1/oauth2/token",
                 data={"grant_type": "client_credentials"},
@@ -38,15 +42,15 @@ def _bearer(base_url: str, api_token: str, verify_ssl: bool) -> str | None:
 
 
 def fetch_factsheets(
-    base_url: str, api_token: str, *, verify_ssl: bool = False
+    base_url: str, api_token: str, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
-    bearer = _bearer(base_url, api_token, verify_ssl)
+    bearer = _bearer(base_url, api_token, tls_profile)
     if not bearer:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=30.0) as c:
+        with httpx.Client(timeout=30.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.post(
                 f"{base_url.rstrip('/')}/services/pathfinder/v1/graphql",
                 headers={
@@ -70,7 +74,7 @@ def harvest_leanix(
     base_url: str | None = None,
     api_token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog LeanIX fact sheets into Egeria as architecture assets."""
     report: dict[str, Any] = {"factsheets": [], "errors": []}
@@ -85,7 +89,7 @@ def harvest_leanix(
         report["skipped"] = "no LeanIX URL/token (set LEANIX_URL / LEANIX_API_TOKEN)"
         return report
 
-    sheets = fetch_factsheets(base_url, api_token, verify_ssl=verify_ssl)
+    sheets = fetch_factsheets(base_url, api_token, tls_profile=tls_profile)
     report["source"] = {"url": base_url, "factsheets": len(sheets)}
     if not sheets:
         report["skipped"] = "no fact sheets returned (unreachable or unauthorized)"

@@ -13,6 +13,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -22,11 +26,13 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def fetch_states(url: str, token: str, *, verify_ssl: bool = False) -> list[dict]:
+def fetch_states(
+    url: str, token: str, *, tls_profile: ResolvedTLSProfile | None = None
+) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/states",
                 headers={"Authorization": f"Bearer {token}"},
@@ -44,7 +50,7 @@ def harvest_iot(
     url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Home Assistant integration domains into Egeria as Collections."""
     report: dict[str, Any] = {"domains": [], "errors": []}
@@ -61,7 +67,7 @@ def harvest_iot(
         )
         return report
 
-    states = fetch_states(url, token, verify_ssl=verify_ssl)
+    states = fetch_states(url, token, tls_profile=tls_profile)
     report["source"] = {"url": url, "entities": len(states)}
     if not states:
         report["skipped"] = "no entities returned (unreachable or unauthorized)"

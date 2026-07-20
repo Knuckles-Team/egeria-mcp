@@ -16,6 +16,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -28,13 +32,17 @@ _DEFAULT_APPLICATIONS = ["risks", "controls", "findings"]
 
 
 def fetch_records(
-    url: str, token: str, application: str, *, verify_ssl: bool = False
+    url: str,
+    token: str,
+    application: str,
+    *,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     """Fetch records for an Archer application (tolerant; ``[]`` on any failure)."""
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/core/content/{application}",
                 headers={
@@ -67,7 +75,7 @@ def harvest_archer(
     token: str | None = None,
     *,
     applications: list[str] | None = None,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog RSA Archer GRC records into Egeria (risks/controls/findings)."""
     report: dict[str, Any] = {"records": [], "errors": []}
@@ -101,7 +109,7 @@ def harvest_archer(
 
     total = 0
     for application in apps:
-        recs = fetch_records(url, token, application, verify_ssl=verify_ssl)
+        recs = fetch_records(url, token, application, tls_profile=tls_profile)
         total += len(recs)
         kind = application.rstrip("s").capitalize() or application
         for rec in recs:

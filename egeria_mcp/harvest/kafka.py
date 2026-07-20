@@ -12,6 +12,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -24,14 +28,14 @@ _INTERNAL_PREFIXES = ("__", "_confluent", "_schemas")
 
 
 def fetch_topics(
-    rest_url: str, token: str | None, *, verify_ssl: bool = False
+    rest_url: str, token: str | None, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[str]:
     """Fetch topic names from a Confluent-style Kafka REST Proxy (v2 or v3)."""
     if not HTTPX_AVAILABLE:
         return []
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(f"{rest_url.rstrip('/')}/topics", headers=headers)
         if r.status_code != 200:
             return []
@@ -52,7 +56,7 @@ def harvest_kafka(
     rest_url: str | None = None,
     token: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Kafka topics into Egeria as data assets."""
     report: dict[str, Any] = {"topics": [], "errors": []}
@@ -69,7 +73,7 @@ def harvest_kafka(
 
     topics = [
         t
-        for t in fetch_topics(rest_url, token, verify_ssl=verify_ssl)
+        for t in fetch_topics(rest_url, token, tls_profile=tls_profile)
         if not t.startswith(_INTERNAL_PREFIXES)
     ]
     report["source"] = {"rest_url": rest_url, "topics": len(topics)}

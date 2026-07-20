@@ -12,6 +12,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -22,13 +26,13 @@ except Exception:  # pragma: no cover
 
 
 def fetch_collections(
-    url: str, api_key: str | None, *, verify_ssl: bool = False
+    url: str, api_key: str | None, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[str]:
     if not HTTPX_AVAILABLE:
         return []
     headers = {"api-key": api_key} if api_key else {}
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(f"{url.rstrip('/')}/collections", headers=headers)
         if r.status_code != 200:
             return []
@@ -43,7 +47,7 @@ def harvest_vectors(
     url: str | None = None,
     api_key: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Qdrant vector collections into Egeria as data assets."""
     report: dict[str, Any] = {"collections": [], "errors": []}
@@ -58,7 +62,7 @@ def harvest_vectors(
         report["skipped"] = "no vector store URL (set QDRANT_URL)"
         return report
 
-    cols = fetch_collections(url, api_key, verify_ssl=verify_ssl)
+    cols = fetch_collections(url, api_key, tls_profile=tls_profile)
     report["source"] = {"url": url, "collections": len(cols)}
     if not cols:
         report["skipped"] = "no collections returned (unreachable or empty)"

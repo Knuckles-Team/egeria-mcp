@@ -13,6 +13,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -23,12 +27,16 @@ except Exception:  # pragma: no cover
 
 
 def fetch_snapshots(
-    url: str, token: str, *, max_snapshots: int = 200, verify_ssl: bool = False
+    url: str,
+    token: str,
+    *,
+    max_snapshots: int = 200,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/v1/core/snapshots",
                 headers={"Authorization": f"Bearer {token}"},
@@ -49,7 +57,7 @@ def harvest_archive(
     token: str | None = None,
     *,
     max_snapshots: int = 200,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog ArchiveBox snapshots into Egeria as content data assets."""
     report: dict[str, Any] = {"snapshots": [], "errors": []}
@@ -67,7 +75,7 @@ def harvest_archive(
         return report
 
     snaps = fetch_snapshots(
-        url, token, max_snapshots=max_snapshots, verify_ssl=verify_ssl
+        url, token, max_snapshots=max_snapshots, tls_profile=tls_profile
     )
     report["source"] = {"url": url, "snapshots": len(snaps)}
     if not snaps:

@@ -14,6 +14,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -44,14 +48,14 @@ def fetch_cis(
     auth=None,
     headers=None,
     limit: int = 100,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     """Fetch configuration items from a ServiceNow CMDB table."""
     if not HTTPX_AVAILABLE:
         return []
     url = f"{base_url.rstrip('/')}/api/now/table/{table}"
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 url,
                 params={
@@ -76,7 +80,7 @@ def harvest_servicenow(
     token: str | None = None,
     *,
     tables: list[str] | None = None,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog ServiceNow CMDB configuration items into Egeria."""
     report: dict[str, Any] = {"items": [], "errors": []}
@@ -97,7 +101,7 @@ def harvest_servicenow(
     total = 0
     for table in tables or _DEFAULT_TABLES:
         cis = fetch_cis(
-            base_url, table, auth=auth, headers=headers, verify_ssl=verify_ssl
+            base_url, table, auth=auth, headers=headers, tls_profile=tls_profile
         )
         total += len(cis)
         for ci in cis:

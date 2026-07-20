@@ -12,6 +12,10 @@ from __future__ import annotations
 from typing import Any
 
 from agent_utilities.core.config import setting
+from agent_utilities.core.transport_security import (
+    ResolvedTLSProfile,
+    resolve_tls_profile,
+)
 
 try:
     import httpx
@@ -22,12 +26,16 @@ except Exception:  # pragma: no cover
 
 
 def fetch_shares(
-    url: str, user: str, password: str, *, verify_ssl: bool = False
+    url: str,
+    user: str,
+    password: str,
+    *,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(verify=verify_ssl, timeout=20.0) as c:
+        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
             r = c.get(
                 f"{url.rstrip('/')}/ocs/v2.php/apps/files_sharing/api/v1/shares",
                 auth=(user, password),
@@ -47,7 +55,7 @@ def harvest_files(
     user: str | None = None,
     password: str | None = None,
     *,
-    verify_ssl: bool = False,
+    tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict[str, Any]:
     """Catalog Nextcloud shares into Egeria as content data assets."""
     report: dict[str, Any] = {"shares": [], "errors": []}
@@ -65,7 +73,7 @@ def harvest_files(
         )
         return report
 
-    shares = fetch_shares(url, user, password, verify_ssl=verify_ssl)
+    shares = fetch_shares(url, user, password, tls_profile=tls_profile)
     report["source"] = {"url": url, "shares": len(shares)}
     if not shares:
         report["skipped"] = "no shares returned (unreachable or none shared)"

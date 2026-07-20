@@ -160,9 +160,9 @@ _25 action-routed tool(s) (default) · 54 verbose 1:1 tool(s). Each is enabled u
 |---|---|---|
 | `EGERIA_PLATFORM_URL` | `https://localhost:9443` | OMAG platform URL |
 | `EGERIA_VIEW_SERVER` | `qs-view-server` | View server name |
-| `EGERIA_USER` | `erinoverview` | User id |
-| `EGERIA_USER_PASSWORD` | `secret` | Password / token |
-| `EGERIA_VERIFY_SSL` | `False` | Verify TLS (self-signed homelab) |
+| `EGERIA_USER` | _(unset)_ | User id |
+| `EGERIA_USER_PASSWORD` | _(unset)_ | Password / token, injected at runtime |
+| `EGERIA_TLS_PROFILE` | _(unset)_ | Optional runtime TLS profile selector; peer and hostname verification are mandatory |
 | `EGERIA_ENABLE_WRITE` | `False` | Gate every write/harvest tool |
 | `EGERIATOOL` | `True` | Register the Egeria tool set |
 
@@ -179,13 +179,12 @@ Pick the extra that matches what you want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `egeria-mcp[mcp]` | Slim MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI) | You run the **MCP server** (smallest install / image) |
-| `egeria-mcp[egeria]` | The optional `pyegeria` SDK (Python ≥ 3.12) | You want the `pyegeria` client alongside the raw-httpx facade |
+| `egeria-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | You run the **MCP server** (smallest install / image) |
 | `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | You run the data-store / connector harvests |
-| `egeria-mcp[all]` | Everything (`mcp` + `agent` + `egeria` + `harvest`) | Development / full surface |
+| `egeria-mcp[all]` | Everything (`mcp` + `agent` + `harvest`) | Development / full surface |
 
 ```bash
-# MCP server only (recommended for tool hosting — slim deps)
+# Connector-focused MCP server (includes the shared graph engine)
 uv pip install "egeria-mcp[mcp]"          # or: pip install -e ".[mcp]"
 
 # Everything (development)
@@ -195,7 +194,7 @@ egeria-mcp                       # stdio MCP server (default transport)
 egeria-mcp --transport http --host 0.0.0.0 --port 8000
 ```
 
-The slim `docker/Dockerfile` builds one image (`knucklessg1/egeria-mcp:latest`) that
+The multi-stage `docker/Dockerfile` builds one immutable image (`registry.example.invalid/egeria-mcp@sha256:<digest>`) that
 installs `egeria-mcp[all]` and runs the `egeria-mcp` console script; `docker/mcp.compose.yml`
 runs it as a streamable-http service.
 
@@ -207,6 +206,10 @@ EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
 ```
 
 ### Knowledge-graph database (`epistemic-graph`)
+
+Both `[mcp]` and `[agent]` carry `epistemic-graph[full]` through the required
+Agent Utilities core. The `[mcp]` surface is connector-focused; `[agent]` additionally
+enables model orchestration.
 
 Egeria is federated alongside the **epistemic-graph** Knowledge Graph: Egeria is the
 metadata / governance / lineage system-of-record, the KG is the cognition / orchestration
@@ -224,16 +227,16 @@ Register in the multiplexer under nickname `eg` (tools surface as `eg__lineage`,
 <!-- BEGIN GENERATED: additional-deployment-options -->
 ### Additional Deployment Options
 
-`egeria-mcp` can also run as a **local container** (Docker / Podman / `uv`) or be
-consumed from a **remote deployment**. The
-[Deployment guide](https://knuckles-team.github.io/egeria-mcp/deployment/) has full, copy-paste
-`mcp_config.json` for all four transports — **stdio**, **streamable-http**,
-**local container / uv**, and **remote URL**:
+`egeria-mcp` can run as a local stdio process or container, or behind a remote
+network boundary. The
+[Deployment guide](https://knuckles-team.github.io/egeria-mcp/deployment/) carries
+the detailed transport contract.
 
-- **Local container / uv** — launch the server from `mcp_config.json` via `uvx`,
-  `docker run`, or `podman run`, or point at a local streamable-http container by `url`.
-- **Remote URL** — connect to a server deployed behind Caddy at
-  `http://egeria-mcp.arpa/mcp` using the `"url"` key.
+- **Local container** — launch a reviewed immutable image as a least-privilege
+  stdio child with no listener or published port.
+- **Remote URL** — connect through an operator-supplied authenticated HTTPS
+  ingress. Keep its URL, outbound identity references, trust profile, and exact
+  `MCP_ALLOWED_HOSTS` in `AgentConfig`.
 <!-- END GENERATED: additional-deployment-options -->
 
 ## Documentation
@@ -255,26 +258,27 @@ recommended reference for installation, deployment, and day-to-day operation.
 `AGENTS.md` is the canonical contributor/agent guidance.
 
 
-<!-- BEGIN agent-os-genesis-deploy (generated; do not edit between markers) -->
+<!-- BEGIN agent-utilities-deployment (generated; do not edit between markers) -->
 
-## Deploy with `agent-os-genesis`
+## Deploy with `agent-utilities-deployment`
 
-This package can be provisioned for you — skill-guided — by the **`agent-os-genesis`**
-universal skill (its *single-package deploy mode*): it picks your install method, seeds
-secrets to OpenBao/Vault (or `.env`), trusts your enterprise CA, registers the MCP
-server, and verifies it — the same machinery that stands up the whole Agent OS, narrowed
-to just this package. Ask your agent to **"deploy `egeria-mcp` with agent-os-genesis"**.
+Provision this package with the consolidated **`agent-utilities-deployment`**
+workflow. It selects an installed-package, editable-source, or immutable-container
+path; records only runtime secret and TLS-profile references in `AgentConfig`; and
+runs doctor, registration, policy, observability, and rollback gates. Ask your agent
+to **"deploy `egeria-mcp` with agent-utilities-deployment"**.
 
 | Install mode | Command |
 |------|---------|
-| Bare-metal, prod (PyPI) | `uvx egeria-mcp` · or `uv tool install egeria-mcp` |
-| Bare-metal, dev (editable) | `uv pip install -e ".[all]"` · or `pip install -e ".[all]"` |
-| Container, prod | deploy `knucklessg1/egeria-mcp:latest` via docker-compose / swarm / podman / podman-compose / kubernetes |
-| Container, dev (editable) | deploy `docker/compose.dev.yml` (source-mounted at `/src`; edits live on restart) |
+| Installed package | `uv tool install "egeria-mcp[mcp]"`, then run `egeria-mcp` |
+| Editable source | `uv pip install -e ".[agent]"`, then run `egeria-mcp` |
+| Immutable container | deploy `registry.example.invalid/egeria-mcp@sha256:<digest>` through the operator-selected orchestrator |
 
-Secrets are read-existing + seeded via `vault_sync` — you are only prompted for what's missing.
+The repository embeds no deployment profile, credential value, certificate path, or
+environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
+configured secret provider.
 
-<!-- END agent-os-genesis-deploy -->
+<!-- END agent-utilities-deployment -->
 
 ## Environment Variables
 
@@ -290,14 +294,14 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 | `AUTH_TYPE` | `none` | none | oauth | oidc (agent-utilities auth) |
 | `EGERIA_PLATFORM_URL` | `https://localhost:9443` | REQUIRED — Apache Egeria platform / View Server (OMVS) |
 | `EGERIA_VIEW_SERVER` | `qs-view-server` |  |
-| `EGERIA_USER` | `erinoverview` |  |
-| `EGERIA_USER_PASSWORD` | `secret` |  |
-| `EGERIA_VERIFY_SSL` | `False` | self-signed homelab → False |
+| `EGERIA_USER` | _(unset)_ |  |
+| `EGERIA_USER_PASSWORD` | _(unset)_ | Runtime secret |
+| `EGERIA_TLS_PROFILE` | _(unset)_ | Optional runtime TLS profile selector; trust anchors, mTLS, and proxies come from AgentConfig/runtime policy |
 | `EGERIA_ENABLE_WRITE` | `False` | gates every write/harvest tool |
 | `EGERIATOOL` | `True` | register the Egeria tool set |
 | `EGERIA_HARVEST_TOPOLOGY` | — | path to a topology.json override (blank = built-in) |
 | `HOST_INVENTORY` | — | path to an Ansible-style hosts inventory |
-| `EGERIA_HARVEST_ENV` | `/home/you/.config/agent-utilities/egeria-harvest.env` | uncomment with an ABSOLUTE path to override (a literal ~ is not expanded here). |
+| `EGERIA_HARVEST_ENV` | — | Optional runtime-injected configuration reference; do not persist a machine path. |
 | `ENABLE_OTEL` | `True` | OPTIONAL — OTEL tracing (agent-utilities framework) |
 | `LANGFUSE_BASE_URL` | — | OPTIONAL — Langfuse / LLMOps harvest connector (egeria_mcp.harvest.llmops) |
 | `LANGFUSE_PUBLIC_KEY` | — |  |
@@ -441,3 +445,19 @@ Secrets are read-existing + seeded via `vault_sync` — you are only prompted fo
 
 _133 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
+
+<!-- GOVERNED-CAPABILITY:START -->
+## Governed capability contract
+
+This package ships a compact canonical skill surface with specialist procedures
+kept as referenced workflows. The current MCP tools, skill metadata,
+`connector_manifest.yml`, ontology, mappings, shapes, fixtures, migrations,
+tool-schema fingerprints, and certification metadata form one versioned
+capability contract. Validate them together; do not rely on stale tool names or
+historical per-task skill wrappers.
+
+Runtime endpoints, credentials, certificate trust, tenant identity, retention,
+and observability policy are deployment inputs and are never packaged values.
+See [Configuration, trust, and privacy](docs/configuration.md) before enabling a
+network transport, connector ingestion, GraphOS delegation, or trace export.
+<!-- GOVERNED-CAPABILITY:END -->

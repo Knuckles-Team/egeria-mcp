@@ -11,10 +11,11 @@ Config-driven (``ARCHI_MODEL_PATH`` = path to the model XML); tolerant.
 from __future__ import annotations
 
 import os
-import xml.etree.ElementTree as ET
 from typing import Any
 
 from agent_utilities.core.config import setting
+
+from egeria_mcp.harvest.xml_security import parse_xml_root
 
 # ArchiMate element type (xsi:type local name) → Egeria asset type.
 _LAYER_TYPE = {
@@ -39,7 +40,7 @@ def _local(tag: str) -> str:
 def parse_model(path: str) -> list[dict]:
     """Parse ArchiMate Open Exchange XML → [{id, name, type}]."""
     try:
-        root = ET.parse(path).getroot()
+        root = parse_xml_root(path)
     except Exception:
         return []
     out: list[dict] = []
@@ -81,7 +82,7 @@ def harvest_archimate(api: Any, model_path: str | None = None) -> dict[str, Any]
         return report
 
     elements = parse_model(path)
-    report["source"] = {"model": path, "elements": len(elements)}
+    report["source"] = {"configured": True, "elements": len(elements)}
     if not elements:
         report["skipped"] = "no elements parsed (not an ArchiMate Open Exchange model?)"
         return report

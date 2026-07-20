@@ -9,6 +9,9 @@ CONCEPT:AU-KG.ingest.enterprise-source-extractor.
 
 from __future__ import annotations
 
+import pytest
+from agent_utilities.knowledge_graph.memory.native_ingest import NativeIngestError
+
 from egeria_mcp.kg_ingest import (
     ingest_catalog,
     ingest_documents,
@@ -23,6 +26,7 @@ from egeria_mcp.kg_ingest import (
 class _FakeTxn:
     def __init__(self):
         self.nodes = {}
+        self.edges = []
         self.committed = False
 
     def begin(self, graph=None):
@@ -32,23 +36,18 @@ class _FakeTxn:
     def add_node(self, txn, node_id, props):
         self.nodes[node_id] = props
 
+    def add_edge(self, txn, src, dst, props):
+        self.edges.append((src, dst, props))
+
     def commit(self, txn):
         self.committed = True
         return True
 
 
-class _FakeEdges:
-    def __init__(self):
-        self.edges = []
-
-    def add(self, src, dst, props):
-        self.edges.append((src, dst, props))
-
 
 class _FakeClient:
     def __init__(self):
         self.txn = _FakeTxn()
-        self.edges = _FakeEdges()
 
 
 class _FakeApi:
@@ -105,16 +104,16 @@ def test_ingest_entities_writes_nodes_and_edges():
         [
             {
                 "id": "egeria:GlossaryTerm:t1",
-                "type": "GlossaryTerm",
+                "node_type": "GlossaryTerm",
                 "name": "Customer",
             },
-            {"id": "egeria:DataAsset:a1", "type": "DataAsset", "name": "CustomerDB"},
+            {"id": "egeria:DataAsset:a1", "node_type": "DataAsset", "name": "CustomerDB"},
         ],
         [
             {
                 "source": "egeria:DataAsset:a1",
                 "target": "egeria:DataAsset:a2",
-                "type": "flowsTo",
+                "relationship": "flowsTo",
             }
         ],
         client=c,
@@ -125,8 +124,8 @@ def test_ingest_entities_writes_nodes_and_edges():
     # provenance is stamped
     assert c.txn.nodes["egeria:GlossaryTerm:t1"]["source"] == "egeria-mcp"
     assert c.txn.nodes["egeria:GlossaryTerm:t1"]["domain"] == "egeria"
-    assert c.edges.edges == [
-        ("egeria:DataAsset:a1", "egeria:DataAsset:a2", {"type": "flowsTo"})
+    assert c.txn.edges == [
+        ("egeria:DataAsset:a1", "egeria:DataAsset:a2", {"relationship": "flowsTo"})
     ]
 
 
@@ -138,7 +137,7 @@ def test_ingest_documents_marks_document_type():
     )
     assert res == {"nodes": 1, "edges": 0}
     node = c.txn.nodes["egeria:GlossaryTerm:t1:def"]
-    assert node["type"] == "Document"
+    assert node["node_type"] == "Document"
     assert node["text"] == "Customer: buyer."
     assert node["created_at"]
 
@@ -149,7 +148,7 @@ def test_map_glossary_terms():
         [{"guid": "t1", "displayName": "Customer", "summary": "A buyer."}]
     )
     assert ents[0]["id"] == "egeria:GlossaryTerm:t1"
-    assert ents[0]["type"] == "GlossaryTerm"
+    assert ents[0]["node_type"] == "GlossaryTerm"
     assert ents[0]["externalToolId"] == "t1"
     assert docs[0]["id"] == "egeria:GlossaryTerm:t1:def"
     assert docs[0]["text"] == "Customer: A buyer."
@@ -167,14 +166,14 @@ def test_map_governance():
         ]
     )
     assert ents[0]["id"] == "egeria:GovernanceRule:g1"
-    assert ents[0]["type"] == "GovernanceRule"
+    assert ents[0]["node_type"] == "GovernanceRule"
     assert docs[0]["doc_type"] == "governance_rule"
 
 
 def test_map_assets_and_lineage():
     assets = map_assets([{"guid": "a1", "displayName": "DB", "typeName": "Database"}])
     assert assets[0]["id"] == "egeria:DataAsset:a1"
-    assert assets[0]["type"] == "DataAsset"
+    assert assets[0]["node_type"] == "DataAsset"
 
     endpoints, rels = map_lineage(
         [{"source": "a1", "target": "a2", "sourceName": "DB", "targetName": "T"}]
@@ -187,7 +186,7 @@ def test_map_assets_and_lineage():
         {
             "source": "egeria:DataAsset:a1",
             "target": "egeria:DataAsset:a2",
-            "type": "flowsTo",
+            "relationship": "flowsTo",
         }
     ]
 
@@ -207,10 +206,10 @@ def test_ingest_catalog_over_fake_api():
 
 
 # ── guards ───────────────────────────────────────────────────────────────────
-def test_ingest_noops_without_engine():
-    assert ingest_entities([{"id": "x", "type": "DataAsset"}]) is None
+def test_ingest_rejects_legacy_structural_fields():
+    with pytest.raises(NativeIngestError, match="canonical node_type"):
+        ingest_entities([{"id": "legacy", "type": "Legacy"}], client=_FakeClient())
 
-
-def test_ingest_empty_is_noop():
-    assert ingest_entities([], client=_FakeClient()) is None
-    assert ingest_documents([], client=_FakeClient()) is None
+def test_ingest_empty_is_rejected():
+    with pytest.raises(NativeIngestError, match="at least one entity"):
+        ingest_entities([], client=_FakeClient())

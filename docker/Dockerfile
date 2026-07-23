@@ -1,7 +1,7 @@
 # Slim multi-stage build: install in a builder, ship only /usr/local. Keeps the
 # pushed image small (no dev-tools/source) so layer pushes finish well inside the
 # registry's blob-upload window even under concurrency.
-FROM python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3 AS builder
+FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6 AS builder
 COPY --from=ghcr.io/astral-sh/uv:0.11.7@sha256:240fb85ab0f263ef12f492d8476aa3a2e4e1e333f7d67fbdd923d00a506a516a /uv /uvx /bin/
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
@@ -18,7 +18,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # egeria-mcp is an MCP-only package (no agent surface); the pipeline's agent leg is
 # auto-skipped since this Dockerfile has no `AS agent` stage.
-FROM python:3.11-slim@sha256:e031123e3d85762b141ad1cbc56452ba69c6e722ebf2f042cc0dc86c47c0d8b3 AS mcp
+FROM python:3.14-slim@sha256:cea0e6040540fb2b965b6e7fb5ffa00871e632eef63719f0ea54bca189ce14a6 AS mcp
 
 ARG HOST=127.0.0.1
 ARG PORT=8000

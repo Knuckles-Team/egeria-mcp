@@ -19,7 +19,7 @@ from egeria_mcp.api_client import EgeriaApi
 from egeria_mcp.auth import get_client
 from egeria_mcp.mcp.mcp_egeria import register_egeria_tools  # noqa: F401
 
-__version__ = "1.0.2"
+__version__ = "2.0.0"
 logger = get_logger(name="egeria_mcp")
 
 

@@ -1,7 +1,8 @@
 {
   "api_version": "graphos.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "d487b1b5bc97947459b1244cedb931dc67d670db07661cbe70eff22ceb7a7cf6",
+    "a2a.json": "b522899741e75eb3205f3c1a2cba12338146f32f9cf11c7ebf9a1508a8f1ebb7",
+    "connector_manifest.yml": "d531b6e945f4570a430ffbed77624b7b3c52b4bd76c60d134a69b3f163bce41a",
     "egeria_mcp/connectors/mcp_source_presets.json": "c6b5b099f1c012ad0743f821a49e7eaceca8777852c27059247fd011760318ae",
     "egeria_mcp/connectors/tool_schema_fingerprints.json": "26c3871f798dbfd4f0cec97c061ff7f2dc47bf70e22f95a4676eaf76af522b9a",
     "egeria_mcp/ontology/egeria.ttl": "bafcd9fc8274a2cad8b023d9e127767d56ff9e7145ff2f74a3acafeff60cab12",
@@ -18,19 +19,19 @@
     "synthetic_fixture_contract": "passed"
   },
   "compatibility": {
-    "agent_utilities": ">=1.27.1,<2",
+    "agent_utilities": ">=2.1.0,<3",
     "bundle_schema": "2",
-    "epistemic_graph": ">=2.23.1,<3"
+    "epistemic_graph": ">=2.23.0,<3"
   },
   "connector": "egeria-mcp",
   "kind": "ConnectorSourceAttestation",
   "live_certified": false,
   "mode": "offline-source",
   "schema_version": "2",
-  "signature": "Y_ZOOvis31JgWCt3h3znczOQIcAv-ZGq_8C1ahZV7r-OcBCVhbNOlklTDIT3wrzi8zUOtivow69iocBdx-eRDg",
+  "signature": "WViCNfuRD10nsNCyBy3l69HJIC5I701z7zTiaiqHlZgz3F2Yo2JRNDUQ6wn3-EtDKs3kqRSl04P4vcsie2z2Cw",
   "signature_algorithm": "ed25519",
   "signer": "ontology-manifest-generator",
-  "signing_public_key": "q0Cp7bmQMqJhbofGKKw8xXC6KbFzukBDDke0UYVi8y4",
+  "signing_public_key": "QkigdPNpcUU7x7NcSkwCsUXIQpaFncMQbYSoiSgI2SY",
   "status": "source-validated",
-  "validated_at": "2026-07-18T00:00:00Z"
+  "validated_at": "2026-07-31T04:00:00Z"
 }

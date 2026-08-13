@@ -119,4 +119,3 @@
 
     CONCEPT:KG-2.9 — self-registering enterprise source extractors.""" ;
     owl:imports <http://knuckles.team/kg/enterprise> .
-

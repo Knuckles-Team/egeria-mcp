@@ -32,7 +32,10 @@ def fetch_routes(
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(timeout=15.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=15.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(f"{admin_url.rstrip('/')}/config/apps/http/servers")
         if r.status_code != 200:
             return []

@@ -32,7 +32,10 @@ def fetch_collections(
         return []
     headers = {"api-key": api_key} if api_key else {}
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(f"{url.rstrip('/')}/collections", headers=headers)
         if r.status_code != 200:
             return []

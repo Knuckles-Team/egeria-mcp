@@ -35,7 +35,10 @@ def fetch_shares(
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{url.rstrip('/')}/ocs/v2.php/apps/files_sharing/api/v1/shares",
                 auth=(user, password),

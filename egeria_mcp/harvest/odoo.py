@@ -39,7 +39,10 @@ def _rpc(url: str, payload: dict, tls_profile: ResolvedTLSProfile | None) -> Any
     if not HTTPX_AVAILABLE:
         return None
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.post(
                 f"{url.rstrip('/')}/jsonrpc",
                 json={"jsonrpc": "2.0", "method": "call", "params": payload},

@@ -39,7 +39,10 @@ def fetch_spaces(
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{url.rstrip('/')}/wiki/rest/api/space",
                 auth=(user, token),

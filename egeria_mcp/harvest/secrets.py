@@ -34,11 +34,16 @@ def _resolve(url: str | None, token: str | None):
     )
 
 
-def _get(url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None, params=None) -> Any:
+def _get(
+    url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None, params=None
+) -> Any:
     if not HTTPX_AVAILABLE:
         return None
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{url.rstrip('/')}{path}",
                 headers={"X-Vault-Token": token},
@@ -74,7 +79,8 @@ def harvest_secrets(
     }
     policies = (
         (
-            _get(url, token, "/v1/sys/policies/acl", tls_profile, {"list": "true"}) or {}
+            _get(url, token, "/v1/sys/policies/acl", tls_profile, {"list": "true"})
+            or {}
         ).get("data")
         or {}
     ).get("keys") or []

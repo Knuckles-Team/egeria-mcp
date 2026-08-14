@@ -49,7 +49,10 @@ def fetch_process_definitions(
     url = f"{base_url.rstrip('/')}/process-definition"
     params = {"latestVersion": "true"} if latest_only else {}
     try:
-        with httpx.Client(timeout=timeout, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=timeout,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(url, params=params)
         if r.status_code != 200:
             return []

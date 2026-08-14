@@ -36,7 +36,10 @@ def fetch_lists(
     auth = (user, token) if user else None
     headers = {} if user else {"Authorization": f"token {token}"}
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/lists",
                 auth=auth,

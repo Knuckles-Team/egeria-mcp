@@ -26,11 +26,16 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _get(base: str, token: str, path: str, params, tls_profile: ResolvedTLSProfile | None) -> list[dict]:
+def _get(
+    base: str, token: str, path: str, params, tls_profile: ResolvedTLSProfile | None
+) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{base.rstrip('/')}{path}",
                 headers={"Authorization": f"Bearer {token}"},

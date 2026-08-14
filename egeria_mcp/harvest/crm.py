@@ -27,12 +27,19 @@ except Exception:  # pragma: no cover
 
 
 def _fetch(
-    url: str, token: str, prefix: str, resource: str, tls_profile: ResolvedTLSProfile | None
+    url: str,
+    token: str,
+    prefix: str,
+    resource: str,
+    tls_profile: ResolvedTLSProfile | None,
 ) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{url.rstrip('/')}{prefix}/{resource}",
                 headers={

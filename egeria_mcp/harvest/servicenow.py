@@ -55,7 +55,10 @@ def fetch_cis(
         return []
     url = f"{base_url.rstrip('/')}/api/now/table/{table}"
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 url,
                 params={

@@ -117,7 +117,10 @@ def fetch_doctype(
         return None
     url = f"{base_url.rstrip('/')}/api/resource/DocType/{name.replace(' ', '%20')}"
     try:
-        with httpx.Client(timeout=15.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=15.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(url, headers={"Authorization": f"token {token}"})
         if r.status_code != 200:
             return None

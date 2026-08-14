@@ -55,7 +55,10 @@ def fetch_projects(
     headers = {"PRIVATE-TOKEN": token}
     per_page = min(100, max_projects)
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             page = 1
             while len(out) < max_projects:
                 r = c.get(

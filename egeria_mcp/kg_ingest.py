@@ -252,9 +252,7 @@ def ingest_catalog(
         try:
             return fn() or []
         except Exception as e:  # noqa: BLE001 — one source empty must not abort
-            logger.debug(
-                "KG ingest source failed: error_type=%s", type(e).__name__
-            )
+            logger.debug("KG ingest source failed: error_type=%s", type(e).__name__)
             return []
 
     term_ents, term_docs = map_glossary_terms(_safe(api.list_glossary_terms))

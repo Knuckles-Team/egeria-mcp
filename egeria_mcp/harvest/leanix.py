@@ -28,9 +28,14 @@ except Exception:  # pragma: no cover
 _QUERY = "{allFactSheets(first:500){edges{node{id name type}}}}"
 
 
-def _bearer(base_url: str, api_token: str, tls_profile: ResolvedTLSProfile | None) -> str | None:
+def _bearer(
+    base_url: str, api_token: str, tls_profile: ResolvedTLSProfile | None
+) -> str | None:
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.post(
                 f"{base_url.rstrip('/')}/services/mtm/v1/oauth2/token",
                 data={"grant_type": "client_credentials"},
@@ -50,7 +55,10 @@ def fetch_factsheets(
     if not bearer:
         return []
     try:
-        with httpx.Client(timeout=30.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=30.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.post(
                 f"{base_url.rstrip('/')}/services/pathfinder/v1/graphql",
                 headers={

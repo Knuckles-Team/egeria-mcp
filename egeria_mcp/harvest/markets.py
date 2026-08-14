@@ -29,13 +29,18 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _fetch_api(url: str, token: str | None, tls_profile: ResolvedTLSProfile | None) -> list[dict]:
+def _fetch_api(
+    url: str, token: str | None, tls_profile: ResolvedTLSProfile | None
+) -> list[dict]:
     if not HTTPX_AVAILABLE:
         return []
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     for path in ("/api/portfolios", "/api/positions", "/api/accounts"):
         try:
-            with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+            with httpx.Client(
+                timeout=20.0,
+                **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+            ) as c:
                 r = c.get(f"{url.rstrip('/')}{path}", headers=headers)
             if r.status_code == 200:
                 data = r.json()

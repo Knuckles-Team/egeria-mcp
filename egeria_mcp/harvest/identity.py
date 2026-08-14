@@ -42,7 +42,10 @@ def _bearer(base_url: str, tls_profile: ResolvedTLSProfile | None) -> str | None
         return None
     url = f"{base_url.rstrip('/')}/realms/{realm}/protocol/openid-connect/token"
     try:
-        with httpx.Client(timeout=15.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=15.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.post(
                 url,
                 data={
@@ -56,11 +59,16 @@ def _bearer(base_url: str, tls_profile: ResolvedTLSProfile | None) -> str | None
         return None
 
 
-def _get(base_url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None) -> Any:
+def _get(
+    base_url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None
+) -> Any:
     if not HTTPX_AVAILABLE:
         return None
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{base_url.rstrip('/')}{path}",
                 headers={"Authorization": f"Bearer {token}"},

@@ -36,7 +36,10 @@ def _plane_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     if not (url and token and workspace and HTTPX_AVAILABLE):
         return []
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/v1/workspaces/{workspace}/projects/",
                 headers={"X-API-Key": token, "Accept": "application/json"},
@@ -65,7 +68,10 @@ def _jira_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     if not (url and user and token and HTTPX_AVAILABLE):
         return []
     try:
-        with httpx.Client(timeout=20.0, **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs()) as c:
+        with httpx.Client(
+            timeout=20.0,
+            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
+        ) as c:
             r = c.get(
                 f"{url.rstrip('/')}/rest/api/3/project/search",
                 auth=(user, token),

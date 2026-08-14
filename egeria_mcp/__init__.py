@@ -13,7 +13,7 @@ import importlib
 import inspect
 from typing import Any
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __all__: list[str] = []
 
 CORE_MODULES = ["egeria_mcp.api_client"]

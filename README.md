@@ -22,7 +22,7 @@
 
 Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosystem.
 
-*Version: 2.0.0*
+*Version: 2.1.0*
 
 > **Documentation** — Installation, deployment, usage across the API, CLI, and MCP
 > interfaces, and guidance for provisioning the Apache Egeria platform are maintained
@@ -290,152 +290,154 @@ configured secret provider.
 |----------|---------|-------------|
 | `HOST` | `0.0.0.0` | REQUIRED — MCP server runtime |
 | `PORT` | `8000` |  |
-| `TRANSPORT` | `stdio` | stdio | streamable-http | sse |
-| `AUTH_TYPE` | `none` | none | oauth | oidc (agent-utilities auth) |
-| `EGERIA_PLATFORM_URL` | `https://localhost:9443` | REQUIRED — Apache Egeria platform / View Server (OMVS) |
+| `TRANSPORT` | `stdio` | stdio \| streamable-http \| sse |
+| `AUTH_TYPE` | `none` | none \| oauth \| oidc (agent-utilities auth) |
+| `EGERIA_PLATFORM_URL` | `https://egeria.example.invalid:9443` | REQUIRED — Apache Egeria platform / View Server (OMVS) |
 | `EGERIA_VIEW_SERVER` | `qs-view-server` |  |
-| `EGERIA_USER` | _(unset)_ |  |
-| `EGERIA_USER_PASSWORD` | _(unset)_ | Runtime secret |
-| `EGERIA_TLS_PROFILE` | _(unset)_ | Optional runtime TLS profile selector; trust anchors, mTLS, and proxies come from AgentConfig/runtime policy |
+| `EGERIA_USER` | — |  |
+| `EGERIA_USER_PASSWORD` | secret-injected |  |
+| `EGERIA_TLS_PROFILE` | — | named AgentConfig TLS profile |
 | `EGERIA_ENABLE_WRITE` | `False` | gates every write/harvest tool |
 | `EGERIATOOL` | `True` | register the Egeria tool set |
 | `EGERIA_HARVEST_TOPOLOGY` | — | path to a topology.json override (blank = built-in) |
 | `HOST_INVENTORY` | — | path to an Ansible-style hosts inventory |
-| `EGERIA_HARVEST_ENV` | — | Optional runtime-injected configuration reference; do not persist a machine path. |
+| `EGERIA_HARVEST_ENV` | `${XDG_CONFIG_HOME}/agent-utilities/egeria-harvest.env` | EGERIA_HARVEST_ENV defaults to ~/.config/agent-utilities/egeria-harvest.env; uncomment with an ABSOLUTE path to override (a literal ~ is not expanded here). |
 | `ENABLE_OTEL` | `True` | OPTIONAL — OTEL tracing (agent-utilities framework) |
 | `LANGFUSE_BASE_URL` | — | OPTIONAL — Langfuse / LLMOps harvest connector (egeria_mcp.harvest.llmops) |
-| `LANGFUSE_PUBLIC_KEY` | — |  |
-| `LANGFUSE_SECRET_KEY` | — |  |
-| `EUNOMIA_TYPE` | `none` | none | embedded | remote |
+| `LANGFUSE_PUBLIC_KEY` | secret-injected |  |
+| `LANGFUSE_SECRET_KEY` | secret-injected |  |
+| `EUNOMIA_TYPE` | `none` | none \| embedded \| remote |
 | `EUNOMIA_POLICY_FILE` | `mcp_policies.json` |  |
 | `ANSIBLE_TOWER_URL` | — |  |
-| `ANSIBLE_TOWER_TOKEN` | — |  |
+| `ANSIBLE_TOWER_TOKEN` | secret-injected |  |
 | `TOWER_URL` | — |  |
-| `TOWER_TOKEN` | — |  |
+| `TOWER_TOKEN` | secret-injected |  |
 | `ARCHIVEBOX_URL` | — |  |
-| `ARCHIVEBOX_TOKEN` | — |  |
-| `ARCHIVEBOX_API_KEY` | — |  |
+| `ARCHIVEBOX_TOKEN` | secret-injected |  |
+| `ARCHIVEBOX_API_KEY` | secret-injected |  |
 | `ARCHI_MODEL_PATH` | — |  |
 | `ARCHER_URL` | — |  |
-| `ARCHER_TOKEN` | — |  |
+| `ARCHER_TOKEN` | secret-injected |  |
 | `ARCHER_SESSION_ID` | — | alias fallback for ARCHER_TOKEN |
 | `ARCHER_APPLICATIONS` | `risks,controls,findings` | comma-separated app list |
 | `ARIS_URL` | — |  |
-| `ARIS_TOKEN` | — |  |
-| `ARIS_API_TOKEN` | — | alias fallback for ARIS_TOKEN |
+| `ARIS_TOKEN` | secret-injected |  |
+| `ARIS_API_TOKEN` | secret-injected | alias fallback for ARIS_TOKEN |
 | `ARIS_API_PATH` | `/abs/api/models` | ARIS REST API path |
 | `ATLASSIAN_AGENT_URL` | — |  |
-| `ATLASSIAN_AGENT_TOKEN` | — |  |
+| `ATLASSIAN_AGENT_TOKEN` | secret-injected |  |
 | `ATLASSIAN_AGENT_USER` | — |  |
 | `JIRA_URL` | — |  |
-| `JIRA_TOKEN` | — |  |
+| `JIRA_TOKEN` | secret-injected |  |
 | `JIRA_USER` | — |  |
 | `CONFLUENCE_URL` | — |  |
-| `CONFLUENCE_TOKEN` | — |  |
+| `CONFLUENCE_TOKEN` | secret-injected |  |
 | `CONFLUENCE_USER` | — |  |
 | `CADDY_ADMIN_URL` | `http://localhost:2019` |  |
 | `CAMUNDA_URL` | — |  |
 | `CAMUNDA7_URL` | — |  |
 | `DATA_SCIENCE_URL` | — |  |
-| `DATA_SCIENCE_TOKEN` | — |  |
+| `DATA_SCIENCE_TOKEN` | secret-injected |  |
 | `DATA_SCIENCE_MCP_URL` | — |  |
-| `DATA_SCIENCE_MCP_TOKEN` | — |  |
+| `DATA_SCIENCE_MCP_TOKEN` | secret-injected |  |
 | `EMERALD_URL` | — |  |
-| `EMERALD_TOKEN` | — |  |
+| `EMERALD_TOKEN` | secret-injected |  |
 | `EMERALD_PORTFOLIO` | — |  |
 | `ERPNEXT_URL` | — |  |
-| `ERPNEXT_TOKEN` | — |  |
+| `ERPNEXT_TOKEN` | secret-injected |  |
 | `FIREFLY_URL` | — |  |
-| `FIREFLY_TOKEN` | — |  |
+| `FIREFLY_TOKEN` | secret-injected |  |
 | `GITHUB_ORG` | — |  |
-| `GITHUB_TOKEN` | — |  |
+| `GITHUB_TOKEN` | secret-injected |  |
 | `GITLAB_URL` | — |  |
 | `GITLAB_HOST` | — |  |
-| `GITLAB_TOKEN` | — |  |
-| `GITLAB_PRIVATE_TOKEN` | — |  |
+| `GITLAB_TOKEN` | secret-injected |  |
+| `GITLAB_PRIVATE_TOKEN` | secret-injected |  |
 | `GRAFANA_URL` | — |  |
-| `GRAFANA_TOKEN` | — |  |
-| `LGTM_TOKEN` | — |  |
+| `GRAFANA_TOKEN` | secret-injected |  |
+| `LGTM_TOKEN` | secret-injected |  |
 | `HOME_ASSISTANT_URL` | — |  |
-| `HOME_ASSISTANT_TOKEN` | — |  |
+| `HOME_ASSISTANT_TOKEN` | secret-injected |  |
 | `JENA_URL` | — |  |
 | `JENA_FUSEKI_URL` | — |  |
 | `JENA_USERNAME` | — |  |
-| `JENA_PASSWORD` | — |  |
-| `JENA_TOKEN` | — |  |
+| `JENA_PASSWORD` | secret-injected |  |
+| `JENA_TOKEN` | secret-injected |  |
 | `KAFKA_REST_URL` | — |  |
-| `KAFKA_TOKEN` | — |  |
+| `KAFKA_TOKEN` | secret-injected |  |
 | `KEYCLOAK_URL` | — |  |
 | `KEYCLOAK_REALM` | `master` |  |
 | `KEYCLOAK_CLIENT_ID` | — |  |
-| `KEYCLOAK_CLIENT_SECRET` | — |  |
-| `KEYCLOAK_TOKEN` | — |  |
+| `KEYCLOAK_CLIENT_SECRET` | secret-injected |  |
+| `KEYCLOAK_TOKEN` | secret-injected |  |
 | `LEANIX_URL` | — |  |
-| `LEANIX_TOKEN` | — |  |
-| `LEANIX_API_TOKEN` | — |  |
+| `LEANIX_TOKEN` | secret-injected |  |
+| `LEANIX_API_TOKEN` | secret-injected |  |
 | `LISTMONK_URL` | — |  |
-| `LISTMONK_TOKEN` | — |  |
+| `LISTMONK_TOKEN` | secret-injected |  |
 | `LISTMONK_USER` | — |  |
 | `MATTERMOST_URL` | — |  |
-| `MATTERMOST_TOKEN` | — |  |
+| `MATTERMOST_TOKEN` | secret-injected |  |
 | `MONGODB_URI` | — |  |
 | `MONGODB_HOST` | — |  |
 | `MONGODB_PORT` | `27017` |  |
 | `MSGRAPH_URL` | `https://graph.microsoft.com/v1.0` |  |
-| `MSGRAPH_TOKEN` | — |  |
-| `MS_GRAPH_TOKEN` | — | alias fallback for MSGRAPH_TOKEN |
+| `MSGRAPH_TOKEN` | secret-injected |  |
+| `MS_GRAPH_TOKEN` | secret-injected | alias fallback for MSGRAPH_TOKEN |
 | `NEXTCLOUD_URL` | — |  |
 | `NEXTCLOUD_USERNAME` | — |  |
-| `NEXTCLOUD_PASSWORD` | — |  |
+| `NEXTCLOUD_PASSWORD` | secret-injected |  |
 | `ODOO_URL` | — |  |
 | `ODOO_DB` | — |  |
 | `ODOO_USER` | — |  |
-| `ODOO_PASSWORD` | — |  |
-| `ODOO_API_KEY` | — | alias fallback for ODOO_PASSWORD |
+| `ODOO_PASSWORD` | secret-injected |  |
+| `ODOO_API_KEY` | secret-injected | alias fallback for ODOO_PASSWORD |
 | `OPENAPI_USERNAME` | — |  |
-| `OPENAPI_PASSWORD` | — |  |
+| `OPENAPI_PASSWORD` | secret-injected |  |
 | `OPENBAO_URL` | — |  |
-| `OPENBAO_TOKEN` | — |  |
+| `OPENBAO_TOKEN` | secret-injected |  |
 | `BAO_ADDR` | — |  |
 | `VAULT_ADDR` | — |  |
-| `VAULT_TOKEN` | — |  |
+| `VAULT_TOKEN` | secret-injected |  |
 | `PLANE_URL` | — |  |
-| `PLANE_TOKEN` | — |  |
+| `PLANE_TOKEN` | secret-injected |  |
 | `PLANE_WORKSPACE` | — |  |
 | `PORTAINER_URL` | — |  |
-| `PORTAINER_TOKEN` | — |  |
-| `PORTAINER_API_KEY` | — |  |
+| `PORTAINER_TOKEN` | secret-injected |  |
+| `PORTAINER_API_KEY` | secret-injected |  |
 | `PORTAINER_ENDPOINT_ID` | `3` |  |
 | `QDRANT_URL` | — |  |
-| `QDRANT_API_KEY` | — |  |
+| `QDRANT_API_KEY` | secret-injected |  |
 | `SERVICENOW_URL` | — |  |
-| `SERVICENOW_TOKEN` | — |  |
+| `SERVICENOW_TOKEN` | secret-injected |  |
 | `SERVICENOW_USER` | — |  |
-| `SERVICENOW_PASSWORD` | — |  |
+| `SERVICENOW_PASSWORD` | secret-injected |  |
 | `TECHNITIUM_DNS_URL` | — |  |
-| `TECHNITIUM_DNS_TOKEN` | — |  |
+| `TECHNITIUM_DNS_TOKEN` | secret-injected |  |
 | `TWENTY_URL` | — |  |
-| `TWENTY_TOKEN` | — |  |
+| `TWENTY_TOKEN` | secret-injected |  |
 | `TWENTY_API_PREFIX` | `/rest` |  |
 | `UPTIME_KUMA_URL` | — |  |
-| `UPTIME_KUMA_TOKEN` | — |  |
+| `UPTIME_KUMA_TOKEN` | secret-injected |  |
 | `VECTOR_URL` | — |  |
-| `VECTOR_TOKEN` | — |  |
+| `VECTOR_TOKEN` | secret-injected |  |
 
 #### Inherited agent-utilities variables (apply to every connector)
 
 | Variable | Example | Description |
 |----------|---------|-------------|
-| `MCP_TOOL_MODE` | `condensed` | Tool surface: `condensed` | `verbose` | `both` |
+| `MCP_TOOL_MODE` | `intent` | Tool surface: `intent` \| `condensed` \| `verbose` \| `both` |
 | `MCP_ENABLED_TOOLS` | — | Comma-separated tool allow-list |
 | `MCP_DISABLED_TOOLS` | — | Comma-separated tool deny-list |
 | `MCP_ENABLED_TAGS` | — | Comma-separated tag allow-list |
 | `MCP_DISABLED_TAGS` | — | Comma-separated tag deny-list |
 | `EUNOMIA_REMOTE_URL` | — | Remote Eunomia authorization server URL |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | — | OTLP collector endpoint |
-| `MCP_CLIENT_AUTH` | — | Outbound MCP auth (`oidc-client-credentials` for fleet calls) |
+| `MCP_CLIENT_AUTH` | — | Outbound MCP child auth: `oidc-client-credentials` \| `basic` \| `none` |
 | `OIDC_CLIENT_ID` | — | OIDC client id (service-account auth) |
-| `OIDC_CLIENT_SECRET` | — | OIDC client secret (service-account auth) |
+| `OIDC_CLIENT_SECRET_REF` | `secret://identity/oidc-client-secret` | Runtime secret reference for the OIDC service account |
+| `MCP_BASIC_AUTH_USERNAME` | — | HTTP Basic username (`MCP_CLIENT_AUTH=basic`) |
+| `MCP_BASIC_AUTH_PASSWORD_REF` | `secret://identity/mcp-basic-password` | Runtime secret reference for HTTP Basic auth (`MCP_CLIENT_AUTH=basic`) |
 | `DEBUG` | `False` | Verbose logging |
 | `PYTHONUNBUFFERED` | `1` | Unbuffered stdout (recommended in containers) |
 | `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
@@ -443,7 +445,7 @@ configured secret provider.
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_133 package + 16 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_133 package + 18 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 <!-- GOVERNED-CAPABILITY:START -->

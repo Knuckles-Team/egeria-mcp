@@ -209,7 +209,7 @@ def test_ingest_documents_marks_document_type():
     node = c.nodes.values["egeria:GlossaryTerm:t1:def"]
     assert node["node_type"] == "Document"
     assert node["text"] == "Customer: buyer."
-    assert node["created_at"]
+    assert node["needs_enrichment"] is True
 
 
 # ── mappers ──────────────────────────────────────────────────────────────────
@@ -265,8 +265,10 @@ def test_map_assets_and_lineage():
 def test_ingest_catalog_over_fake_api():
     c = _FakeClient()
     res = ingest_catalog(_FakeApi(), client=c)
-    # 1 term + 1 category + 1 gov + 2 assets + 2 lineage endpoints = 7 nodes
-    assert res["nodes"] == 7
+    # 1 term + 1 category + 1 gov + 2 assets; the 2 lineage endpoints re-reference
+    # the same 2 assets by id and are deduped (ChangeEnvelope rejects duplicate
+    # auxiliary node ids) = 5 unique nodes.
+    assert res["nodes"] == 5
     assert res["edges"] == 1
     # 1 term def + 1 gov def = 2 documents
     assert res["documents"] == 2

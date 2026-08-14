@@ -267,6 +267,19 @@ def ingest_catalog(
     entities += flow_ents
     relationships += flow_rels
 
+    # A lineage endpoint may re-reference an asset already listed by
+    # list_assets(); the ChangeEnvelope write path rejects duplicate node ids,
+    # so keep the first (richer, directly-catalogued) record per id.
+    seen_ids: set[str] = set()
+    deduped_entities: list[dict[str, Any]] = []
+    for entity in entities:
+        entity_id = entity.get("id")
+        if entity_id in seen_ids:
+            continue
+        seen_ids.add(entity_id)
+        deduped_entities.append(entity)
+    entities = deduped_entities
+
     node_res = ingest_entities(entities, relationships, client=client, graph=graph)
     doc_res = (
         ingest_documents(documents, client=client, graph=graph)

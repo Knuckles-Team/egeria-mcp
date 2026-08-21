@@ -1,11 +1,10 @@
 {
   "api_version": "graphos.io/v1",
   "artifacts": {
-    "a2a.json": "b522899741e75eb3205f3c1a2cba12338146f32f9cf11c7ebf9a1508a8f1ebb7",
-    "connector_manifest.yml": "d531b6e945f4570a430ffbed77624b7b3c52b4bd76c60d134a69b3f163bce41a",
+    "connector_manifest.yml": "00a45f09441d6b5cb61a475c2cab399925ef7f835c041ecdca8023ec646342cf",
     "egeria_mcp/connectors/mcp_source_presets.json": "c6b5b099f1c012ad0743f821a49e7eaceca8777852c27059247fd011760318ae",
     "egeria_mcp/connectors/tool_schema_fingerprints.json": "26c3871f798dbfd4f0cec97c061ff7f2dc47bf70e22f95a4676eaf76af522b9a",
-    "egeria_mcp/ontology/egeria.ttl": "bafcd9fc8274a2cad8b023d9e127767d56ff9e7145ff2f74a3acafeff60cab12",
+    "egeria_mcp/ontology/egeria.ttl": "e273821a3333f76b9cc88474c150f2459ef530845cd36891757b27d635a16188",
     "egeria_mcp/ontology/fixtures/records.json": "8982ec355eba18ad8ab0c36e6dd8fe424e07327070cd504a9c0a57e41629da87",
     "egeria_mcp/ontology/mappings/source.yaml": "327c9c9aef8ca22699ee09e007d5b4c271b1109e617e5c794fdee04644180f23",
     "egeria_mcp/ontology/migrations/manifest.json": "e375f163145984d001f09c48d93150b11caa28279ea61c47df6c48f865fa9e08",
@@ -19,19 +18,19 @@
     "synthetic_fixture_contract": "passed"
   },
   "compatibility": {
-    "agent_utilities": ">=2.1.0,<3",
+    "agent_utilities": ">=2.4.0,<3",
     "bundle_schema": "2",
-    "epistemic_graph": ">=2.23.0,<3"
+    "epistemic_graph": ">=2.26.0,<3"
   },
   "connector": "egeria-mcp",
   "kind": "ConnectorSourceAttestation",
   "live_certified": false,
   "mode": "offline-source",
   "schema_version": "2",
-  "signature": "WViCNfuRD10nsNCyBy3l69HJIC5I701z7zTiaiqHlZgz3F2Yo2JRNDUQ6wn3-EtDKs3kqRSl04P4vcsie2z2Cw",
-  "signature_algorithm": "ed25519",
-  "signer": "ontology-manifest-generator",
-  "signing_public_key": "QkigdPNpcUU7x7NcSkwCsUXIQpaFncMQbYSoiSgI2SY",
+  "signature": null,
+  "signature_algorithm": "none",
+  "signer": "UNSIGNED-PREVIEW",
+  "signing_public_key": "",
   "status": "source-validated",
-  "validated_at": "2026-07-31T04:00:00Z"
+  "validated_at": "2026-08-21T04:30:39Z"
 }

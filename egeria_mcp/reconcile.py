@@ -17,6 +17,7 @@ Entry point: :func:`reconcile`.
 from __future__ import annotations
 
 import json as _json
+from collections.abc import Callable
 from typing import Any
 
 PATTERNS = (
@@ -203,6 +204,336 @@ def _core(qn: str, prefix: str) -> str:
     return qn[len(prefix) :] if qn.startswith(prefix) else qn
 
 
+def _repo_name(r: dict) -> str:
+    return (
+        _core(r["qualifiedName"], "Repository::").split("::")[-1].split("/")[-1].lower()
+    )
+
+
+def _build_node_by_name(nodes: list[dict]) -> dict[str, dict]:
+    return {
+        _core(n["qualifiedName"], "Node::").split("::")[0]
+        if n["qualifiedName"].startswith("Node::")
+        else _core(n["qualifiedName"], "Host::"): n
+        for n in nodes
+    }
+
+
+def _index_by_name(records: list[dict], prefix: str) -> dict[str, dict]:
+    return {_core(r["qualifiedName"], prefix): r for r in records}
+
+
+# A ``link`` callable closes over the shared api/report/idempotency-cache state;
+# each pattern function below takes it as a parameter rather than recreating it.
+_Linker = Callable[[dict, dict, str, str], None]
+
+
+def _pattern_host_hosting(
+    link: _Linker,
+    node_by_name: dict[str, dict],
+    stores: list[dict],
+    datasets: list[dict],
+    services: list[dict],
+) -> None:
+    """P1: asset.hostNode → Node hosts asset."""
+    for pool in (stores, datasets, services):
+        for a in pool:
+            host = (a.get("additionalProperties") or {}).get("hostNode")
+            if host and host in node_by_name:
+                link(node_by_name[host], a, "hosts", "host-hosting")
+
+    # P2 / address: store.networkAddress host → node by addr (best-effort, skipped if no match)
+
+
+def _pattern_service_store(
+    link: _Linker, services: list[dict], store_by_name: dict[str, dict]
+) -> None:
+    """P3: service identity — Service::*_<name> realizes DataStore::<name>."""
+    for svc in services:
+        sname = _core(svc["qualifiedName"], "Service::")
+        for store_name, store in store_by_name.items():
+            if (
+                sname == store_name
+                or sname.endswith("_" + store_name)
+                or store_name in sname.split("_")
+            ):
+                link(svc, store, "realizes", "service-store")
+                break
+
+
+def _pattern_dataset_store(
+    link: _Linker, datasets: list[dict], store_by_name: dict[str, dict]
+) -> None:
+    """P4: dataset-store containment — Dataset::<store>::* hosted by DataStore::<store>."""
+    for ds in datasets:
+        qn = ds["qualifiedName"]
+        if qn.startswith("Dataset::") and qn.count("::") >= 2:
+            parent = qn.split("::")[1].split(".")[0]
+            match_store = store_by_name.get(parent)
+            if match_store:
+                link(match_store, ds, "hosts", "dataset-store")
+
+
+def _pattern_source_store(
+    link: _Linker, datasets: list[dict], store_by_name: dict[str, dict]
+) -> None:
+    """P11: source-store — data asset → its source DataStore (by `source` property)."""
+    for ds in datasets:
+        source = (ds.get("additionalProperties") or {}).get("source")
+        match_store = (
+            store_by_name.get(_SOURCE_STORE.get(source, "")) if source else None
+        )
+        if match_store:
+            link(match_store, ds, "hosts", "source-store")
+
+
+def _pattern_ingress_exposure(
+    link: _Linker, routes: list[dict], svc_by_name: dict[str, dict]
+) -> None:
+    """P5: ingress-exposure — Route.upstream → Service."""
+    for rt in routes:
+        up = (rt.get("additionalProperties") or {}).get("upstream") or ""
+        host = up.split(":")[0].split("/")[0]
+        if not host:
+            continue
+        for sname, svc in svc_by_name.items():
+            if host == sname or sname.endswith("_" + host) or host in sname.split("_"):
+                link(rt, svc, "routes-to", "ingress-exposure")
+                break
+
+
+def _pattern_monitoring(
+    link: _Linker,
+    monitors: list[dict],
+    store_by_name: dict[str, dict],
+    svc_by_name: dict[str, dict],
+    nodes: list[dict],
+    routes: list[dict],
+) -> None:
+    """P6: monitoring — Monitor.name ~ Route/Service/Node/Store."""
+    targets_by_name = {
+        **store_by_name,
+        **svc_by_name,
+        **_index_by_name(nodes, "Node::"),
+        **_index_by_name(routes, "Route::"),
+    }
+    for mon in monitors:
+        mname = _core(mon["qualifiedName"], "Monitor::").lower()
+        for tname, tgt in targets_by_name.items():
+            if mname and (mname in tname.lower() or tname.lower().endswith(mname)):
+                link(mon, tgt, "monitors", "monitoring")
+                break
+
+
+def _pattern_cmdb_identity(
+    link: _Linker,
+    cis: list[dict],
+    store_by_name: dict[str, dict],
+    svc_by_name: dict[str, dict],
+    nodes: list[dict],
+) -> None:
+    """P7: cmdb-identity — CI::ServiceNow::<name> ~ infra asset."""
+    infra_by_name = {
+        **store_by_name,
+        **_index_by_name(nodes, "Node::"),
+        **svc_by_name,
+    }
+    for ci in cis:
+        cname = _core(ci["qualifiedName"], "CI::ServiceNow::")
+        for iname, tgt in infra_by_name.items():
+            if cname and cname.lower() == iname.lower():
+                link(ci, tgt, "same-as", "cmdb-identity")
+                break
+
+
+def _pattern_access_control(
+    link: _Linker, clients: list[dict], svc_by_name: dict[str, dict]
+) -> None:
+    """P8: access-control — Keycloak Client::<realm>::<id> secures matching Service."""
+    for cl in clients:
+        parts = _core(cl["qualifiedName"], "Client::").split("::")
+        cid = parts[-1] if parts else ""
+        for sname, svc in svc_by_name.items():
+            if cid and (cid == sname or cid in sname.split("_")):
+                link(cl, svc, "secures", "access-control")
+                break
+
+
+def _pattern_repo_service(
+    link: _Linker, repos: list[dict], svc_by_name: dict[str, dict]
+) -> None:
+    """P12: repo-service — a Repository deploys the Service that runs its build."""
+    for repo in repos:
+        rname = _repo_name(repo)
+        for sname, svc in svc_by_name.items():
+            sl = sname.lower()
+            if rname and (
+                rname == sl or sl.endswith("_" + rname) or rname in sl.split("_")
+            ):
+                link(repo, svc, "deploys", "repo-service")
+                break
+
+
+def _pattern_datasource_store(
+    link: _Linker, datasources: list[dict], store_by_name: dict[str, dict]
+) -> None:
+    """P16: datasource-store — a Grafana datasource reads a DataStore (by name)."""
+    for dsrc in datasources:
+        dname = _core(dsrc["qualifiedName"], "Datasource::").split("::")[-1].lower()
+        for store_name, store in store_by_name.items():
+            if dname and (dname == store_name.lower() or store_name.lower() in dname):
+                link(dsrc, store, "reads", "datasource-store")
+                break
+
+
+def _build_realization_index(
+    services: list[dict], stores: list[dict], repos: list[dict]
+) -> dict[str, dict]:
+    real_by_name: dict[str, dict] = {}
+    real_by_name.update(
+        {_core(s["qualifiedName"], "Service::").lower(): s for s in services}
+    )
+    real_by_name.update(
+        {_core(s["qualifiedName"], "DataStore::").lower(): s for s in stores}
+    )
+    real_by_name.update({_repo_name(r): r for r in repos})
+    return real_by_name
+
+
+def _find_realization_target(name: str, real_by_name: dict[str, dict]) -> dict | None:
+    target = real_by_name.get(name)
+    if target:
+        return target
+    for rn, ra in real_by_name.items():
+        if rn and (name == rn or rn.endswith(name) or name in rn.split("_")):
+            return ra
+    return None
+
+
+def _pattern_ea_realization(
+    link: _Linker,
+    ea: list[dict],
+    services: list[dict],
+    stores: list[dict],
+    repos: list[dict],
+) -> None:
+    """P21: ea-realization — ArchiMate/LeanIX element → the running asset it models."""
+    real_by_name = _build_realization_index(services, stores, repos)
+    for el in ea:
+        name = (el.get("displayName") or "").lower()
+        if not name:
+            continue
+        target = _find_realization_target(name, real_by_name)
+        if target:
+            link(el, target, "realized-by", "ea-realization")
+
+
+def _pattern_semantic_assignment(
+    api: Any,
+    link: _Linker,
+    datasets: list[dict],
+    services: list[dict],
+    stores: list[dict],
+) -> None:
+    """P9: semantic-assignment — asset.displayName == Glossary Term → means Concept."""
+    terms = {
+        t.get("displayName"): t
+        for t in _paginated_search(api, "Term::")
+        if t.get("displayName")
+    }
+    if not terms:
+        return
+    for pool in (datasets, services, stores):
+        for a in pool:
+            term = terms.get(a.get("displayName"))
+            if term:
+                link(a, term, "means", "semantic-assignment")
+
+
+def _build_capability_groups(
+    assets: dict[str, list[dict]],
+) -> tuple[dict[str, list[dict]], dict[str, set[str]]]:
+    """Group all loaded assets by canonical capability, tracking distinct
+    sources per capability (used to bound cohorts to genuinely cross-vendor
+    groups)."""
+    cap_groups: dict[str, list[dict]] = {}
+    cap_sources: dict[str, set[str]] = {}
+    for rec in (r for pool in assets.values() for r in pool):
+        cap = _capability_of(rec)
+        if not cap:
+            continue
+        cap_groups.setdefault(cap, []).append(rec)
+        cap_sources.setdefault(cap, set()).add(_source_of(rec))
+    return cap_groups, cap_sources
+
+
+def _link_cross_vendor_identity(link: _Linker, recs: list[dict]) -> None:
+    """Cross-vendor identity: same displayName from different sources = same entity."""
+    by_name: dict[str, list[dict]] = {}
+    for rec in recs:
+        nm = (rec.get("displayName") or "").lower()
+        if nm:
+            by_name.setdefault(nm, []).append(rec)
+    for grp in by_name.values():
+        if len(grp) < 2 or len({_source_of(g) for g in grp}) < 2:
+            continue
+        for other in grp[1:]:
+            link(grp[0], other, "same-as", "cross-vendor-identity")
+
+
+def _link_capability_cohorts(
+    api: Any,
+    link: _Linker,
+    cap_groups: dict[str, list[dict]],
+    cap_sources: dict[str, set[str]],
+) -> None:
+    """Capability cohorts + cross-vendor identity: group assets that serve the
+    SAME capability across DIFFERENT vendors (first-party + open-source). Only
+    build a cohort where ≥2 distinct sources are present, so it stays bounded
+    and meaningful (e.g. ITSM = ServiceNow + ERPNext; vcs = GitLab + GitHub;
+    EA = LeanIX + ArchiMate)."""
+    for cap, recs in cap_groups.items():
+        if len(cap_sources[cap]) < 2:
+            continue  # single-vendor — nothing cross-vendor to link
+        col = api.create_collection(
+            f"Capability {cap}",
+            description=f"All {cap} assets across first-party + open-source vendors.",
+            category="Capability",
+        )
+        if col.get("guid"):
+            cohort = {"guid": col["guid"], "qualifiedName": f"Capability::{cap}"}
+            for rec in recs:
+                link(cohort, rec, "groups", "capability-cohort")
+        _link_cross_vendor_identity(link, recs)
+
+
+def _pattern_confidentiality_propagation(
+    api: Any,
+    report: dict[str, Any],
+    datasets: list[dict],
+    store_by_name: dict[str, dict],
+) -> None:
+    """P10: confidentiality-propagation — raise a store to the max of its
+    datasets' levels."""
+    for ds in datasets:
+        qn = ds["qualifiedName"]
+        if not (qn.startswith("Dataset::") and qn.count("::") >= 2):
+            continue
+        match_store = store_by_name.get(qn.split("::")[1].split(".")[0])
+        if not match_store:
+            continue
+        ds_level = api.governance_for(ds["guid"]).get("confidentialityLevel")
+        st_level = api.governance_for(match_store["guid"]).get("confidentialityLevel")
+        if isinstance(ds_level, int) and (
+            not isinstance(st_level, int) or ds_level > st_level
+        ):
+            api.set_confidentiality(match_store["guid"], ds_level)
+            report["confidentiality-propagation"]["links"] += 1
+            report["confidentiality-propagation"]["items"].append(
+                f"{match_store['qualifiedName']} → level {ds_level} (from {ds['qualifiedName']})"
+            )
+
+
 def reconcile(api: Any, *, propagate_confidentiality: bool = True) -> dict[str, Any]:
     """Cross-link the catalogue across layers; return a per-pattern report.
 
@@ -247,221 +578,28 @@ def reconcile(api: Any, *, propagate_confidentiality: bool = True) -> dict[str, 
                 f"{src.get('qualifiedName')} →[{label}] {tgt.get('qualifiedName')}"
             )
 
-    node_by_name = {
-        _core(n["qualifiedName"], "Node::").split("::")[0]
-        if n["qualifiedName"].startswith("Node::")
-        else _core(n["qualifiedName"], "Host::"): n
-        for n in nodes
-    }
-    store_by_name = {_core(s["qualifiedName"], "DataStore::"): s for s in stores}
+    node_by_name = _build_node_by_name(nodes)
+    store_by_name = _index_by_name(stores, "DataStore::")
+    svc_by_name = _index_by_name(services, "Service::")
 
-    # P1 host-hosting: asset.hostNode → Node hosts asset
-    for pool in (stores, datasets, services):
-        for a in pool:
-            host = (a.get("additionalProperties") or {}).get("hostNode")
-            if host and host in node_by_name:
-                link(node_by_name[host], a, "hosts", "host-hosting")
+    _pattern_host_hosting(link, node_by_name, stores, datasets, services)
+    _pattern_service_store(link, services, store_by_name)
+    _pattern_dataset_store(link, datasets, store_by_name)
+    _pattern_source_store(link, datasets, store_by_name)
+    _pattern_ingress_exposure(link, routes, svc_by_name)
+    _pattern_monitoring(link, monitors, store_by_name, svc_by_name, nodes, routes)
+    _pattern_cmdb_identity(link, cis, store_by_name, svc_by_name, nodes)
+    _pattern_access_control(link, clients, svc_by_name)
+    _pattern_repo_service(link, repos, svc_by_name)
+    _pattern_datasource_store(link, datasources, store_by_name)
+    _pattern_ea_realization(link, ea, services, stores, repos)
+    _pattern_semantic_assignment(api, link, datasets, services, stores)
 
-    # P2 / address: store.networkAddress host → node by addr (best-effort, skipped if no match)
+    cap_groups, cap_sources = _build_capability_groups(assets)
+    _link_capability_cohorts(api, link, cap_groups, cap_sources)
 
-    # P3 service-store identity: Service::*_<name> realizes DataStore::<name>
-    for svc in services:
-        sname = _core(svc["qualifiedName"], "Service::")
-        for store_name, store in store_by_name.items():
-            if (
-                sname == store_name
-                or sname.endswith("_" + store_name)
-                or store_name in sname.split("_")
-            ):
-                link(svc, store, "realizes", "service-store")
-                break
-
-    # P4 dataset-store containment: Dataset::<store>::* hosted by DataStore::<store>
-    for ds in datasets:
-        qn = ds["qualifiedName"]
-        if qn.startswith("Dataset::") and qn.count("::") >= 2:
-            parent = qn.split("::")[1].split(".")[0]
-            match_store = store_by_name.get(parent)
-            if match_store:
-                link(match_store, ds, "hosts", "dataset-store")
-
-    # P11 source-store: data asset → its source DataStore (by `source` property)
-    for ds in datasets:
-        source = (ds.get("additionalProperties") or {}).get("source")
-        match_store = (
-            store_by_name.get(_SOURCE_STORE.get(source, "")) if source else None
-        )
-        if match_store:
-            link(match_store, ds, "hosts", "source-store")
-
-    # P5 ingress-exposure: Route.upstream → Service
-    svc_by_name = {_core(s["qualifiedName"], "Service::"): s for s in services}
-    for rt in routes:
-        up = (rt.get("additionalProperties") or {}).get("upstream") or ""
-        host = up.split(":")[0].split("/")[0]
-        if not host:
-            continue
-        for sname, svc in svc_by_name.items():
-            if host == sname or sname.endswith("_" + host) or host in sname.split("_"):
-                link(rt, svc, "routes-to", "ingress-exposure")
-                break
-
-    # P6 monitoring: Monitor.name ~ Route/Service/Node/Store
-    targets_by_name = {
-        **store_by_name,
-        **svc_by_name,
-        **{_core(n["qualifiedName"], "Node::"): n for n in nodes},
-        **{_core(r["qualifiedName"], "Route::"): r for r in routes},
-    }
-    for mon in monitors:
-        mname = _core(mon["qualifiedName"], "Monitor::").lower()
-        for tname, tgt in targets_by_name.items():
-            if mname and (mname in tname.lower() or tname.lower().endswith(mname)):
-                link(mon, tgt, "monitors", "monitoring")
-                break
-
-    # P7 cmdb-identity: CI::ServiceNow::<name> ~ infra asset
-    infra_by_name = {
-        **store_by_name,
-        **{_core(n["qualifiedName"], "Node::"): n for n in nodes},
-        **svc_by_name,
-    }
-    for ci in cis:
-        cname = _core(ci["qualifiedName"], "CI::ServiceNow::")
-        for iname, tgt in infra_by_name.items():
-            if cname and cname.lower() == iname.lower():
-                link(ci, tgt, "same-as", "cmdb-identity")
-                break
-
-    # P8 access-control: Keycloak Client::<realm>::<id> secures matching Service
-    for cl in clients:
-        parts = _core(cl["qualifiedName"], "Client::").split("::")
-        cid = parts[-1] if parts else ""
-        for sname, svc in svc_by_name.items():
-            if cid and (cid == sname or cid in sname.split("_")):
-                link(cl, svc, "secures", "access-control")
-                break
-
-    def _repo_name(r: dict) -> str:
-        return (
-            _core(r["qualifiedName"], "Repository::")
-            .split("::")[-1]
-            .split("/")[-1]
-            .lower()
-        )
-
-    # P12 repo-service: a Repository deploys the Service that runs its build
-    for repo in repos:
-        rname = _repo_name(repo)
-        for sname, svc in svc_by_name.items():
-            sl = sname.lower()
-            if rname and (
-                rname == sl or sl.endswith("_" + rname) or rname in sl.split("_")
-            ):
-                link(repo, svc, "deploys", "repo-service")
-                break
-
-    # P16 datasource-store: a Grafana datasource reads a DataStore (by name)
-    for dsrc in datasources:
-        dname = _core(dsrc["qualifiedName"], "Datasource::").split("::")[-1].lower()
-        for store_name, store in store_by_name.items():
-            if dname and (dname == store_name.lower() or store_name.lower() in dname):
-                link(dsrc, store, "reads", "datasource-store")
-                break
-
-    # P21 ea-realization: ArchiMate/LeanIX element → the running asset it models
-    real_by_name: dict[str, dict] = {}
-    real_by_name.update(
-        {_core(s["qualifiedName"], "Service::").lower(): s for s in services}
-    )
-    real_by_name.update(
-        {_core(s["qualifiedName"], "DataStore::").lower(): s for s in stores}
-    )
-    real_by_name.update({_repo_name(r): r for r in repos})
-    for el in ea:
-        name = (el.get("displayName") or "").lower()
-        if not name:
-            continue
-        target = real_by_name.get(name)
-        if not target:
-            for rn, ra in real_by_name.items():
-                if rn and (name == rn or rn.endswith(name) or name in rn.split("_")):
-                    target = ra
-                    break
-        if target:
-            link(el, target, "realized-by", "ea-realization")
-
-    # P9 semantic-assignment: asset.displayName == Glossary Term → means Concept
-    terms = {
-        t.get("displayName"): t
-        for t in _paginated_search(api, "Term::")
-        if t.get("displayName")
-    }
-    if terms:
-        for pool in (datasets, services, stores):
-            for a in pool:
-                term = terms.get(a.get("displayName"))
-                if term:
-                    link(a, term, "means", "semantic-assignment")
-
-    # Capability cohorts + cross-vendor identity: group assets that serve the SAME
-    # capability across DIFFERENT vendors (first-party + open-source). Only build a
-    # cohort where ≥2 distinct sources are present, so it stays bounded and meaningful
-    # (e.g. ITSM = ServiceNow + ERPNext; vcs = GitLab + GitHub; EA = LeanIX + ArchiMate).
-    cap_groups: dict[str, list[dict]] = {}
-    cap_sources: dict[str, set[str]] = {}
-    for rec in (r for pool in assets.values() for r in pool):
-        cap = _capability_of(rec)
-        if not cap:
-            continue
-        cap_groups.setdefault(cap, []).append(rec)
-        cap_sources.setdefault(cap, set()).add(_source_of(rec))
-
-    for cap, recs in cap_groups.items():
-        if len(cap_sources[cap]) < 2:
-            continue  # single-vendor — nothing cross-vendor to link
-        col = api.create_collection(
-            f"Capability {cap}",
-            description=f"All {cap} assets across first-party + open-source vendors.",
-            category="Capability",
-        )
-        if col.get("guid"):
-            cohort = {"guid": col["guid"], "qualifiedName": f"Capability::{cap}"}
-            for rec in recs:
-                link(cohort, rec, "groups", "capability-cohort")
-        # cross-vendor identity: same displayName from different sources = same entity
-        by_name: dict[str, list[dict]] = {}
-        for rec in recs:
-            nm = (rec.get("displayName") or "").lower()
-            if nm:
-                by_name.setdefault(nm, []).append(rec)
-        for grp in by_name.values():
-            if len(grp) < 2 or len({_source_of(g) for g in grp}) < 2:
-                continue
-            for other in grp[1:]:
-                link(grp[0], other, "same-as", "cross-vendor-identity")
-
-    # P10 confidentiality-propagation: raise a store to the max of its datasets' levels
     if propagate_confidentiality:
-        for ds in datasets:
-            qn = ds["qualifiedName"]
-            if not (qn.startswith("Dataset::") and qn.count("::") >= 2):
-                continue
-            match_store = store_by_name.get(qn.split("::")[1].split(".")[0])
-            if not match_store:
-                continue
-            ds_level = api.governance_for(ds["guid"]).get("confidentialityLevel")
-            st_level = api.governance_for(match_store["guid"]).get(
-                "confidentialityLevel"
-            )
-            if isinstance(ds_level, int) and (
-                not isinstance(st_level, int) or ds_level > st_level
-            ):
-                api.set_confidentiality(match_store["guid"], ds_level)
-                report["confidentiality-propagation"]["links"] += 1
-                report["confidentiality-propagation"]["items"].append(
-                    f"{match_store['qualifiedName']} → level {ds_level} (from {ds['qualifiedName']})"
-                )
+        _pattern_confidentiality_propagation(api, report, datasets, store_by_name)
 
     report["summary"] = {p: report[p]["links"] for p in PATTERNS}
     report["summary"]["total_links"] = sum(report[p]["links"] for p in PATTERNS)

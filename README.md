@@ -57,11 +57,12 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 
 <!-- MCP-TOOLS-TABLE:START -->
 
-#### Condensed action-routed tools (default — `MCP_TOOL_MODE=condensed`)
+#### Condensed action-routed tools (`MCP_TOOL_MODE=condensed`)
 
 | MCP Tool | Toggle Env Var | Description |
 |----------|----------------|-------------|
 | `egeria_actors` | `EGERIATOOL` | Browse people/teams, projects, communities, locations, cohorts. |
+| `egeria_asset_for_kg_node` | `EGERIATOOL` | Resolve a KG node id to its Egeria GUID. |
 | `egeria_audit` | `EGERIATOOL` | Completeness audit: report unlinked 'island' assets + per-layer coverage. |
 | `egeria_catalog` | `EGERIATOOL` | Browse the technical catalog: assets, connections, endpoints, schema. |
 | `egeria_collection` | `EGERIATOOL` | Browse collections and digital products. |
@@ -83,8 +84,11 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 | `egeria_harvest_projects` | `EGERIATOOL` | Catalog Plane/Jira projects into Egeria as Projects. |
 | `egeria_harvest_repositories` | `EGERIATOOL` | Catalog GitLab projects into Egeria (code/CI layer). |
 | `egeria_harvest_servicenow` | `EGERIATOOL` | Catalog ServiceNow CMDB configuration items into Egeria. |
+| `egeria_ingest_catalog` | `EGERIATOOL` | Natively ingest the Egeria catalog into epistemic-graph as typed OWL nodes. |
+| `egeria_lineage_scan` | `EGERIATOOL` | Scan the catalog's hub prefixes and return every DataFlow lineage edge. |
 | `egeria_metadata` | `EGERIATOOL` | Generic open-metadata access: search across all types, or get by GUID. |
 | `egeria_reconcile` | `EGERIATOOL` | Cross-link the harvested layers into one connected lineage/governance graph. |
+| `egeria_reconcile_openlineage_asset` | `EGERIATOOL` | Reconcile one OpenLineage dataset into Egeria (requires EGERIA_ENABLE_WRITE=true). |
 | `egeria_solution` | `EGERIATOOL` | Browse solution architecture: supply chains, blueprints, components. |
 
 #### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
@@ -151,7 +155,7 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 
 </details>
 
-_25 action-routed tool(s) (default) · 54 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (`condensed` default · `verbose` 1:1 · `both`). Auto-generated — do not edit._
+_29 action-routed tool(s) · 54 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (**`intent` default** — the six verb-tools, granular set loaded on demand · `condensed` action-routed · `verbose` 1:1 · `both`). Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 ## Configuration (environment)
@@ -297,11 +301,14 @@ configured secret provider.
 | `EGERIA_USER` | — |  |
 | `EGERIA_USER_PASSWORD` | secret-injected |  |
 | `EGERIA_TLS_PROFILE` | — | named AgentConfig TLS profile |
+| `EGERIA_TLS_PROFILE_REF` | — | direct runtime TLS profile reference (transport_security.py) |
 | `EGERIA_ENABLE_WRITE` | `False` | gates every write/harvest tool |
 | `EGERIATOOL` | `True` | register the Egeria tool set |
 | `EGERIA_HARVEST_TOPOLOGY` | — | path to a topology.json override (blank = built-in) |
 | `HOST_INVENTORY` | — | path to an Ansible-style hosts inventory |
 | `EGERIA_HARVEST_ENV` | `${XDG_CONFIG_HOME}/agent-utilities/egeria-harvest.env` | EGERIA_HARVEST_ENV defaults to ~/.config/agent-utilities/egeria-harvest.env; uncomment with an ABSOLUTE path to override (a literal ~ is not expanded here). |
+| `EGERIA_KG_INGEST` | `True` | default-on: mirror the harvested catalog into the KG; set False to skip |
+| `EGERIA_MCP_AGENT_IMAGE` | `registry.example.com/egeria-mcp-agent@sha256:...` | OPTIONAL — Container image pins (docker/*compose*.yml; set by CI/CD, not local dev) |
 | `ENABLE_OTEL` | `True` | OPTIONAL — OTEL tracing (agent-utilities framework) |
 | `LANGFUSE_BASE_URL` | — | OPTIONAL — Langfuse / LLMOps harvest connector (egeria_mcp.harvest.llmops) |
 | `LANGFUSE_PUBLIC_KEY` | secret-injected |  |
@@ -445,7 +452,7 @@ configured secret provider.
 | `MODEL_ID` | `gpt-4o` | Model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_133 package + 18 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_136 package + 18 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 <!-- GOVERNED-CAPABILITY:START -->

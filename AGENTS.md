@@ -86,6 +86,35 @@ Stable concept IDs (prefix `CONCEPT:EG-*`) trace the federation's core ideas acr
 <!-- CONCEPT:EA-KG.compute.completeness-audit-reports-unlinked --> **EA-KG.compute.completeness-audit-reports-unlinked** Completeness Audit — `audit()` (`audit.py`)
 <!-- CONCEPT:AU-KG.ingest.then-by-its-node --> **AU-KG.ingest.then-by-its-node** Vendor-Neutral Capability Tagging — `_capability_of()` (`reconcile.py`)
 
+## Node-id convention (CA-46 PROPOSED — shared, not binding on other lanes)
+
+KG node ids follow `<domain>:<class>:<externalId>`. For a lakehouse table the
+`externalId` is the DEC-CA-05 dataset-naming string
+`iceberg://<catalog>/<ns>/<table>@<snapshot>` — the **same** string used as the
+`agent-utilities` PROV-O `prov:Entity` id and as this connector's Egeria `DataAsset`
+`qualifiedName`. One deterministic key, no separate mapping table.
+
+This is **binding on this lane's own tools only** (`egeria_asset_for_kg_node`) until
+CA-25 / CA-30 / CA-40 confirm it. It is offered to those lanes, not imposed on them.
+
+## ActionSpec / DEC-CA-07 status (BLOCKER shared with CA-44 and CA-45)
+
+`agent_utilities/knowledge_graph/ontology/connector_manifest.py`'s `ActionSpec` model is
+still the three-field `{id, name, description}` shape with `extra="forbid"`, so it does
+**not** accept DEC-CA-07's extended `actions:` schema
+(`parameters` / `target_resource` / `conflict_policy` / `requires_approval`).
+
+That file is outside this connector's owned files, so the `actions:` block in
+`connector_manifest.yml` stays fleet boilerplate until `ActionSpec` is extended upstream
+(CA-32). The same blocker was reported independently by CA-44 and CA-45 — it is an
+upstream schema gap, not a per-connector omission.
+
+> **Do not hand-edit `connector_manifest.yml` to record notes like these.** That file is
+> machine-generated and its sha256 is pinned in `egeria_mcp/ontology/certification.json`;
+> editing it breaks the certification hash and turns `agent-utilities`' `always_run`
+> `check-release-catalogs` gate red for **every** lane committing to that repo. Prose
+> belongs here in `AGENTS.md`.
+
 ## ⛔ Keep the Repository Root Pristine
 The repository ROOT must contain only canonical project files (packaging, config,
 docs, lockfiles). Never write debug/migration/scratch scripts, data dumps, logs, or

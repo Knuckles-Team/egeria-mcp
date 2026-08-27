@@ -79,5 +79,8 @@ def test_mcp_tools_register():
         "egeria_classify",
         "egeria_create_term",
         "egeria_assert_lineage",
+        "egeria_lineage_scan",
+        "egeria_reconcile_openlineage_asset",
+        "egeria_asset_for_kg_node",
     }
     assert expected.issubset(names), f"missing tools; got {sorted(names)}"

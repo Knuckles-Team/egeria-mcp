@@ -291,3 +291,56 @@ def ingest_catalog(
         "edges": node_res["edges"],
         "documents": doc_res["nodes"],
     }
+
+
+# ── KG node id → Egeria GUID (reverse of the GUID→node-id mapping above) ─────
+def asset_for_kg_node(api: Any, node_id: str) -> dict[str, Any]:
+    """Resolve a KG node id to its Egeria GUID.
+
+    CONCEPT:EA-KG.compute.kg-node-egeria-guid-lookup — KG Node → Egeria GUID.
+    The reverse direction of this module's ``egeria:<class>:<guid>`` mapping
+    (``_asset_id`` et al, used by :func:`map_assets`/:func:`map_lineage`): every
+    KG node id here follows ``<domain>:<class>:<externalId>`` (baseline's
+    Wire-First convention). When ``domain == "egeria"``, ``externalId`` already
+    IS the Egeria GUID (this module's own convention) and is confirmed to exist
+    via :meth:`EgeriaApi.get_element`. Otherwise ``externalId`` is treated as a
+    qualifiedName — e.g. ``DEC-CA-05``'s ``iceberg://<catalog>/<ns>/<table>@
+    <snapshot>`` dataset-naming rule, the node-id convention this package
+    proposes (shared with, not binding on, CA-25/CA-30/CA-40; see
+    ``connector_manifest.yml``'s ``review_todos``) — and resolved via
+    :meth:`EgeriaApi.find_asset` (exact qualifiedName match). Read-only.
+    """
+    parts = (node_id or "").split(":", 2)
+    if len(parts) != 3 or not all(parts):
+        return {
+            "error": "malformed_node_id",
+            "node_id": node_id,
+            "expected_format": "<domain>:<class>:<externalId>",
+        }
+    domain, node_class, external_id = parts
+
+    if domain == "egeria":
+        el = api.get_element(external_id) or {}
+        if not el or el.get("error") or el.get("httpCode") not in (None, 200):
+            return {"error": "not_found", "node_id": node_id, "guid": None}
+        return {
+            "node_id": node_id,
+            "node_class": node_class,
+            "guid": external_id,
+            "qualifiedName": el.get("qualifiedName"),
+        }
+
+    guid = api.find_asset(external_id)
+    if not guid:
+        return {
+            "error": "not_found",
+            "node_id": node_id,
+            "qualifiedName": external_id,
+            "guid": None,
+        }
+    return {
+        "node_id": node_id,
+        "node_class": node_class,
+        "guid": guid,
+        "qualifiedName": external_id,
+    }

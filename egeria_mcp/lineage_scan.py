@@ -19,6 +19,7 @@ HUB_PREFIXES = [
     "Host::",
     "DataStore::",
     "Dataset::",
+    "Iceberg::",
     "Route::",
     "Monitor::",
     "CI::ServiceNow::",

@@ -70,6 +70,23 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         """Return the data-lineage graph (upstream/downstream assets + processes)."""
         return get_client().lineage(asset_guid, direction, depth)
 
+    @mcp.tool(tags={"lineage"})
+    async def egeria_lineage_scan(
+        max_total: int = Field(
+            default=2000,
+            description="Max assets to scan per hub prefix (see lineage_scan.HUB_PREFIXES).",
+        ),
+    ) -> Any:
+        """Scan the catalog's hub prefixes and return every DataFlow lineage edge.
+
+        First-class promotion of ``lineage_scan.catalog_lineage_edges`` — the same
+        bulk lineage-harvest helper ``egeria_ingest_catalog``/``egeria_audit`` already
+        use internally, now independently callable. Read-only against Egeria.
+        """
+        from egeria_mcp.lineage_scan import catalog_lineage_edges
+
+        return catalog_lineage_edges(get_client(), max_total=max_total)
+
     @mcp.tool(tags={"governance"})
     async def egeria_governance_for(
         element_guid: str = Field(
@@ -173,6 +190,27 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         from egeria_mcp.kg_ingest import ingest_catalog
 
         return {"ingested": ingest_catalog(get_client())}
+
+    @mcp.tool(tags={"asset"})
+    async def egeria_asset_for_kg_node(
+        node_id: str = Field(
+            description=(
+                "KG node id, '<domain>:<class>:<externalId>' — e.g. "
+                "'egeria:DataAsset:<guid>' or 'au:IcebergTable:iceberg://<catalog>/"
+                "<ns>/<table>@<snapshot>'."
+            ),
+        ),
+    ) -> Any:
+        """Resolve a KG node id to its Egeria GUID.
+
+        The reverse of ``egeria_ingest_catalog``'s existing Egeria-GUID→KG-node-id
+        mapping: parses ``externalId`` out of the node id and resolves it — directly
+        when it's already an Egeria GUID (``domain == 'egeria'``), else via
+        qualifiedName match. Read-only against Egeria.
+        """
+        from egeria_mcp.kg_ingest import asset_for_kg_node
+
+        return asset_for_kg_node(get_client(), node_id)
 
     # ── Broad OMVS coverage (action-dispatch domain tools) ───────────────────
     # Each tool fans an ``action`` out to the matching EgeriaApi find method,
@@ -482,6 +520,69 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         ``source`` and produced ``target`` via ``process``.
         """
         return get_client().assert_lineage(source_guid, process_guid, target_guid)
+
+    @mcp.tool(tags={"lineage", "write"})
+    async def egeria_reconcile_openlineage_asset(
+        dataset_name: str = Field(
+            description=(
+                "OpenLineage dataset id per DEC-CA-05: "
+                "'iceberg://<catalog>/<ns>/<table>@<snapshot>'."
+            ),
+        ),
+        job_name: str = Field(
+            default="",
+            description=(
+                "OpenLineage job name (RunEvent.job.name). Given together with "
+                "produced_from, asserts lineage via the existing "
+                "egeria_assert_lineage machinery."
+            ),
+        ),
+        produced_from: str = Field(
+            default="",
+            description=(
+                "Upstream input dataset name (same iceberg://... format) that "
+                "job_name derived dataset_name from, if known."
+            ),
+        ),
+    ) -> Any:
+        """Reconcile one OpenLineage dataset into Egeria (requires EGERIA_ENABLE_WRITE=true).
+
+        Looks up or creates the Egeria DataAsset by qualifiedName == dataset_name
+        (idempotent by (dataset_name, snapshot) — re-running never duplicates the
+        asset or its lineage edge), and, when job_name + produced_from are both
+        given, asserts source→process→target lineage via the EXISTING
+        egeria_assert_lineage machinery rather than a second lineage-write path.
+        A dataset_name (or produced_from) that doesn't parse as
+        iceberg://<catalog>/<ns>/<table>@<snapshot> is quarantined — never guessed.
+
+        Per DEC-CA-05: Egeria is a peer/exchange here, never the lineage store of
+        record — this makes Egeria's catalog agree with what au's PROV-O graph
+        already recorded, one direction (au → Egeria).
+        """
+        from egeria_mcp.reconcile import (
+            MalformedDatasetName,
+            parse_iceberg_dataset_name,
+            reconcile_openlineage_asset,
+        )
+
+        try:
+            # Validate before resolving a client (matches egeria_harvest's
+            # cheap-check-before-get_client() convention) — a malformed name
+            # quarantines without needing Egeria credentials at all.
+            parse_iceberg_dataset_name(dataset_name)
+            return reconcile_openlineage_asset(
+                get_client(),
+                dataset_name,
+                job_name=job_name,
+                produced_from=produced_from,
+            )
+        except MalformedDatasetName as e:
+            return {
+                "quarantined": True,
+                "reason": "malformed_dataset_name",
+                "dataset_name": str(e),
+                "expected_format": "iceberg://<catalog>/<ns>/<table>@<snapshot>",
+            }
 
     @mcp.tool(tags={"asset", "write"})
     async def egeria_create_asset(

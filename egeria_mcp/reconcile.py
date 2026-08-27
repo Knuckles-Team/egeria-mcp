@@ -12,11 +12,22 @@ targets are skipped. Confidentiality is propagated up hosting chains (a store th
 hosts Confidential data is raised to at least that level).
 
 Entry point: :func:`reconcile`.
+
+A second, unrelated entry point lives here too: :func:`reconcile_openlineage_asset`
+— per-dataset reconciliation for the OpenLineage fan-in (``DEC-CA-05``/CA-25/CA-46).
+Where :func:`reconcile` cross-links what harvest already catalogued,
+:func:`reconcile_openlineage_asset` ensures ONE named Iceberg dataset IS catalogued
+(look up or create its Egeria ``DataAsset`` by qualifiedName) and, when run/job
+context is given, asserts its lineage edge via the existing ``assert_lineage``
+machinery. Egeria is a peer/exchange here, never the lineage store of record
+(``DEC-CA-05``): this makes Egeria's catalog agree with what au already recorded,
+one direction (au → Egeria).
 """
 
 from __future__ import annotations
 
 import json as _json
+import re
 from typing import Any
 
 PATTERNS = (
@@ -466,3 +477,113 @@ def reconcile(api: Any, *, propagate_confidentiality: bool = True) -> dict[str, 
     report["summary"] = {p: report[p]["links"] for p in PATTERNS}
     report["summary"]["total_links"] = sum(report[p]["links"] for p in PATTERNS)
     return report
+
+
+# ── OpenLineage asset reconciliation (DEC-CA-05 / CA-25 / CA-46) ─────────────
+
+# DEC-CA-05's dataset-naming rule: this string IS the prov:Entity id and the
+# Egeria DataAsset qualifiedName — one deterministic key, no separate mapping.
+_ICEBERG_DATASET_RE = re.compile(
+    r"^iceberg://(?P<catalog>[^/]+)/(?P<namespace>[^/]+)/(?P<table>[^/@]+)@(?P<snapshot>[^/@]+)$"
+)
+
+
+class MalformedDatasetName(ValueError):
+    """A dataset name did not parse as ``iceberg://<catalog>/<ns>/<table>@<snapshot>``.
+
+    Named typed error for the quarantine path — never guess a dataset's identity
+    from an unparseable name (mirrors the ``DEC-CA-03``/``DEC-CA-06`` quarantine
+    pattern for unmapped CDC tables).
+    """
+
+
+def parse_iceberg_dataset_name(dataset_name: str) -> dict[str, str]:
+    """Parse ``iceberg://<catalog>/<ns>/<table>@<snapshot>`` (``DEC-CA-05``).
+
+    Raises :class:`MalformedDatasetName` rather than guessing.
+    """
+    m = _ICEBERG_DATASET_RE.match(dataset_name or "")
+    if not m:
+        raise MalformedDatasetName(dataset_name)
+    return m.groupdict()
+
+
+def reconcile_openlineage_asset(
+    api: Any,
+    dataset_name: str,
+    *,
+    job_name: str = "",
+    produced_from: str = "",
+) -> dict[str, Any]:
+    """Ensure Egeria has a ``DataAsset`` for one OpenLineage-named Iceberg dataset.
+
+    CONCEPT:EA-KG.compute.openlineage-asset-reconcile-egeria — OpenLineage Asset Reconcile.
+    Looks up or creates the Egeria ``DataAsset`` by ``qualifiedName == dataset_name``
+    (idempotent by construction — :meth:`EgeriaApi.create_asset` finds-before-creating).
+    When ``job_name`` and ``produced_from`` (an upstream dataset name, same format) are
+    both given, also asserts source→process→target lineage — ``produced_from`` used
+    ``job_name`` to produce ``dataset_name`` — via the EXISTING
+    :meth:`EgeriaApi.assert_lineage` machinery (no second lineage-write path), skipping
+    the assertion if the two are already connected (idempotent by ``(dataset_name,
+    snapshot)``: re-running never duplicates the asset or the edge).
+
+    Never the lineage store of record (``DEC-CA-05``): this reconciles Egeria's
+    catalog to agree with what au's PROV-O graph already recorded, one direction.
+
+    Raises :class:`MalformedDatasetName` if ``dataset_name`` (or a given
+    ``produced_from``) does not parse as
+    ``iceberg://<catalog>/<ns>/<table>@<snapshot>`` — quarantined, never guessed, by
+    the caller (see the ``egeria_reconcile_openlineage_asset`` MCP tool). Requires
+    ``EGERIA_ENABLE_WRITE=true`` — inherited for free: :meth:`EgeriaApi.create_asset`
+    raises :class:`~egeria_mcp.api.api_client_egeria.EgeriaWriteDisabled` when writes
+    are disabled, the same refusal shape as every other write-gated tool in this
+    package.
+    """
+    parts = parse_iceberg_dataset_name(dataset_name)
+
+    asset = api.create_asset(
+        "RelationalTable",
+        dataset_name,
+        f"{parts['table']}@{parts['snapshot']}",
+        description=(
+            f"Iceberg table {parts['catalog']}/{parts['namespace']}/{parts['table']}"
+            f", snapshot {parts['snapshot']} (OpenLineage-reconciled)."
+        ),
+        additional_properties={
+            "catalog": parts["catalog"],
+            "namespace": parts["namespace"],
+            "table": parts["table"],
+            "snapshot": parts["snapshot"],
+            "source": "openlineage",
+        },
+    )
+    result: dict[str, Any] = {
+        "dataset_name": dataset_name,
+        "guid": asset.get("guid"),
+        "reused": bool(asset.get("reused")),
+    }
+    if asset.get("error"):
+        result["error"] = asset["error"]
+        return result
+
+    if job_name and produced_from:
+        # Raises MalformedDatasetName if produced_from doesn't parse either —
+        # fail closed rather than asserting lineage against a guessed identity.
+        parse_iceberg_dataset_name(produced_from)
+        upstream = api.create_asset(
+            "RelationalTable", produced_from, produced_from.rsplit("/", 1)[-1]
+        )
+        process_qn = f"Process::openlineage::{job_name}"
+        process = api.create_asset("Process", process_qn, job_name)
+        if upstream.get("error") or process.get("error"):
+            result["lineage_error"] = upstream.get("error") or process.get("error")
+            return result
+        # Idempotent on the edge too: process→target already asserted means this
+        # exact (job_name, produced_from, dataset_name) reconciliation already ran.
+        if asset["guid"] in _connected(api, process["guid"]):
+            result["lineage"] = {"reused": True}
+        else:
+            result["lineage"] = api.assert_lineage(
+                upstream["guid"], process["guid"], asset["guid"]
+            )
+    return result

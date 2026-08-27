@@ -1,7 +1,7 @@
 {
   "api_version": "graphos.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "00a45f09441d6b5cb61a475c2cab399925ef7f835c041ecdca8023ec646342cf",
+    "connector_manifest.yml": "78f84f185cca236d9eb45cc59b583127285399646befe7531e47fd64d458f699",
     "egeria_mcp/connectors/mcp_source_presets.json": "c6b5b099f1c012ad0743f821a49e7eaceca8777852c27059247fd011760318ae",
     "egeria_mcp/connectors/tool_schema_fingerprints.json": "26c3871f798dbfd4f0cec97c061ff7f2dc47bf70e22f95a4676eaf76af522b9a",
     "egeria_mcp/ontology/egeria.ttl": "e273821a3333f76b9cc88474c150f2459ef530845cd36891757b27d635a16188",
@@ -18,9 +18,9 @@
     "synthetic_fixture_contract": "passed"
   },
   "compatibility": {
-    "agent_utilities": ">=2.4.0,<3",
+    "agent_utilities": ">=2.5.0,<3",
     "bundle_schema": "2",
-    "epistemic_graph": ">=2.26.0,<3"
+    "epistemic_graph": ">=2.27.0,<3"
   },
   "connector": "egeria-mcp",
   "kind": "ConnectorSourceAttestation",
@@ -32,5 +32,5 @@
   "signer": "UNSIGNED-PREVIEW",
   "signing_public_key": "",
   "status": "source-validated",
-  "validated_at": "2026-08-21T04:30:39Z"
+  "validated_at": "2026-08-27T03:15:14Z"
 }

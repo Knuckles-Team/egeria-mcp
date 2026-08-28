@@ -20,6 +20,7 @@ from agent_utilities.core.transport_security import (
     ResolvedTLSProfile,
     resolve_tls_profile,
 )
+from egeria_mcp.harvest._reporting import count_created, note_error
 
 try:
     import httpx
@@ -54,6 +55,56 @@ def _get(
         return None
 
 
+def _catalog_nodes(api: Any, nodes: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Swarm nodes as ``SoftwareServer`` assets, appending into ``report``."""
+    for n in nodes:
+        host = (n.get("Description") or {}).get("Hostname")
+        if not host:
+            continue
+        res = api.create_asset(
+            "SoftwareServer",
+            f"Node::{host}",
+            host,
+            description=f"Docker Swarm node '{host}'.",
+            deployed_implementation_type="Docker Swarm Node",
+            confidentiality_level=1,
+            additional_properties={
+                "role": (n.get("Spec") or {}).get("Role"),
+                "availability": (n.get("Spec") or {}).get("Availability"),
+                "state": (n.get("Status") or {}).get("State"),
+                "addr": (n.get("Status") or {}).get("Addr"),
+                "source": "Portainer",
+            },
+        )
+        note_error(report, f"node:{host}", res)
+        report["nodes"].append({"host": host, **res})
+
+
+def _catalog_services(api: Any, services: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Swarm services as ``DeployedSoftwareComponent``s into ``report``."""
+    for s in services:
+        name = (s.get("Spec") or {}).get("Name")
+        if not name:
+            continue
+        image = (
+            ((s.get("Spec") or {}).get("TaskTemplate") or {}).get("ContainerSpec") or {}
+        ).get("Image")
+        res = api.create_asset(
+            "DeployedSoftwareComponent",
+            f"Service::{name}",
+            name,
+            description=f"Swarm service '{name}'.",
+            deployed_implementation_type="Docker Swarm Service",
+            confidentiality_level=1,
+            additional_properties={
+                "image": (image or "").split("@")[0],
+                "source": "Portainer",
+            },
+        )
+        note_error(report, f"service:{name}", res)
+        report["services"].append({"name": name, **res})
+
+
 def harvest_containers(
     api: Any,
     base_url: str | None = None,
@@ -64,10 +115,6 @@ def harvest_containers(
 ) -> dict[str, Any]:
     """Catalog the Docker Swarm estate (nodes + services) into Egeria."""
     report: dict[str, Any] = {"nodes": [], "services": [], "errors": []}
-
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
 
     base_url, api_key = _resolve(base_url, api_key)
     if not base_url or not api_key:
@@ -94,53 +141,12 @@ def harvest_containers(
         report["skipped"] = "no swarm data returned (unreachable or unauthorized)"
         return report
 
-    for n in nodes:
-        host = (n.get("Description") or {}).get("Hostname")
-        if not host:
-            continue
-        res = api.create_asset(
-            "SoftwareServer",
-            f"Node::{host}",
-            host,
-            description=f"Docker Swarm node '{host}'.",
-            deployed_implementation_type="Docker Swarm Node",
-            confidentiality_level=1,
-            additional_properties={
-                "role": (n.get("Spec") or {}).get("Role"),
-                "availability": (n.get("Spec") or {}).get("Availability"),
-                "state": (n.get("Status") or {}).get("State"),
-                "addr": (n.get("Status") or {}).get("Addr"),
-                "source": "Portainer",
-            },
-        )
-        record_error(f"node:{host}", res)
-        report["nodes"].append({"host": host, **res})
-
-    for s in services:
-        name = (s.get("Spec") or {}).get("Name")
-        if not name:
-            continue
-        image = (
-            ((s.get("Spec") or {}).get("TaskTemplate") or {}).get("ContainerSpec") or {}
-        ).get("Image")
-        res = api.create_asset(
-            "DeployedSoftwareComponent",
-            f"Service::{name}",
-            name,
-            description=f"Swarm service '{name}'.",
-            deployed_implementation_type="Docker Swarm Service",
-            confidentiality_level=1,
-            additional_properties={
-                "image": (image or "").split("@")[0],
-                "source": "Portainer",
-            },
-        )
-        record_error(f"service:{name}", res)
-        report["services"].append({"name": name, **res})
+    _catalog_nodes(api, nodes, report)
+    _catalog_services(api, services, report)
 
     report["summary"] = {
-        "nodes": len([n for n in report["nodes"] if n.get("guid")]),
-        "services": len([s for s in report["services"] if s.get("guid")]),
+        "nodes": count_created(report["nodes"]),
+        "services": count_created(report["services"]),
         "errors": len(report["errors"]),
     }
     return report

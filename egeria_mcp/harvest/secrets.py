@@ -18,6 +18,7 @@ from agent_utilities.core.transport_security import (
     ResolvedTLSProfile,
     resolve_tls_profile,
 )
+from egeria_mcp.harvest._reporting import count_created, note_error
 
 try:
     import httpx
@@ -54,25 +55,10 @@ def _get(
         return None
 
 
-def harvest_secrets(
-    api: Any,
-    url: str | None = None,
-    token: str | None = None,
-    *,
-    tls_profile: ResolvedTLSProfile | None = None,
-) -> dict[str, Any]:
-    """Catalog OpenBao/Vault secret-engine mounts + policy names into Egeria."""
-    report: dict[str, Any] = {"mounts": [], "policies": [], "errors": []}
-
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
-    url, token = _resolve(url, token)
-    if not url or not token:
-        report["skipped"] = "no OpenBao URL/token (set OPENBAO_URL / OPENBAO_TOKEN)"
-        return report
-
+def _fetch_mounts_and_policies(
+    url: str, token: str, tls_profile: ResolvedTLSProfile | None
+) -> tuple[dict, list[str]]:
+    """Fetch + normalize secret-engine mounts and non-default ACL policy names."""
     mounts_resp = _get(url, token, "/v1/sys/mounts", tls_profile) or {}
     mounts = mounts_resp.get("data") or {
         k: v for k, v in mounts_resp.items() if isinstance(v, dict) and "type" in v
@@ -84,11 +70,11 @@ def harvest_secrets(
         ).get("data")
         or {}
     ).get("keys") or []
-    report["source"] = {"url": url, "mounts": len(mounts), "policies": len(policies)}
-    if not mounts and not policies:
-        report["skipped"] = "no mounts/policies returned (unreachable or unauthorized)"
-        return report
+    return mounts, policies
 
+
+def _catalog_mounts(api: Any, mounts: dict, report: dict[str, Any]) -> None:
+    """Catalog secret-engine mounts as ``DeployedSoftwareComponent``s."""
     for path, meta in (mounts or {}).items():
         name = path.rstrip("/")
         res = api.create_asset(
@@ -103,9 +89,12 @@ def harvest_secrets(
                 "source": "OpenBao",
             },
         )
-        record_error(f"mount:{name}", res)
+        note_error(report, f"mount:{name}", res)
         report["mounts"].append({"name": name, **res})
 
+
+def _catalog_policies(api: Any, policies: list[str], report: dict[str, Any]) -> None:
+    """Catalog non-default ACL policy names as governance-component assets."""
     for pol in policies:
         if pol in ("root", "default"):
             continue
@@ -118,12 +107,37 @@ def harvest_secrets(
             confidentiality_level=1,
             additional_properties={"kind": "acl-policy", "source": "OpenBao"},
         )
-        record_error(f"policy:{pol}", res)
+        note_error(report, f"policy:{pol}", res)
         report["policies"].append({"name": pol, **res})
 
+
+def harvest_secrets(
+    api: Any,
+    url: str | None = None,
+    token: str | None = None,
+    *,
+    tls_profile: ResolvedTLSProfile | None = None,
+) -> dict[str, Any]:
+    """Catalog OpenBao/Vault secret-engine mounts + policy names into Egeria."""
+    report: dict[str, Any] = {"mounts": [], "policies": [], "errors": []}
+
+    url, token = _resolve(url, token)
+    if not url or not token:
+        report["skipped"] = "no OpenBao URL/token (set OPENBAO_URL / OPENBAO_TOKEN)"
+        return report
+
+    mounts, policies = _fetch_mounts_and_policies(url, token, tls_profile)
+    report["source"] = {"url": url, "mounts": len(mounts), "policies": len(policies)}
+    if not mounts and not policies:
+        report["skipped"] = "no mounts/policies returned (unreachable or unauthorized)"
+        return report
+
+    _catalog_mounts(api, mounts, report)
+    _catalog_policies(api, policies, report)
+
     report["summary"] = {
-        "mounts": len([m for m in report["mounts"] if m.get("guid")]),
-        "policies": len([p for p in report["policies"] if p.get("guid")]),
+        "mounts": count_created(report["mounts"]),
+        "policies": count_created(report["policies"]),
         "errors": len(report["errors"]),
     }
     return report

@@ -48,14 +48,17 @@ def _bearer(
         return None
 
 
-def fetch_factsheets(
-    base_url: str, api_token: str, *, tls_profile: ResolvedTLSProfile | None = None
+def _factsheet_nodes(payload: dict) -> list[dict]:
+    """Fact-sheet nodes from a GraphQL ``allFactSheets`` response."""
+    edges = (((payload or {}).get("data") or {}).get("allFactSheets") or {}).get(
+        "edges"
+    ) or []
+    return [e["node"] for e in edges if e.get("node")]
+
+
+def _query_factsheets(
+    base_url: str, bearer: str, tls_profile: ResolvedTLSProfile | None
 ) -> list[dict]:
-    if not HTTPX_AVAILABLE:
-        return []
-    bearer = _bearer(base_url, api_token, tls_profile)
-    if not bearer:
-        return []
     try:
         with httpx.Client(
             timeout=30.0,
@@ -69,14 +72,20 @@ def fetch_factsheets(
                 },
                 json={"query": _QUERY},
             )
-        if r.status_code != 200:
-            return []
-        edges = (((r.json() or {}).get("data") or {}).get("allFactSheets") or {}).get(
-            "edges"
-        ) or []
-        return [e["node"] for e in edges if e.get("node")]
+        return _factsheet_nodes(r.json()) if r.status_code == 200 else []
     except Exception:
         return []
+
+
+def fetch_factsheets(
+    base_url: str, api_token: str, *, tls_profile: ResolvedTLSProfile | None = None
+) -> list[dict]:
+    if not HTTPX_AVAILABLE:
+        return []
+    bearer = _bearer(base_url, api_token, tls_profile)
+    if not bearer:
+        return []
+    return _query_factsheets(base_url, bearer, tls_profile)
 
 
 def harvest_leanix(

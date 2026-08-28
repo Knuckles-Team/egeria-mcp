@@ -33,6 +33,21 @@ _NAME = re.compile(r'monitor_name="([^"]+)"')
 _TYPE = re.compile(r'monitor_type="([^"]+)"')
 
 
+def _parse_monitor_names(metrics_text: str) -> list[dict]:
+    """Distinct {name, type} monitors from Uptime Kuma's Prometheus text."""
+    seen: dict[str, str] = {}
+    for line in metrics_text.splitlines():
+        if not (
+            line.startswith("monitor_status") or line.startswith("monitor_response_time")
+        ):
+            continue
+        n = _NAME.search(line)
+        if n and n.group(1) not in seen:
+            t = _TYPE.search(line)
+            seen[n.group(1)] = t.group(1) if t else ""
+    return [{"name": k, "type": v} for k, v in seen.items()]
+
+
 def fetch_monitors(
     url: str, token: str, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[dict]:
@@ -48,16 +63,7 @@ def fetch_monitors(
             return []
     except Exception:
         return []
-    seen: dict[str, str] = {}
-    for line in r.text.splitlines():
-        if line.startswith("monitor_status") or line.startswith(
-            "monitor_response_time"
-        ):
-            n = _NAME.search(line)
-            if n and n.group(1) not in seen:
-                t = _TYPE.search(line)
-                seen[n.group(1)] = t.group(1) if t else ""
-    return [{"name": k, "type": v} for k, v in seen.items()]
+    return _parse_monitor_names(r.text)
 
 
 def harvest_monitoring(

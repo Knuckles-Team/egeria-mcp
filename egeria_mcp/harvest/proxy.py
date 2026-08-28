@@ -27,37 +27,61 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def fetch_routes(
-    admin_url: str, *, tls_profile: ResolvedTLSProfile | None = None
-) -> list[dict]:
-    """Return [{host, upstream}] from Caddy's http servers config."""
+def _route_hosts(route: dict) -> list[str]:
+    """Every matched hostname for one Caddy route (across its ``match`` blocks)."""
+    hosts: list[str] = []
+    for m in route.get("match", []) or []:
+        hosts.extend(m.get("host", []) or [])
+    return hosts
+
+
+def _route_upstream(route: dict) -> str:
+    """The first upstream dial address handling one Caddy route, if any."""
+    for h in route.get("handle", []) or []:
+        upstreams = h.get("upstreams") or []
+        if upstreams:
+            return upstreams[0].get("dial", "")
+    return ""
+
+
+def _server_routes(server: dict) -> list[dict]:
+    """[{host, upstream}] for every route on one Caddy http server."""
+    upstream_by_route = [
+        (_route_hosts(route), _route_upstream(route))
+        for route in (server or {}).get("routes", []) or []
+    ]
+    return [
+        {"host": host, "upstream": upstream}
+        for hosts, upstream in upstream_by_route
+        for host in hosts
+    ]
+
+
+def _fetch_server_configs(
+    admin_url: str, tls_profile: ResolvedTLSProfile | None
+) -> dict:
+    """Fetch Caddy's ``apps.http.servers`` config (``{}`` on any failure)."""
     if not HTTPX_AVAILABLE:
-        return []
+        return {}
     try:
         with httpx.Client(
             timeout=15.0,
             **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
         ) as c:
             r = c.get(f"{admin_url.rstrip('/')}/config/apps/http/servers")
-        if r.status_code != 200:
-            return []
-        servers = r.json() or {}
+        return r.json() or {} if r.status_code == 200 else {}
     except Exception:
-        return []
+        return {}
+
+
+def fetch_routes(
+    admin_url: str, *, tls_profile: ResolvedTLSProfile | None = None
+) -> list[dict]:
+    """Return [{host, upstream}] from Caddy's http servers config."""
+    servers = _fetch_server_configs(admin_url, tls_profile)
     out: list[dict] = []
     for srv in (servers or {}).values():
-        for route in (srv or {}).get("routes", []) or []:
-            hosts: list[str] = []
-            for m in route.get("match", []) or []:
-                hosts.extend(m.get("host", []) or [])
-            upstream = ""
-            for h in route.get("handle", []) or []:
-                ups = h.get("upstreams") or []
-                if ups:
-                    upstream = ups[0].get("dial", "")
-                    break
-            for host in hosts:
-                out.append({"host": host, "upstream": upstream})
+        out.extend(_server_routes(srv))
     return out
 
 

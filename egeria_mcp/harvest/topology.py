@@ -146,6 +146,16 @@ DEFAULT_TOPOLOGY: dict[str, Any] = {
 }
 
 
+def _read_override(path: str) -> dict[str, Any] | None:
+    """Parse an ``EGERIA_HARVEST_TOPOLOGY`` override file (``None`` if unusable)."""
+    try:
+        with open(path, encoding="utf-8") as fh:
+            override = json.load(fh)
+    except (OSError, ValueError):
+        return None  # tolerant: fall back to the built-in example
+    return override if isinstance(override, dict) else None
+
+
 def load_topology() -> dict[str, Any]:
     """Return the harvest topology.
 
@@ -154,19 +164,12 @@ def load_topology() -> dict[str, Any]:
     override the generic :data:`DEFAULT_TOPOLOGY`. Otherwise the built-in example is
     returned. Keep the override file out of any public repository.
     """
-    path = setting("EGERIA_HARVEST_TOPOLOGY")
     topology = {
         k: list(v) if isinstance(v, list) else dict(v)
         for k, v in DEFAULT_TOPOLOGY.items()
     }
-    if path and os.path.isfile(path):
-        try:
-            with open(path, encoding="utf-8") as fh:
-                override = json.load(fh)
-            if isinstance(override, dict):
-                topology.update(
-                    {k: v for k, v in override.items() if k in DEFAULT_TOPOLOGY}
-                )
-        except (OSError, ValueError):
-            pass  # tolerant: fall back to the built-in example
+    path = setting("EGERIA_HARVEST_TOPOLOGY")
+    override = _read_override(path) if path and os.path.isfile(path) else None
+    if override:
+        topology.update({k: v for k, v in override.items() if k in DEFAULT_TOPOLOGY})
     return topology

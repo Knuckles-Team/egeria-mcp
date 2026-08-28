@@ -94,6 +94,59 @@ def load_assets(api: Any, prefixes: list[str]) -> dict[str, dict]:
     return index
 
 
+def _related_endpoint(rel: dict) -> tuple[str | None, str | None, str | None]:
+    """The linked element's (guid, name, type) from one ``relatedElement`` block."""
+    rhdr = rel.get("elementHeader") if isinstance(rel, dict) else {}
+    guid = (rhdr or {}).get("guid") if isinstance(rhdr, dict) else rel.get("guid")
+    name = (rel.get("properties") or {}).get("qualifiedName") or (
+        rel.get("properties") or {}
+    ).get("displayName")
+    type_name = ((rhdr or {}).get("type") or {}).get("typeName")
+    return guid, name, type_name
+
+
+def _directed_edge(
+    linkage: dict,
+    this_guid: str,
+    this_name: str | None,
+    this_type: str | None,
+    other_guid: str,
+    other_name: str | None,
+    other_type: str | None,
+) -> dict:
+    """Orient one lineage-linkage entry into a {source,target,...} edge dict."""
+    label = (linkage.get("relationshipProperties") or {}).get("label") or "flow"
+    if linkage.get("relatedElementAtEnd1"):  # related is end1 (source)
+        src, tgt = other_guid, this_guid
+        src_n, tgt_n, src_t, tgt_t = other_name, this_name, other_type, this_type
+    else:
+        src, tgt = this_guid, other_guid
+        src_n, tgt_n, src_t, tgt_t = this_name, other_name, this_type, other_type
+    return {
+        "source": src,
+        "target": tgt,
+        "label": label,
+        "sourceName": src_n,
+        "targetName": tgt_n,
+        "sourceType": src_t,
+        "targetType": tgt_t,
+    }
+
+
+def _record_edges(rec: dict, linkage: list[dict]) -> list[tuple[tuple, dict]]:
+    """``[((source, target), edge), ...]`` for one asset's lineage linkage."""
+    g = rec.get("guid")
+    this_name, this_type = rec.get("qualifiedName"), rec.get("typeName")
+    out: list[tuple[tuple, dict]] = []
+    for e in linkage:
+        other, other_name, other_type = _related_endpoint(e.get("relatedElement") or {})
+        if not other:
+            continue
+        edge = _directed_edge(e, g, this_name, this_type, other, other_name, other_type)
+        out.append(((edge["source"], edge["target"]), edge))
+    return out
+
+
 def scan_lineage_edges(api: Any, recs: list[dict]) -> list[dict]:
     """Collect directed ``DataFlow`` edges incident on ``recs``.
 
@@ -102,53 +155,11 @@ def scan_lineage_edges(api: Any, recs: list[dict]) -> list[dict]:
     """
     edges: dict[tuple, dict] = {}
     for rec in recs:
-        g = rec.get("guid")
-        if not g:
+        if not rec.get("guid"):
             continue
-        lin = api.lineage(g) or {}
-        for e in lin.get("lineageLinkage") or []:
-            rel = e.get("relatedElement") or {}
-            rhdr = rel.get("elementHeader") if isinstance(rel, dict) else {}
-            other = (
-                (rhdr or {}).get("guid") if isinstance(rhdr, dict) else rel.get("guid")
-            )
-            if not other:
-                continue
-            other_name = (rel.get("properties") or {}).get("qualifiedName") or (
-                rel.get("properties") or {}
-            ).get("displayName")
-            other_type = ((rhdr or {}).get("type") or {}).get("typeName")
-            label = (e.get("relationshipProperties") or {}).get("label") or "flow"
-            this_name = rec.get("qualifiedName")
-            this_type = rec.get("typeName")
-            if e.get("relatedElementAtEnd1"):  # related is end1 (source)
-                src, tgt = other, g
-                src_n, tgt_n, src_t, tgt_t = (
-                    other_name,
-                    this_name,
-                    other_type,
-                    this_type,
-                )
-            else:
-                src, tgt = g, other
-                src_n, tgt_n, src_t, tgt_t = (
-                    this_name,
-                    other_name,
-                    this_type,
-                    other_type,
-                )
-            edges.setdefault(
-                (src, tgt),
-                {
-                    "source": src,
-                    "target": tgt,
-                    "label": label,
-                    "sourceName": src_n,
-                    "targetName": tgt_n,
-                    "sourceType": src_t,
-                    "targetType": tgt_t,
-                },
-            )
+        lin = api.lineage(rec["guid"]) or {}
+        for key, edge in _record_edges(rec, lin.get("lineageLinkage") or []):
+            edges.setdefault(key, edge)
     return list(edges.values())
 
 

@@ -200,42 +200,8 @@ def fetch_github_repos(
     return out[:max_repos]
 
 
-def harvest_github(
-    api: Any,
-    token: str | None = None,
-    *,
-    org: str | None = None,
-    max_repos: int = 100,
-    tls_profile: ResolvedTLSProfile | None = None,
-) -> dict[str, Any]:
-    """Catalog GitHub repositories into Egeria as ``DeployedSoftwareComponent`` assets.
-
-    Config: ``GITHUB_TOKEN`` (+ optional ``GITHUB_ORG``). Tolerant — skipped when
-    unconfigured/unreachable.
-    """
-    report: dict[str, Any] = {"repositories": [], "errors": []}
-
-    def note_error(report, what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
-    token = token or setting("GITHUB_TOKEN")
-    org = org or setting("GITHUB_ORG")
-    if not token:
-        report["skipped"] = "no GitHub token (set GITHUB_TOKEN)"
-        return report
-
-    repos = fetch_github_repos(
-        token,
-        org=org,
-        max_repos=max_repos,
-        tls_profile=tls_profile,
-    )
-    report["source"] = {"org": org or "(user)", "repos": len(repos)}
-    if not repos:
-        report["skipped"] = "no repos returned (unreachable or unauthorized)"
-        return report
-
+def _catalog_github_repos(api: Any, repos: list[dict], report: dict[str, Any]) -> None:
+    """Catalog GitHub repositories as ``DeployedSoftwareComponent`` assets."""
     for repo in repos:
         full = repo.get("full_name") or repo.get("name")
         if not full:
@@ -258,6 +224,41 @@ def harvest_github(
         )
         note_error(report, f"repo:{full}", res)
         report["repositories"].append({"path": full, **res})
+
+
+def harvest_github(
+    api: Any,
+    token: str | None = None,
+    *,
+    org: str | None = None,
+    max_repos: int = 100,
+    tls_profile: ResolvedTLSProfile | None = None,
+) -> dict[str, Any]:
+    """Catalog GitHub repositories into Egeria as ``DeployedSoftwareComponent`` assets.
+
+    Config: ``GITHUB_TOKEN`` (+ optional ``GITHUB_ORG``). Tolerant — skipped when
+    unconfigured/unreachable.
+    """
+    report: dict[str, Any] = {"repositories": [], "errors": []}
+
+    token = token or setting("GITHUB_TOKEN")
+    org = org or setting("GITHUB_ORG")
+    if not token:
+        report["skipped"] = "no GitHub token (set GITHUB_TOKEN)"
+        return report
+
+    repos = fetch_github_repos(
+        token,
+        org=org,
+        max_repos=max_repos,
+        tls_profile=tls_profile,
+    )
+    report["source"] = {"org": org or "(user)", "repos": len(repos)}
+    if not repos:
+        report["skipped"] = "no repos returned (unreachable or unauthorized)"
+        return report
+
+    _catalog_github_repos(api, repos, report)
 
     report["summary"] = {
         "repositories": count_created(report["repositories"]),

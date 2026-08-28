@@ -31,12 +31,18 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
-def _plane_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
-    url = setting("PLANE_URL")
-    token = setting("PLANE_TOKEN")
-    workspace = setting("PLANE_WORKSPACE")
-    if not (url and token and workspace and HTTPX_AVAILABLE):
-        return []
+def _as_plane_project(p: dict) -> dict:
+    return {
+        "source": "Plane",
+        "key": p.get("identifier") or p.get("id"),
+        "name": p.get("name"),
+        "description": p.get("description"),
+    }
+
+
+def _fetch_plane_projects(
+    url: str, token: str, workspace: str, tls_profile: ResolvedTLSProfile | None
+) -> list[dict]:
     try:
         with httpx.Client(
             timeout=20.0,
@@ -50,17 +56,18 @@ def _plane_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
             return []
         data = r.json()
         results = data.get("results") if isinstance(data, dict) else data
-        return [
-            {
-                "source": "Plane",
-                "key": p.get("identifier") or p.get("id"),
-                "name": p.get("name"),
-                "description": p.get("description"),
-            }
-            for p in (results or [])
-        ]
+        return [_as_plane_project(p) for p in (results or [])]
     except Exception:
         return []
+
+
+def _plane_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
+    url = setting("PLANE_URL")
+    token = setting("PLANE_TOKEN")
+    workspace = setting("PLANE_WORKSPACE")
+    if not (url and token and workspace and HTTPX_AVAILABLE):
+        return []
+    return _fetch_plane_projects(url, token, workspace, tls_profile)
 
 
 def _jira_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:

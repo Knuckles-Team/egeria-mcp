@@ -50,6 +50,36 @@ def _get(
         return []
 
 
+def _catalog_sites(api: Any, sites: list[dict], report: dict[str, Any]) -> None:
+    """Catalog SharePoint sites as Egeria Collections."""
+    for s in sites:
+        name = s.get("displayName") or s.get("name")
+        if not name:
+            continue
+        res = api.create_collection(
+            f"SharePoint: {name}",
+            description=f"SharePoint site '{name}'.",
+            category="SharePointSite",
+        )
+        note_error(report, f"site:{name}", res)
+        report["sites"].append({"name": name, **res})
+
+
+def _catalog_groups(api: Any, groups: list[dict], report: dict[str, Any]) -> None:
+    """Catalog M365 groups/teams as Egeria Collections."""
+    for g in groups:
+        name = g.get("displayName")
+        if not name:
+            continue
+        res = api.create_collection(
+            f"M365 Group: {name}",
+            description=f"Microsoft 365 group/team '{name}'.",
+            category="M365Group",
+        )
+        note_error(report, f"group:{name}", res)
+        report["groups"].append({"name": name, **res})
+
+
 def harvest_m365(
     api: Any,
     token: str | None = None,
@@ -79,28 +109,8 @@ def harvest_m365(
         report["skipped"] = "no sites/groups returned (unreachable or unauthorized)"
         return report
 
-    for s in sites:
-        name = s.get("displayName") or s.get("name")
-        if not name:
-            continue
-        res = api.create_collection(
-            f"SharePoint: {name}",
-            description=f"SharePoint site '{name}'.",
-            category="SharePointSite",
-        )
-        note_error(report, f"site:{name}", res)
-        report["sites"].append({"name": name, **res})
-    for g in groups:
-        name = g.get("displayName")
-        if not name:
-            continue
-        res = api.create_collection(
-            f"M365 Group: {name}",
-            description=f"Microsoft 365 group/team '{name}'.",
-            category="M365Group",
-        )
-        note_error(report, f"group:{name}", res)
-        report["groups"].append({"name": name, **res})
+    _catalog_sites(api, sites, report)
+    _catalog_groups(api, groups, report)
 
     report["summary"] = {
         "sites": count_created(report["sites"]),

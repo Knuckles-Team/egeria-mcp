@@ -56,6 +56,26 @@ def fetch_snapshots(
         return []
 
 
+def _catalog_snapshots(api: Any, snaps: list[dict], report: dict[str, Any]) -> None:
+    """Catalog ArchiveBox snapshots as content data assets."""
+    for sn in snaps:
+        target = sn.get("url") or sn.get("id")
+        if not target:
+            continue
+        qn = f"Snapshot::ArchiveBox::{sn.get('id') or target}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            (sn.get("title") or target)[:200],
+            description=f"Archived snapshot of {target}.",
+            deployed_implementation_type="Web Snapshot",
+            confidentiality_level=1,
+            additional_properties={"url": target, "source": "ArchiveBox"},
+        )
+        note_error(report, f"snapshot:{target}", res)
+        report["snapshots"].append({"url": target, **res})
+
+
 def harvest_archive(
     api: Any,
     url: str | None = None,
@@ -88,22 +108,7 @@ def harvest_archive(
         description="ArchiveBox web-archive corpus.",
         category="WebArchive",
     )
-    for sn in snaps:
-        target = sn.get("url") or sn.get("id")
-        if not target:
-            continue
-        qn = f"Snapshot::ArchiveBox::{sn.get('id') or target}"
-        res = api.create_asset(
-            "DeployedDatabaseSchema",
-            qn,
-            (sn.get("title") or target)[:200],
-            description=f"Archived snapshot of {target}.",
-            deployed_implementation_type="Web Snapshot",
-            confidentiality_level=1,
-            additional_properties={"url": target, "source": "ArchiveBox"},
-        )
-        note_error(report, f"snapshot:{target}", res)
-        report["snapshots"].append({"url": target, **res})
+    _catalog_snapshots(api, snaps, report)
 
     report["summary"] = {
         "snapshots": count_created(report["snapshots"]),

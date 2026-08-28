@@ -50,6 +50,30 @@ def fetch_datasets(
         return []
 
 
+def _catalog_datasets(
+    api: Any, datasets: list[dict], store_guid: str | None, report: dict[str, Any]
+) -> None:
+    """Catalog Jena datasets as data assets, linked to the Fuseki store."""
+    for ds in datasets:
+        name = (ds.get("ds.name") or ds.get("name") or "").lstrip("/")
+        if not name:
+            continue
+        qn = f"Dataset::Jena::{name}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            name,
+            description=f"Jena Fuseki RDF dataset '{name}'.",
+            deployed_implementation_type="RDF Dataset",
+            confidentiality_level=1,
+            additional_properties={"dataset": name, "source": "Jena"},
+        )
+        note_error(report, f"dataset:{name}", res)
+        report["datasets"].append({"name": name, **res})
+        if store_guid and res.get("guid"):
+            api.link_data_flow(store_guid, res["guid"], label="hosts")
+
+
 def harvest_semantic(
     api: Any, url: str | None = None, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> dict[str, Any]:
@@ -84,25 +108,7 @@ def harvest_semantic(
     )
     note_error(report, "store:fuseki", store)
     store_guid = store.get("guid")
-
-    for ds in datasets:
-        name = (ds.get("ds.name") or ds.get("name") or "").lstrip("/")
-        if not name:
-            continue
-        qn = f"Dataset::Jena::{name}"
-        res = api.create_asset(
-            "DeployedDatabaseSchema",
-            qn,
-            name,
-            description=f"Jena Fuseki RDF dataset '{name}'.",
-            deployed_implementation_type="RDF Dataset",
-            confidentiality_level=1,
-            additional_properties={"dataset": name, "source": "Jena"},
-        )
-        note_error(report, f"dataset:{name}", res)
-        report["datasets"].append({"name": name, **res})
-        if store_guid and res.get("guid"):
-            api.link_data_flow(store_guid, res["guid"], label="hosts")
+    _catalog_datasets(api, datasets, store_guid, report)
 
     report["summary"] = {
         "datasets": count_created(report["datasets"]),

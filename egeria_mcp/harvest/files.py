@@ -54,6 +54,32 @@ def fetch_shares(
         return []
 
 
+def _catalog_shares(api: Any, shares: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Nextcloud shares as content data assets, deduped by path."""
+    seen: set[str] = set()
+    for sh in shares:
+        path = sh.get("path") or sh.get("file_target")
+        if not path or path in seen:
+            continue
+        seen.add(path)
+        qn = f"Content::Nextcloud::{path}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            path.lstrip("/") or path,
+            description=f"Nextcloud shared item '{path}'.",
+            deployed_implementation_type="Nextcloud Share",
+            confidentiality_level=2,
+            additional_properties={
+                "itemType": sh.get("item_type"),
+                "owner": sh.get("uid_owner"),
+                "source": "Nextcloud",
+            },
+        )
+        note_error(report, f"share:{path}", res)
+        report["shares"].append({"path": path, **res})
+
+
 def harvest_files(
     api: Any,
     url: str | None = None,
@@ -80,28 +106,7 @@ def harvest_files(
         report["skipped"] = "no shares returned (unreachable or none shared)"
         return report
 
-    seen: set[str] = set()
-    for sh in shares:
-        path = sh.get("path") or sh.get("file_target")
-        if not path or path in seen:
-            continue
-        seen.add(path)
-        qn = f"Content::Nextcloud::{path}"
-        res = api.create_asset(
-            "DeployedDatabaseSchema",
-            qn,
-            path.lstrip("/") or path,
-            description=f"Nextcloud shared item '{path}'.",
-            deployed_implementation_type="Nextcloud Share",
-            confidentiality_level=2,
-            additional_properties={
-                "itemType": sh.get("item_type"),
-                "owner": sh.get("uid_owner"),
-                "source": "Nextcloud",
-            },
-        )
-        note_error(report, f"share:{path}", res)
-        report["shares"].append({"path": path, **res})
+    _catalog_shares(api, shares, report)
 
     report["summary"] = {
         "shares": count_created(report["shares"]),

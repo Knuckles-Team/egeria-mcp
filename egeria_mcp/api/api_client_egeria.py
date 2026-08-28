@@ -52,18 +52,22 @@ def _slug(name: str) -> str:
     return "".join(ch if ch.isalnum() else "" for ch in name.strip().title())
 
 
-def _norm(el: dict) -> dict:
-    """Flatten an Egeria OMVS element envelope into a flat record."""
-    if not isinstance(el, dict):
-        return {}
-    _header = el.get("elementHeader")
-    header = _header if isinstance(_header, dict) else {}
-    props = el.get("properties") or el.get("glossaryProperties") or {}
-    if not isinstance(props, dict):
-        props = {}
-    _type_info = header.get("type")
-    type_info = _type_info if isinstance(_type_info, dict) else {}
-    flat: dict[str, Any] = {
+def _as_dict(value: Any) -> dict:
+    return value if isinstance(value, dict) else {}
+
+
+def _element_header(el: dict) -> dict:
+    return _as_dict(el.get("elementHeader"))
+
+
+def _element_properties(el: dict) -> dict:
+    return _as_dict(el.get("properties") or el.get("glossaryProperties") or {})
+
+
+def _core_fields(el: dict, header: dict, props: dict) -> dict[str, Any]:
+    """The five well-known fields every flattened element carries."""
+    type_info = _as_dict(header.get("type"))
+    return {
         "guid": el.get("guid") or header.get("guid") or header.get("GUID"),
         "typeName": props.get("typeName")
         or type_info.get("typeName")
@@ -72,6 +76,15 @@ def _norm(el: dict) -> dict:
         "qualifiedName": props.get("qualifiedName"),
         "summary": props.get("summary") or props.get("description"),
     }
+
+
+def _norm(el: dict) -> dict:
+    """Flatten an Egeria OMVS element envelope into a flat record."""
+    if not isinstance(el, dict):
+        return {}
+    header = _element_header(el)
+    props = _element_properties(el)
+    flat = _core_fields(el, header, props)
     for k, v in props.items():
         flat.setdefault(k, v)
     # surface classifications (for governance/confidentiality props downstream)
@@ -454,6 +467,45 @@ class EgeriaApi:
         except Exception:
             return {}
 
+    @staticmethod
+    def _classification_entry(key: str, val: dict) -> tuple[dict, int] | None:
+        """One ``ElementClassification`` header entry -> (entry, conf_level).
+
+        Returns ``None`` for a non-classification value or a structural anchor
+        (not a governance classification). ``conf_level`` is ``None`` unless this
+        entry is the Confidentiality classification carrying a level.
+        """
+        if not isinstance(val, dict) or val.get("class") != "ElementClassification":
+            return None
+        name = val.get("classificationName") or key
+        if name.lower() in ("anchors", "anchor"):
+            return None
+        props = val.get("classificationProperties") or {}
+        entry: dict[str, Any] = {"name": name}
+        conf_level = None
+        if "confidentialityLevel" in props:
+            entry["level"] = props["confidentialityLevel"]
+            if name.lower().startswith("confidential"):
+                conf_level = props["confidentialityLevel"]
+        return entry, conf_level
+
+    @classmethod
+    def _classifications_and_confidentiality(
+        cls, header: dict
+    ) -> tuple[list[dict], int | None]:
+        """Flatten an ``elementHeader`` into ``([{name, level?}], confidentialityLevel)``."""
+        classifications: list[dict] = []
+        conf_level: int | None = None
+        for key, val in header.items():
+            parsed = cls._classification_entry(key, val)
+            if parsed is None:
+                continue
+            entry, level = parsed
+            classifications.append(entry)
+            if level is not None:
+                conf_level = level
+        return classifications, conf_level
+
     def governance_for(self, element_guid: str) -> dict:
         """Return classifications + confidentiality level applying to an element.
 
@@ -470,22 +522,9 @@ class EgeriaApi:
                 "confidentialityLevel": None,
                 "httpCode": el.get("httpCode") if isinstance(el, dict) else None,
             }
-        header = el.get("elementHeader") or {}
-        classifications: list[dict] = []
-        conf_level: int | None = None
-        for key, val in header.items():
-            if not isinstance(val, dict) or val.get("class") != "ElementClassification":
-                continue
-            name = val.get("classificationName") or key
-            if name.lower() in ("anchors", "anchor"):
-                continue  # structural anchor, not a governance classification
-            props = val.get("classificationProperties") or {}
-            entry: dict[str, Any] = {"name": name}
-            if "confidentialityLevel" in props:
-                entry["level"] = props["confidentialityLevel"]
-                if name.lower().startswith("confidential"):
-                    conf_level = props["confidentialityLevel"]
-            classifications.append(entry)
+        classifications, conf_level = self._classifications_and_confidentiality(
+            el.get("elementHeader") or {}
+        )
         return {
             "guid": element_guid,
             "classifications": classifications,

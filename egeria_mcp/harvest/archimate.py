@@ -38,52 +38,40 @@ def _local(tag: str) -> str:
     return tag.rsplit("}", 1)[-1]
 
 
+_XSI_TYPE = "{http://www.w3.org/2001/XMLSchema-instance}type"
+
+
+def _element_name(el) -> str | None:
+    """The ``<name>`` child's text, falling back to a ``name`` attribute."""
+    for child in el:
+        if _local(child.tag) == "name":
+            return (child.text or "").strip()
+    return el.get("name")
+
+
+def _element_record(el) -> dict | None:
+    """One ``{id, name, type}`` record for an ArchiMate ``<element>``, if valid."""
+    etype = (el.get(_XSI_TYPE) or el.get("type") or "").rsplit(":", 1)[-1]
+    name = _element_name(el)
+    if not (name and etype):
+        return None
+    return {"id": el.get("identifier") or el.get("id"), "name": name, "type": etype}
+
+
 def parse_model(path: str) -> list[dict]:
     """Parse ArchiMate Open Exchange XML → [{id, name, type}]."""
     try:
         root = parse_xml_root(path)
     except Exception:
         return []
-    out: list[dict] = []
-    xsi_type = "{http://www.w3.org/2001/XMLSchema-instance}type"
-    for el in root.iter():
-        if _local(el.tag) != "element":
-            continue
-        etype = (el.get(xsi_type) or el.get("type") or "").rsplit(":", 1)[-1]
-        name = None
-        for child in el:
-            if _local(child.tag) == "name":
-                name = (child.text or "").strip()
-                break
-        name = name or el.get("name")
-        if name and etype:
-            out.append(
-                {
-                    "id": el.get("identifier") or el.get("id"),
-                    "name": name,
-                    "type": etype,
-                }
-            )
-    return out
+    records = (
+        _element_record(el) for el in root.iter() if _local(el.tag) == "element"
+    )
+    return [record for record in records if record is not None]
 
 
-def harvest_archimate(api: Any, model_path: str | None = None) -> dict[str, Any]:
-    """Catalog ArchiMate model elements into Egeria as architecture assets."""
-    report: dict[str, Any] = {"elements": [], "errors": []}
-
-    path = model_path or setting("ARCHI_MODEL_PATH")
-    if not path or not os.path.isfile(path):
-        report["skipped"] = (
-            "no ArchiMate model (set ARCHI_MODEL_PATH to the Open Exchange XML)"
-        )
-        return report
-
-    elements = parse_model(path)
-    report["source"] = {"configured": True, "elements": len(elements)}
-    if not elements:
-        report["skipped"] = "no elements parsed (not an ArchiMate Open Exchange model?)"
-        return report
-
+def _catalog_elements(api: Any, elements: list[dict], report: dict[str, Any]) -> None:
+    """Catalog ArchiMate elements as Egeria assets mapped by layer."""
     for el in elements:
         etype = el["type"]
         asset_type = _LAYER_TYPE.get(etype, "DeployedSoftwareComponent")
@@ -104,6 +92,26 @@ def harvest_archimate(api: Any, model_path: str | None = None) -> dict[str, Any]
         )
         note_error(report, f"element:{el['name']}", res)
         report["elements"].append({"name": el["name"], "type": etype, **res})
+
+
+def harvest_archimate(api: Any, model_path: str | None = None) -> dict[str, Any]:
+    """Catalog ArchiMate model elements into Egeria as architecture assets."""
+    report: dict[str, Any] = {"elements": [], "errors": []}
+
+    path = model_path or setting("ARCHI_MODEL_PATH")
+    if not path or not os.path.isfile(path):
+        report["skipped"] = (
+            "no ArchiMate model (set ARCHI_MODEL_PATH to the Open Exchange XML)"
+        )
+        return report
+
+    elements = parse_model(path)
+    report["source"] = {"configured": True, "elements": len(elements)}
+    if not elements:
+        report["skipped"] = "no elements parsed (not an ArchiMate Open Exchange model?)"
+        return report
+
+    _catalog_elements(api, elements, report)
 
     report["summary"] = {
         "elements": count_created(report["elements"]),

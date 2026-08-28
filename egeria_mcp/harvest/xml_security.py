@@ -16,7 +16,12 @@ class HarvestXmlError(ValueError):
     """An input document crossed a harvester security boundary."""
 
 
-def parse_xml_root(path: str):
+def _read_bounded_file(path: str) -> bytes:
+    """Read ``path`` as a regular file no larger than ``MAX_XML_BYTES``.
+
+    Rejects symlinks, non-files, oversized files, and a size that changes
+    between the ``stat()`` and the read (TOCTOU).
+    """
     candidate = Path(path)
     try:
         if candidate.is_symlink() or not candidate.is_file():
@@ -32,8 +37,13 @@ def parse_xml_root(path: str):
         raise HarvestXmlError("harvest input is unavailable") from None
     if len(payload) != expected or len(payload) > MAX_XML_BYTES:
         raise HarvestXmlError("harvest input changed while being read")
+    return payload
+
+
+def _parse_defused(payload: bytes):
+    """Parse ``payload`` with DTDs/entities/external refs forbidden."""
     try:
-        root = DefusedET.fromstring(
+        return DefusedET.fromstring(
             payload,
             forbid_dtd=True,
             forbid_entities=True,
@@ -42,6 +52,9 @@ def parse_xml_root(path: str):
     except (DefusedET.ParseError, DefusedXmlException, ValueError):
         raise HarvestXmlError("harvest input is invalid") from None
 
+
+def _check_structure_bounds(root) -> None:
+    """Raise if the parsed tree exceeds the element-count or depth boundary."""
     count = 0
     stack = [(root, 1)]
     while stack:
@@ -50,4 +63,10 @@ def parse_xml_root(path: str):
         if count > MAX_XML_ELEMENTS or depth > MAX_XML_DEPTH:
             raise HarvestXmlError("harvest input exceeds its structure boundary")
         stack.extend((child, depth + 1) for child in element)
+
+
+def parse_xml_root(path: str):
+    payload = _read_bounded_file(path)
+    root = _parse_defused(payload)
+    _check_structure_bounds(root)
     return root

@@ -15,6 +15,100 @@ from __future__ import annotations
 from typing import Any
 
 from egeria_mcp.harvest import topology
+from egeria_mcp.harvest._reporting import note_error
+
+
+def _catalog_glossary_terms(
+    api: Any, estate: dict[str, Any], report: dict[str, Any]
+) -> str | None:
+    """Create the glossary backbone + its terms; return the glossary guid."""
+    glossary = estate["glossary"]
+    g = api.create_glossary(glossary["name"], glossary["description"])
+    note_error(report, "glossary", g)
+    glossary_guid = g.get("guid")
+    report["glossary"] = {"name": glossary["name"], **g}
+
+    if glossary_guid:
+        for term in estate["terms"]:
+            res = api.create_term(
+                glossary_guid,
+                term["name"],
+                term.get("summary", ""),
+                description=term.get("description", ""),
+            )
+            note_error(report, f"term:{term['name']}", res)
+            report["terms"].append({"name": term["name"], **res})
+    return glossary_guid
+
+
+def _catalog_stores_and_datasets(
+    api: Any, estate: dict[str, Any], report: dict[str, Any]
+) -> dict[str, str]:
+    """Catalog data-store servers + their datasets; return {key: guid}."""
+    key_to_guid: dict[str, str] = {}
+
+    for store in estate["stores"]:
+        qn = f"DataStore::{store['name']}"
+        res = api.create_asset(
+            store["type_name"],
+            qn,
+            store["name"],
+            description=store.get("description", ""),
+            deployed_implementation_type=store.get("deployed_implementation_type", ""),
+            confidentiality_level=store.get("confidentiality_level"),
+            additional_properties=store.get("extended"),
+        )
+        note_error(report, f"store:{store['name']}", res)
+        if res.get("guid"):
+            key_to_guid[store["key"]] = res["guid"]
+        report["stores"].append({"name": store["name"], "qualifiedName": qn, **res})
+
+    for ds in estate["datasets"]:
+        qn = f"Dataset::{ds['parent']}::{ds['name']}"
+        res = api.create_asset(
+            ds["type_name"],
+            qn,
+            ds["name"],
+            description=ds.get("description", ""),
+            deployed_implementation_type=ds.get("deployed_implementation_type", ""),
+            confidentiality_level=ds.get("confidentiality_level"),
+        )
+        note_error(report, f"dataset:{ds['name']}", res)
+        if res.get("guid"):
+            key_to_guid[ds["key"]] = res["guid"]
+        report["datasets"].append({"name": ds["name"], "qualifiedName": qn, **res})
+
+    return key_to_guid
+
+
+def _catalog_flows(
+    api: Any,
+    estate: dict[str, Any],
+    key_to_guid: dict[str, str],
+    report: dict[str, Any],
+) -> None:
+    """Catalog declared DataFlow lineage edges between cataloged assets."""
+    for flow in estate["flows"]:
+        src = key_to_guid.get(flow["source"])
+        tgt = key_to_guid.get(flow["target"])
+        if not src or not tgt:
+            report["errors"].append(
+                {
+                    "item": f"flow:{flow['source']}->{flow['target']}",
+                    "error": "unresolved endpoint",
+                }
+            )
+            continue
+        res = api.link_data_flow(
+            src,
+            tgt,
+            label=flow.get("label", ""),
+            description=flow.get("description", ""),
+        )
+        note_error(report, f"flow:{flow['source']}->{flow['target']}", res)
+        report["flows"].append(
+            {"source": flow["source"], "target": flow["target"], **res}
+        )
 
 
 def harvest_datastores(api: Any) -> dict[str, Any]:
@@ -42,90 +136,17 @@ def harvest_datastores(api: Any) -> dict[str, Any]:
         "flows": [],
         "errors": [],
     }
-    key_to_guid: dict[str, str] = {}
-
-    def record_error(what: str, res: dict) -> bool:
-        """Return True if ``res`` carries an error (and log it)."""
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-            return True
-        return False
-
     # Topology: the generic built-in example, or an EGERIA_HARVEST_TOPOLOGY override.
     estate = topology.load_topology()
-    glossary = estate["glossary"]
 
     # 1) glossary backbone ────────────────────────────────────────────────────
-    g = api.create_glossary(glossary["name"], glossary["description"])
-    record_error("glossary", g)
-    glossary_guid = g.get("guid")
-    report["glossary"] = {"name": glossary["name"], **g}
-
-    if glossary_guid:
-        for term in estate["terms"]:
-            res = api.create_term(
-                glossary_guid,
-                term["name"],
-                term.get("summary", ""),
-                description=term.get("description", ""),
-            )
-            record_error(f"term:{term['name']}", res)
-            report["terms"].append({"name": term["name"], **res})
+    _catalog_glossary_terms(api, estate, report)
 
     # 2) data-store servers + their datasets (assets w/ confidentiality) ───────
-    for store in estate["stores"]:
-        qn = f"DataStore::{store['name']}"
-        res = api.create_asset(
-            store["type_name"],
-            qn,
-            store["name"],
-            description=store.get("description", ""),
-            deployed_implementation_type=store.get("deployed_implementation_type", ""),
-            confidentiality_level=store.get("confidentiality_level"),
-            additional_properties=store.get("extended"),
-        )
-        record_error(f"store:{store['name']}", res)
-        if res.get("guid"):
-            key_to_guid[store["key"]] = res["guid"]
-        report["stores"].append({"name": store["name"], "qualifiedName": qn, **res})
-
-    for ds in estate["datasets"]:
-        qn = f"Dataset::{ds['parent']}::{ds['name']}"
-        res = api.create_asset(
-            ds["type_name"],
-            qn,
-            ds["name"],
-            description=ds.get("description", ""),
-            deployed_implementation_type=ds.get("deployed_implementation_type", ""),
-            confidentiality_level=ds.get("confidentiality_level"),
-        )
-        record_error(f"dataset:{ds['name']}", res)
-        if res.get("guid"):
-            key_to_guid[ds["key"]] = res["guid"]
-        report["datasets"].append({"name": ds["name"], "qualifiedName": qn, **res})
+    key_to_guid = _catalog_stores_and_datasets(api, estate, report)
 
     # 3) lineage (DataFlow edges between catalogued assets) ────────────────────
-    for flow in estate["flows"]:
-        src = key_to_guid.get(flow["source"])
-        tgt = key_to_guid.get(flow["target"])
-        if not src or not tgt:
-            report["errors"].append(
-                {
-                    "item": f"flow:{flow['source']}->{flow['target']}",
-                    "error": "unresolved endpoint",
-                }
-            )
-            continue
-        res = api.link_data_flow(
-            src,
-            tgt,
-            label=flow.get("label", ""),
-            description=flow.get("description", ""),
-        )
-        record_error(f"flow:{flow['source']}->{flow['target']}", res)
-        report["flows"].append(
-            {"source": flow["source"], "target": flow["target"], **res}
-        )
+    _catalog_flows(api, estate, key_to_guid, report)
 
     report["summary"] = {
         "terms": len(report["terms"]),

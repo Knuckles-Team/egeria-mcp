@@ -29,6 +29,17 @@ except Exception:  # pragma: no cover
 _INTERNAL_PREFIXES = ("__", "_confluent", "_schemas")
 
 
+def _topic_names(data: Any) -> list[str]:
+    """Topic names from a Confluent REST Proxy response (v2 list or v3 dict)."""
+    if isinstance(data, list):  # v2: ["t1", "t2"]
+        return [t for t in data if isinstance(t, str)]
+    if isinstance(data, dict):  # v3: {"data": [{"topic_name": ...}]}
+        return [
+            d.get("topic_name") for d in data.get("data", []) if d.get("topic_name")
+        ]
+    return []
+
+
 def fetch_topics(
     rest_url: str, token: str | None, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[str]:
@@ -44,16 +55,9 @@ def fetch_topics(
             r = c.get(f"{rest_url.rstrip('/')}/topics", headers=headers)
         if r.status_code != 200:
             return []
-        data = r.json()
-        if isinstance(data, list):  # v2: ["t1", "t2"]
-            return [t for t in data if isinstance(t, str)]
-        if isinstance(data, dict):  # v3: {"data": [{"topic_name": ...}]}
-            return [
-                d.get("topic_name") for d in data.get("data", []) if d.get("topic_name")
-            ]
+        return _topic_names(r.json())
     except Exception:
         return []
-    return []
 
 
 def harvest_kafka(

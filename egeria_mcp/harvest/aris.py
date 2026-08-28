@@ -19,6 +19,7 @@ from agent_utilities.core.transport_security import (
     ResolvedTLSProfile,
     resolve_tls_profile,
 )
+from egeria_mcp.harvest._reporting import count_created, note_error
 
 try:
     import httpx
@@ -69,52 +70,26 @@ def fetch_models(
         return []
 
 
-def harvest_aris(
-    api: Any,
-    url: str | None = None,
-    token: str | None = None,
-    *,
-    api_path: str | None = None,
-    tls_profile: ResolvedTLSProfile | None = None,
-) -> dict[str, Any]:
-    """Catalog ARIS models into Egeria (process + architecture)."""
-    report: dict[str, Any] = {"models": [], "errors": []}
+def _model_asset_kind(mtype: str, mid: str) -> tuple[str, str, str]:
+    """Resolve the (asset_type, qualifiedName, capability) for an ARIS model type."""
+    if _is_process(mtype):
+        return "Process", f"Process::ARIS::{mid}", "bpm"
+    return (
+        "DeployedSoftwareComponent",
+        f"ArchiMate::ARIS::{mtype}::{mid}",
+        "enterprise-architecture",
+    )
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
 
-    url = url or setting("ARIS_URL")
-    token = token or setting("ARIS_TOKEN") or setting("ARIS_API_TOKEN")
-    api_path = api_path or setting("ARIS_API_PATH", "/abs/api/models")
-    if not url or not token:
-        report["skipped"] = "no ARIS URL/token (set ARIS_URL / ARIS_TOKEN)"
-        return report
-
-    models = fetch_models(url, token, api_path, tls_profile=tls_profile)
-    report["source"] = {"url": url, "models": len(models)}
-    if not models:
-        report["skipped"] = "no models returned (unreachable or unauthorized)"
-        return report
-
+def _catalog_models(api: Any, models: list[dict], report: dict[str, Any]) -> None:
+    """Catalog ARIS models as Process (BPM) or architecture assets."""
     for m in models:
         name = m.get("name") or m.get("id")
         mid = m.get("id") or name
         if not name:
             continue
         mtype = m.get("type") or m.get("modelType") or "Model"
-        if _is_process(mtype):
-            asset_type, qn, cap = (
-                "Process",
-                f"Process::ARIS::{mid}",
-                "bpm",
-            )
-        else:
-            asset_type, qn, cap = (
-                "DeployedSoftwareComponent",
-                f"ArchiMate::ARIS::{mtype}::{mid}",
-                "enterprise-architecture",
-            )
+        asset_type, qn, cap = _model_asset_kind(mtype, mid)
         res = api.create_asset(
             asset_type,
             qn,
@@ -129,11 +104,38 @@ def harvest_aris(
                 "source": "ARIS",
             },
         )
-        record_error(f"model:{name}", res)
+        note_error(report, f"model:{name}", res)
         report["models"].append({"name": str(name), "type": mtype, **res})
 
+
+def harvest_aris(
+    api: Any,
+    url: str | None = None,
+    token: str | None = None,
+    *,
+    api_path: str | None = None,
+    tls_profile: ResolvedTLSProfile | None = None,
+) -> dict[str, Any]:
+    """Catalog ARIS models into Egeria (process + architecture)."""
+    report: dict[str, Any] = {"models": [], "errors": []}
+
+    url = url or setting("ARIS_URL")
+    token = token or setting("ARIS_TOKEN") or setting("ARIS_API_TOKEN")
+    api_path = api_path or setting("ARIS_API_PATH", "/abs/api/models")
+    if not url or not token:
+        report["skipped"] = "no ARIS URL/token (set ARIS_URL / ARIS_TOKEN)"
+        return report
+
+    models = fetch_models(url, token, api_path, tls_profile=tls_profile)
+    report["source"] = {"url": url, "models": len(models)}
+    if not models:
+        report["skipped"] = "no models returned (unreachable or unauthorized)"
+        return report
+
+    _catalog_models(api, models, report)
+
     report["summary"] = {
-        "models": len([m for m in report["models"] if m.get("guid")]),
+        "models": count_created(report["models"]),
         "errors": len(report["errors"]),
     }
     return report

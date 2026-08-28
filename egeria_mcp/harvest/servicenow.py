@@ -77,6 +77,62 @@ def fetch_cis(
         return []
 
 
+def _catalog_configuration_items(
+    api: Any, table: str, cis: list[dict], report: dict[str, Any]
+) -> None:
+    """Catalog one CMDB table's configuration items as ``SoftwareServer`` assets."""
+    for ci in cis:
+        name = ci.get("name")
+        if not name:
+            continue
+        res = api.create_asset(
+            "SoftwareServer",
+            f"CI::ServiceNow::{name}",
+            name,
+            description=ci.get("short_description")
+            or f"ServiceNow CMDB CI '{name}' ({table}).",
+            deployed_implementation_type=ci.get("sys_class_name") or table,
+            confidentiality_level=1,
+            additional_properties={
+                "table": table,
+                "sysId": ci.get("sys_id"),
+                "capability": "ITSM",
+                "source": "ServiceNow",
+            },
+        )
+        note_error(report, f"ci:{name}", res)
+        report["items"].append({"name": name, "table": table, **res})
+
+
+def _build_auth(
+    user: str | None, password: str | None, token: str | None
+) -> tuple[tuple[str, str] | None, dict[str, str] | None]:
+    """Basic-auth tuple + bearer headers from whichever credential is set."""
+    auth = (user, password) if (user and password) else None
+    headers = {"Authorization": f"Bearer {token}"} if token else None
+    return auth, headers
+
+
+def _catalog_all_tables(
+    api: Any,
+    base_url: str,
+    tables: list[str],
+    auth: tuple[str, str] | None,
+    headers: dict[str, str] | None,
+    tls_profile: ResolvedTLSProfile | None,
+    report: dict[str, Any],
+) -> int:
+    """Fetch + catalog every configured CMDB table; return the total CI count."""
+    total = 0
+    for table in tables:
+        cis = fetch_cis(
+            base_url, table, auth=auth, headers=headers, tls_profile=tls_profile
+        )
+        total += len(cis)
+        _catalog_configuration_items(api, table, cis, report)
+    return total
+
+
 def harvest_servicenow(
     api: Any,
     base_url: str | None = None,
@@ -96,36 +152,10 @@ def harvest_servicenow(
             "no ServiceNow URL/credentials (set SERVICENOW_URL + USER/PASSWORD or TOKEN)"
         )
         return report
-    auth = (user, password) if (user and password) else None
-    headers = {"Authorization": f"Bearer {token}"} if token else None
-
-    total = 0
-    for table in tables or _DEFAULT_TABLES:
-        cis = fetch_cis(
-            base_url, table, auth=auth, headers=headers, tls_profile=tls_profile
-        )
-        total += len(cis)
-        for ci in cis:
-            name = ci.get("name")
-            if not name:
-                continue
-            res = api.create_asset(
-                "SoftwareServer",
-                f"CI::ServiceNow::{name}",
-                name,
-                description=ci.get("short_description")
-                or f"ServiceNow CMDB CI '{name}' ({table}).",
-                deployed_implementation_type=ci.get("sys_class_name") or table,
-                confidentiality_level=1,
-                additional_properties={
-                    "table": table,
-                    "sysId": ci.get("sys_id"),
-                    "capability": "ITSM",
-                    "source": "ServiceNow",
-                },
-            )
-            note_error(report, f"ci:{name}", res)
-            report["items"].append({"name": name, "table": table, **res})
+    auth, headers = _build_auth(user, password, token)
+    total = _catalog_all_tables(
+        api, base_url, tables or _DEFAULT_TABLES, auth, headers, tls_profile, report
+    )
 
     report["source"] = {"base_url": base_url, "configuration_items": total}
     if total == 0:

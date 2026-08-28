@@ -24,6 +24,71 @@ _APPROVAL_LEVEL = 2
 # mere presence, independent of any numeric level (e.g. a Retention hold).
 _GATING_CLASSIFICATIONS = ("retention", "criticality")
 
+_LEVEL_NAMES = {
+    0: "Unclassified",
+    1: "Internal",
+    2: "Confidential",
+    3: "Sensitive",
+    4: "Restricted",
+}
+
+
+def _gating_classifications(classifications: list) -> list:
+    """Classifications matching a gating name (Retention/Criticality)."""
+    return [
+        c
+        for c in classifications
+        if any(g in str(c.get("name", c)).lower() for g in _GATING_CLASSIFICATIONS)
+    ]
+
+
+def _downstream_impact(lin: dict) -> int:
+    """Downstream lineage element count from an AssetLineageGraph response."""
+    impact = 0
+    for key in ("lineageLinkage", "lineageRelationships", "nodes", "elements", "edges"):
+        val = lin.get(key)
+        if isinstance(val, list):
+            impact = max(impact, len(val))
+    return impact
+
+
+def _approval_reasons(conf_level: Any, gating: list) -> list[str]:
+    """Human-readable reasons an asset requires approval."""
+    reasons: list[str] = []
+    if isinstance(conf_level, int):
+        reasons.append(
+            f"Confidentiality={_LEVEL_NAMES.get(conf_level, conf_level)} "
+            f"(level {conf_level}) — approval required"
+        )
+    if gating:
+        names = ", ".join(sorted({str(c.get("name", c)) for c in gating}))
+        reasons.append(
+            f"gating classification(s) present ({names}) — approval required"
+        )
+    return reasons
+
+
+def _route_decision(
+    classified_restricted: bool, gating: list, conf_level: Any, impact: int
+) -> tuple[str, list[str]]:
+    """The (decision, reasons) pair for a governed-route result."""
+    reasons: list[str] = []
+    decision = "proceed"
+    if classified_restricted:
+        decision = "require_approval"
+        reasons.extend(_approval_reasons(conf_level, gating))
+    if impact > 0:
+        if decision == "proceed":
+            decision = "review"
+        reasons.append(
+            f"{impact} downstream lineage element(s) — sequence change with impact awareness"
+        )
+    if not reasons:
+        reasons.append(
+            "no governance restrictions and no downstream lineage — safe to proceed"
+        )
+    return decision, reasons
+
 
 def governed_route(api: Any, asset_guid: str) -> dict[str, Any]:
     """Return a policy-aware routing decision for acting on an Egeria asset.
@@ -51,58 +116,17 @@ def governed_route(api: Any, asset_guid: str) -> dict[str, Any]:
 
     classifications = gov.get("classifications") or []
     conf_level = gov.get("confidentialityLevel")
+    # A gating classification (Retention/Criticality) escalates on presence alone.
+    gating = _gating_classifications(classifications)
     classified_restricted = (
         isinstance(conf_level, int) and conf_level >= _APPROVAL_LEVEL
-    )
-    # A gating classification (Retention/Criticality) escalates on presence alone.
-    gating = [
-        c
-        for c in classifications
-        if any(g in str(c.get("name", c)).lower() for g in _GATING_CLASSIFICATIONS)
-    ]
-    if gating:
-        classified_restricted = True
+    ) or bool(gating)
 
     # Downstream lineage = consumers impacted by a change to this asset. Egeria's
     # AssetLineageGraph carries connected edges in ``lineageLinkage``.
-    impact = 0
-    for key in ("lineageLinkage", "lineageRelationships", "nodes", "elements", "edges"):
-        val = lin.get(key)
-        if isinstance(val, list):
-            impact = max(impact, len(val))
+    impact = _downstream_impact(lin)
 
-    _LEVEL_NAMES = {
-        0: "Unclassified",
-        1: "Internal",
-        2: "Confidential",
-        3: "Sensitive",
-        4: "Restricted",
-    }
-
-    reasons: list[str] = []
-    decision = "proceed"
-    if classified_restricted:
-        decision = "require_approval"
-        if isinstance(conf_level, int):
-            reasons.append(
-                f"Confidentiality={_LEVEL_NAMES.get(conf_level, conf_level)} "
-                f"(level {conf_level}) — approval required"
-            )
-        if gating:
-            names = ", ".join(sorted({str(c.get("name", c)) for c in gating}))
-            reasons.append(
-                f"gating classification(s) present ({names}) — approval required"
-            )
-    if impact > 0:
-        if decision == "proceed":
-            decision = "review"
-        reasons.append(
-            f"{impact} downstream lineage element(s) — sequence change with impact awareness"
-        )
-    if not reasons:
-        reasons.append(
-            "no governance restrictions and no downstream lineage — safe to proceed"
-        )
+    decision, reasons = _route_decision(classified_restricted, gating, conf_level, impact)
 
     return {
         "asset_guid": asset_guid,

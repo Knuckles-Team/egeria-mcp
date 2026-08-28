@@ -108,6 +108,47 @@ def fetch_records(
     return res if isinstance(res, list) else []
 
 
+def _catalog_records(
+    api: Any, model: str, kind: str, level: int, recs: list[dict], report: dict[str, Any]
+) -> None:
+    """Catalog one Odoo model's records (customers/leads) as data assets."""
+    for rec in recs:
+        name = rec.get("display_name") or rec.get("name") or rec.get("id")
+        rid = rec.get("id") or name
+        if not name:
+            continue
+        qn = f"Dataset::Odoo::{kind}::{rid}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            str(name),
+            description=f"Odoo CRM {kind.lower()} '{name}'.",
+            deployed_implementation_type=f"Odoo {kind}",
+            confidentiality_level=level,
+            additional_properties={
+                "crmObject": kind,
+                "odooModel": model,
+                "odooId": str(rid),
+                "capability": "crm",
+                "source": "Odoo",
+            },
+        )
+        note_error(report, f"{model}:{name}", res)
+        report["records"].append({"kind": kind, "name": str(name), **res})
+
+
+def _resolve_config(
+    url: str | None, db: str | None, user: str | None, password: str | None
+) -> tuple[str | None, str | None, str | None, str | None]:
+    """Explicit args, else the ``ODOO_*`` settings."""
+    return (
+        url or setting("ODOO_URL"),
+        db or setting("ODOO_DB"),
+        user or setting("ODOO_USER"),
+        password or setting("ODOO_PASSWORD") or setting("ODOO_API_KEY"),
+    )
+
+
 def harvest_odoo(
     api: Any,
     url: str | None = None,
@@ -120,10 +161,7 @@ def harvest_odoo(
     """Catalog Odoo CRM customers + leads into Egeria."""
     report: dict[str, Any] = {"records": [], "errors": []}
 
-    url = url or setting("ODOO_URL")
-    db = db or setting("ODOO_DB")
-    user = user or setting("ODOO_USER")
-    password = password or setting("ODOO_PASSWORD") or setting("ODOO_API_KEY")
+    url, db, user, password = _resolve_config(url, db, user, password)
     if not url or not db or not user or not password:
         report["skipped"] = (
             "no Odoo config (set ODOO_URL / ODOO_DB / ODOO_USER / ODOO_PASSWORD)"
@@ -151,29 +189,7 @@ def harvest_odoo(
     for model, kind, level in _MODELS:
         recs = fetch_records(url, db, uid, password, model, tls_profile=tls_profile)
         total += len(recs)
-        for rec in recs:
-            name = rec.get("display_name") or rec.get("name") or rec.get("id")
-            rid = rec.get("id") or name
-            if not name:
-                continue
-            qn = f"Dataset::Odoo::{kind}::{rid}"
-            res = api.create_asset(
-                "DeployedDatabaseSchema",
-                qn,
-                str(name),
-                description=f"Odoo CRM {kind.lower()} '{name}'.",
-                deployed_implementation_type=f"Odoo {kind}",
-                confidentiality_level=level,
-                additional_properties={
-                    "crmObject": kind,
-                    "odooModel": model,
-                    "odooId": str(rid),
-                    "capability": "crm",
-                    "source": "Odoo",
-                },
-            )
-            note_error(report, f"{model}:{name}", res)
-            report["records"].append({"kind": kind, "name": str(name), **res})
+        _catalog_records(api, model, kind, level, recs, report)
 
     report["source"] = {"url": url, "records": total}
     if total == 0:

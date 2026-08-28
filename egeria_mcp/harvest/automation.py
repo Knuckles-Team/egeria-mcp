@@ -52,6 +52,45 @@ def _fetch(
         return []
 
 
+def _catalog_inventories(api: Any, inventories: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Tower inventories as Egeria Collections."""
+    for inv in inventories:
+        name = inv.get("name")
+        if not name:
+            continue
+        res = api.create_collection(
+            f"Inventory {name}",
+            description=inv.get("description") or f"Ansible inventory '{name}'.",
+            category="AnsibleInventory",
+        )
+        note_error(report, f"inventory:{name}", res)
+        report["inventories"].append({"name": name, **res})
+
+
+def _catalog_job_templates(api: Any, templates: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Tower job templates as Egeria Process assets."""
+    for jt in templates:
+        name = jt.get("name")
+        if not name:
+            continue
+        qn = f"Process::Ansible::{name.replace(' ', '')}"
+        res = api.create_asset(
+            "Process",
+            qn,
+            name,
+            description=jt.get("description") or f"Ansible job template '{name}'.",
+            deployed_implementation_type="Ansible Job Template",
+            confidentiality_level=1,
+            additional_properties={
+                "playbook": jt.get("playbook"),
+                "jobType": jt.get("job_type"),
+                "source": "Ansible",
+            },
+        )
+        note_error(report, f"job_template:{name}", res)
+        report["job_templates"].append({"name": name, "qualifiedName": qn, **res})
+
+
 def harvest_automation(
     api: Any,
     url: str | None = None,
@@ -79,38 +118,8 @@ def harvest_automation(
         report["skipped"] = "no Tower data returned (unreachable or unauthorized)"
         return report
 
-    for inv in inventories:
-        name = inv.get("name")
-        if not name:
-            continue
-        res = api.create_collection(
-            f"Inventory {name}",
-            description=inv.get("description") or f"Ansible inventory '{name}'.",
-            category="AnsibleInventory",
-        )
-        note_error(report, f"inventory:{name}", res)
-        report["inventories"].append({"name": name, **res})
-
-    for jt in templates:
-        name = jt.get("name")
-        if not name:
-            continue
-        qn = f"Process::Ansible::{name.replace(' ', '')}"
-        res = api.create_asset(
-            "Process",
-            qn,
-            name,
-            description=jt.get("description") or f"Ansible job template '{name}'.",
-            deployed_implementation_type="Ansible Job Template",
-            confidentiality_level=1,
-            additional_properties={
-                "playbook": jt.get("playbook"),
-                "jobType": jt.get("job_type"),
-                "source": "Ansible",
-            },
-        )
-        note_error(report, f"job_template:{name}", res)
-        report["job_templates"].append({"name": name, "qualifiedName": qn, **res})
+    _catalog_inventories(api, inventories, report)
+    _catalog_job_templates(api, templates, report)
 
     report["summary"] = {
         "inventories": count_created(report["inventories"]),

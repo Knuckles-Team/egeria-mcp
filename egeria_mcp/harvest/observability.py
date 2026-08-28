@@ -47,6 +47,52 @@ def _get(
         return None
 
 
+def _catalog_datasources(api: Any, datasources: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Grafana data sources as ``DeployedSoftwareComponent`` assets."""
+    for ds in datasources:
+        name = ds.get("name")
+        if not name:
+            continue
+        res = api.create_asset(
+            "DeployedSoftwareComponent",
+            f"Datasource::Grafana::{name}",
+            name,
+            description=f"Grafana data source '{name}' ({ds.get('type')}).",
+            deployed_implementation_type=ds.get("type") or "Grafana Datasource",
+            confidentiality_level=1,
+            additional_properties={"dsType": ds.get("type"), "source": "Grafana"},
+        )
+        note_error(report, f"datasource:{name}", res)
+        report["datasources"].append({"name": name, **res})
+
+
+def _catalog_dashboards(api: Any, dashboards: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Grafana dashboards as Egeria Collections."""
+    for db in dashboards:
+        title = db.get("title")
+        if not title:
+            continue
+        res = api.create_collection(
+            f"Dashboard: {title}",
+            description=f"Grafana dashboard '{title}'.",
+            category="GrafanaDashboard",
+        )
+        note_error(report, f"dashboard:{title}", res)
+        report["dashboards"].append({"title": title, **res})
+
+
+def _fetch_datasources_and_dashboards(
+    url: str, token: str, tls_profile: ResolvedTLSProfile | None
+) -> tuple[list[dict], list[dict]]:
+    """Fetch Grafana data sources + dashboards (``[]`` for either on failure)."""
+    datasources = _get(url, token, "/api/datasources", None, tls_profile) or []
+    dashboards = (
+        _get(url, token, "/api/search", {"type": "dash-db", "limit": 200}, tls_profile)
+        or []
+    )
+    return datasources, dashboards
+
+
 def harvest_observability(
     api: Any,
     url: str | None = None,
@@ -63,11 +109,7 @@ def harvest_observability(
         report["skipped"] = "no Grafana URL/token (set GRAFANA_URL / LGTM_TOKEN)"
         return report
 
-    datasources = _get(url, token, "/api/datasources", None, tls_profile) or []
-    dashboards = (
-        _get(url, token, "/api/search", {"type": "dash-db", "limit": 200}, tls_profile)
-        or []
-    )
+    datasources, dashboards = _fetch_datasources_and_dashboards(url, token, tls_profile)
     report["source"] = {
         "url": url,
         "datasources": len(datasources),
@@ -79,32 +121,8 @@ def harvest_observability(
         )
         return report
 
-    for ds in datasources:
-        name = ds.get("name")
-        if not name:
-            continue
-        res = api.create_asset(
-            "DeployedSoftwareComponent",
-            f"Datasource::Grafana::{name}",
-            name,
-            description=f"Grafana data source '{name}' ({ds.get('type')}).",
-            deployed_implementation_type=ds.get("type") or "Grafana Datasource",
-            confidentiality_level=1,
-            additional_properties={"dsType": ds.get("type"), "source": "Grafana"},
-        )
-        note_error(report, f"datasource:{name}", res)
-        report["datasources"].append({"name": name, **res})
-    for db in dashboards:
-        title = db.get("title")
-        if not title:
-            continue
-        res = api.create_collection(
-            f"Dashboard: {title}",
-            description=f"Grafana dashboard '{title}'.",
-            category="GrafanaDashboard",
-        )
-        note_error(report, f"dashboard:{title}", res)
-        report["dashboards"].append({"title": title, **res})
+    _catalog_datasources(api, datasources, report)
+    _catalog_dashboards(api, dashboards, report)
 
     report["summary"] = {
         "datasources": count_created(report["datasources"]),

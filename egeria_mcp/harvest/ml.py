@@ -48,6 +48,47 @@ def _fetch(
         return []
 
 
+def _catalog_models(api: Any, models: list[dict], report: dict[str, Any]) -> None:
+    """Catalog ML models as ``DeployedSoftwareComponent`` assets."""
+    for m in models:
+        name = m.get("name") or m.get("id")
+        if not name:
+            continue
+        res = api.create_asset(
+            "DeployedSoftwareComponent",
+            f"Model::{name}",
+            str(name),
+            description=f"ML model '{name}'.",
+            deployed_implementation_type=m.get("framework") or "ML Model",
+            confidentiality_level=1,
+            additional_properties={
+                "framework": m.get("framework"),
+                "source": "DataScience",
+            },
+        )
+        note_error(report, f"model:{name}", res)
+        report["models"].append({"name": str(name), **res})
+
+
+def _catalog_datasets(api: Any, datasets: list[dict], report: dict[str, Any]) -> None:
+    """Catalog ML training datasets as ``DeployedDatabaseSchema`` assets."""
+    for d in datasets:
+        name = d.get("name") or d.get("id")
+        if not name:
+            continue
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            f"Dataset::ML::{name}",
+            str(name),
+            description=f"ML training dataset '{name}'.",
+            deployed_implementation_type="Training Dataset",
+            confidentiality_level=2,
+            additional_properties={"source": "DataScience"},
+        )
+        note_error(report, f"dataset:{name}", res)
+        report["datasets"].append({"name": str(name), **res})
+
+
 def harvest_ml(
     api: Any,
     url: str | None = None,
@@ -71,39 +112,8 @@ def harvest_ml(
         report["skipped"] = "no models/datasets returned (unreachable or unauthorized)"
         return report
 
-    for m in models:
-        name = m.get("name") or m.get("id")
-        if not name:
-            continue
-        res = api.create_asset(
-            "DeployedSoftwareComponent",
-            f"Model::{name}",
-            str(name),
-            description=f"ML model '{name}'.",
-            deployed_implementation_type=m.get("framework") or "ML Model",
-            confidentiality_level=1,
-            additional_properties={
-                "framework": m.get("framework"),
-                "source": "DataScience",
-            },
-        )
-        note_error(report, f"model:{name}", res)
-        report["models"].append({"name": str(name), **res})
-    for d in datasets:
-        name = d.get("name") or d.get("id")
-        if not name:
-            continue
-        res = api.create_asset(
-            "DeployedDatabaseSchema",
-            f"Dataset::ML::{name}",
-            str(name),
-            description=f"ML training dataset '{name}'.",
-            deployed_implementation_type="Training Dataset",
-            confidentiality_level=2,
-            additional_properties={"source": "DataScience"},
-        )
-        note_error(report, f"dataset:{name}", res)
-        report["datasets"].append({"name": str(name), **res})
+    _catalog_models(api, models, report)
+    _catalog_datasets(api, datasets, report)
 
     report["summary"] = {
         "models": count_created(report["models"]),

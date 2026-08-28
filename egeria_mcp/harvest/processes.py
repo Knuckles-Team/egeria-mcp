@@ -63,6 +63,75 @@ def fetch_process_definitions(
         return []
 
 
+def _catalog_process_definitions(
+    api: Any, defs: list[dict], report: dict[str, Any]
+) -> dict[str, str]:
+    """Catalog each process (latest version) as an Egeria Process asset.
+
+    Returns the ``{process_key: guid}`` map, used to resolve declared lineage
+    flows against the processes actually cataloged.
+    """
+    key_to_guid: dict[str, str] = {}
+    seen_keys: set[str] = set()
+    for pd in defs:
+        key = pd.get("key")
+        if not key or key in seen_keys:
+            continue
+        seen_keys.add(key)
+        qn = f"Process::Camunda::{key}"
+        res = api.create_asset(
+            "Process",
+            qn,
+            pd.get("name") or key,
+            description=pd.get("description") or f"Camunda BPMN process '{key}'.",
+            deployed_implementation_type="BPMN Process",
+            confidentiality_level=1,  # Internal
+            additional_properties={
+                "processKey": key,
+                "engine": "Camunda 7",
+                "latestVersion": pd.get("version"),
+                "versionTag": pd.get("versionTag"),
+                "resource": pd.get("resource"),
+            },
+        )
+        note_error(report, f"process:{key}", res)
+        if res.get("guid"):
+            key_to_guid[key] = res["guid"]
+        report["processes"].append(
+            {"key": key, "name": pd.get("name"), "qualifiedName": qn, **res}
+        )
+    return key_to_guid
+
+
+def _catalog_declared_flows(
+    api: Any,
+    flows: list[dict],
+    key_to_guid: dict[str, str],
+    report: dict[str, Any],
+) -> None:
+    """Catalog declared process<-dataset lineage (dataset feeds the process)."""
+    for flow in flows:
+        proc_guid = key_to_guid.get(flow.get("process"))
+        ds_qn = f"Dataset::{flow.get('dataset')}"
+        ds_guid = api.find_asset(ds_qn) if flow.get("dataset") else None
+        if not proc_guid or not ds_guid:
+            report["errors"].append(
+                {
+                    "item": f"flow:{flow.get('dataset')}->{flow.get('process')}",
+                    "error": "unresolved endpoint",
+                }
+            )
+            continue
+        # The dataset feeds the process (dataset → process consumes).
+        res = api.link_data_flow(
+            ds_guid, proc_guid, label=flow.get("label", "consumes")
+        )
+        note_error(report, f"flow:{flow.get('dataset')}->{flow.get('process')}", res)
+        report["flows"].append(
+            {"dataset": flow.get("dataset"), "process": flow.get("process"), **res}
+        )
+
+
 def harvest_processes(
     api: Any,
     base_url: str | None = None,
@@ -96,58 +165,12 @@ def harvest_processes(
 
     # Catalog each process (latest version) as an Egeria Process asset.
     estate = topology.load_topology()
-    key_to_guid: dict[str, str] = {}
-    seen_keys: set[str] = set()
-    for pd in defs:
-        key = pd.get("key")
-        if not key or key in seen_keys:
-            continue
-        seen_keys.add(key)
-        qn = f"Process::Camunda::{key}"
-        res = api.create_asset(
-            "Process",
-            qn,
-            pd.get("name") or key,
-            description=pd.get("description") or f"Camunda BPMN process '{key}'.",
-            deployed_implementation_type="BPMN Process",
-            confidentiality_level=1,  # Internal
-            additional_properties={
-                "processKey": key,
-                "engine": "Camunda 7",
-                "latestVersion": pd.get("version"),
-                "versionTag": pd.get("versionTag"),
-                "resource": pd.get("resource"),
-            },
-        )
-        note_error(report, f"process:{key}", res)
-        if res.get("guid"):
-            key_to_guid[key] = res["guid"]
-        report["processes"].append(
-            {"key": key, "name": pd.get("name"), "qualifiedName": qn, **res}
-        )
+    key_to_guid = _catalog_process_definitions(api, defs, report)
 
     # Optional, declared process → dataset lineage (deployment-specific; only when
     # the topology config supplies a ``process_flows`` list of {process, dataset}).
-    for flow in estate.get("process_flows", []) if isinstance(estate, dict) else []:
-        proc_guid = key_to_guid.get(flow.get("process"))
-        ds_qn = f"Dataset::{flow.get('dataset')}"
-        ds_guid = api.find_asset(ds_qn) if flow.get("dataset") else None
-        if not proc_guid or not ds_guid:
-            report["errors"].append(
-                {
-                    "item": f"flow:{flow.get('dataset')}->{flow.get('process')}",
-                    "error": "unresolved endpoint",
-                }
-            )
-            continue
-        # The dataset feeds the process (dataset → process consumes).
-        res = api.link_data_flow(
-            ds_guid, proc_guid, label=flow.get("label", "consumes")
-        )
-        note_error(report, f"flow:{flow.get('dataset')}->{flow.get('process')}", res)
-        report["flows"].append(
-            {"dataset": flow.get("dataset"), "process": flow.get("process"), **res}
-        )
+    flows = estate.get("process_flows", []) if isinstance(estate, dict) else []
+    _catalog_declared_flows(api, flows, key_to_guid, report)
 
     report["summary"] = {
         "processes": count_created(report["processes"]),

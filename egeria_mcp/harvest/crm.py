@@ -18,6 +18,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -71,10 +73,6 @@ def harvest_crm(
     """Catalog Twenty CRM companies + people into Egeria."""
     report: dict[str, Any] = {"records": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("TWENTY_URL")
     token = token or setting("TWENTY_TOKEN")
     prefix = setting("TWENTY_API_PREFIX", "/rest")
@@ -90,7 +88,7 @@ def harvest_crm(
         deployed_implementation_type="Twenty CRM",
         confidentiality_level=2,
     )
-    record_error("store:twenty", store)
+    note_error(report, "store:twenty", store)
 
     total = 0
     for resource, level, kind in (("companies", 2, "Company"), ("people", 3, "Person")):
@@ -115,14 +113,14 @@ def harvest_crm(
                 confidentiality_level=level,
                 additional_properties={"crmObject": kind, "source": "Twenty"},
             )
-            record_error(f"{resource}:{name}", res)
+            note_error(report, f"{resource}:{name}", res)
             report["records"].append({"kind": kind, "name": str(name), **res})
 
     report["source"] = {"url": url, "records": total}
     if total == 0:
         report["skipped"] = "no CRM records returned (unreachable or unauthorized)"
     report["summary"] = {
-        "records": len([r for r in report["records"] if r.get("guid")]),
+        "records": count_created(report["records"]),
         "errors": len(report["errors"]),
     }
     return report

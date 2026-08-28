@@ -18,6 +18,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -87,10 +89,6 @@ def harvest_leanix(
     """Catalog LeanIX fact sheets into Egeria as architecture assets."""
     report: dict[str, Any] = {"factsheets": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     base_url = base_url or setting("LEANIX_URL")
     api_token = api_token or setting("LEANIX_API_TOKEN") or setting("LEANIX_TOKEN")
     if not base_url or not api_token:
@@ -108,7 +106,7 @@ def harvest_leanix(
         description="LeanIX EA fact-sheet portfolio.",
         category="Portfolio",
     )
-    record_error("collection:leanix", col)
+    note_error(report, "collection:leanix", col)
 
     # FactSheet type → Egeria asset type.
     type_map = {
@@ -139,11 +137,11 @@ def harvest_leanix(
                 "source": "LeanIX",
             },
         )
-        record_error(f"factsheet:{name}", res)
+        note_error(report, f"factsheet:{name}", res)
         report["factsheets"].append({"name": name, "type": fstype, **res})
 
     report["summary"] = {
-        "factsheets": len([f for f in report["factsheets"] if f.get("guid")]),
+        "factsheets": count_created(report["factsheets"]),
         "errors": len(report["errors"]),
     }
     return report

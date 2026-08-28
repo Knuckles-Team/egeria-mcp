@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -55,10 +57,6 @@ def harvest_observability(
     """Catalog Grafana data sources + dashboards into Egeria."""
     report: dict[str, Any] = {"datasources": [], "dashboards": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("GRAFANA_URL")
     token = token or setting("LGTM_TOKEN") or setting("GRAFANA_TOKEN")
     if not url or not token:
@@ -94,7 +92,7 @@ def harvest_observability(
             confidentiality_level=1,
             additional_properties={"dsType": ds.get("type"), "source": "Grafana"},
         )
-        record_error(f"datasource:{name}", res)
+        note_error(report, f"datasource:{name}", res)
         report["datasources"].append({"name": name, **res})
     for db in dashboards:
         title = db.get("title")
@@ -105,12 +103,12 @@ def harvest_observability(
             description=f"Grafana dashboard '{title}'.",
             category="GrafanaDashboard",
         )
-        record_error(f"dashboard:{title}", res)
+        note_error(report, f"dashboard:{title}", res)
         report["dashboards"].append({"title": title, **res})
 
     report["summary"] = {
-        "datasources": len([d for d in report["datasources"] if d.get("guid")]),
-        "dashboards": len([d for d in report["dashboards"] if d.get("guid")]),
+        "datasources": count_created(report["datasources"]),
+        "dashboards": count_created(report["dashboards"]),
         "errors": len(report["errors"]),
     }
     return report

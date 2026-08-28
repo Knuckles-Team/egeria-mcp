@@ -15,6 +15,7 @@ from typing import Any
 
 from agent_utilities.core.config import setting
 
+from egeria_mcp.harvest._reporting import count_created, note_error
 from egeria_mcp.harvest.xml_security import parse_xml_root
 
 # ArchiMate element type (xsi:type local name) → Egeria asset type.
@@ -70,10 +71,6 @@ def harvest_archimate(api: Any, model_path: str | None = None) -> dict[str, Any]
     """Catalog ArchiMate model elements into Egeria as architecture assets."""
     report: dict[str, Any] = {"elements": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     path = model_path or setting("ARCHI_MODEL_PATH")
     if not path or not os.path.isfile(path):
         report["skipped"] = (
@@ -105,11 +102,11 @@ def harvest_archimate(api: Any, model_path: str | None = None) -> dict[str, Any]
                 "source": "ArchiMate",
             },
         )
-        record_error(f"element:{el['name']}", res)
+        note_error(report, f"element:{el['name']}", res)
         report["elements"].append({"name": el["name"], "type": etype, **res})
 
     report["summary"] = {
-        "elements": len([e for e in report["elements"] if e.get("guid")]),
+        "elements": count_created(report["elements"]),
         "errors": len(report["errors"]),
     }
     return report

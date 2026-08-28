@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -68,10 +70,6 @@ def harvest_proxy(
     """Catalog Caddy routed hosts into Egeria as exposed-service endpoints."""
     report: dict[str, Any] = {"routes": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     admin_url = admin_url or setting("CADDY_ADMIN_URL") or "http://localhost:2019"
     routes = fetch_routes(admin_url, tls_profile=tls_profile)
     report["source"] = {"admin_url": admin_url, "routes": len(routes)}
@@ -90,11 +88,11 @@ def harvest_proxy(
             confidentiality_level=1,
             additional_properties={"upstream": rt.get("upstream"), "source": "Caddy"},
         )
-        record_error(f"route:{host}", res)
+        note_error(report, f"route:{host}", res)
         report["routes"].append({"host": host, **res})
 
     report["summary"] = {
-        "routes": len([r for r in report["routes"] if r.get("guid")]),
+        "routes": count_created(report["routes"]),
         "errors": len(report["errors"]),
     }
     return report

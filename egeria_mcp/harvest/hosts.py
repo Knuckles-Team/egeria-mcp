@@ -17,6 +17,8 @@ from typing import Any
 
 from agent_utilities.core.config import setting
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 
 def _load(path: str) -> Any:
     try:
@@ -58,10 +60,6 @@ def harvest_hosts(api: Any, inventory_path: str | None = None) -> dict[str, Any]
     """Catalog hosts from an inventory file into Egeria as SoftwareServers."""
     report: dict[str, Any] = {"hosts": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     path = inventory_path or setting("HOST_INVENTORY")
     if not path or not os.path.isfile(path):
         report["skipped"] = "no host inventory (set HOST_INVENTORY to a YAML/JSON file)"
@@ -91,11 +89,11 @@ def harvest_hosts(api: Any, inventory_path: str | None = None) -> dict[str, Any]
                 "source": "inventory",
             },
         )
-        record_error(f"host:{name}", res)
+        note_error(report, f"host:{name}", res)
         report["hosts"].append({"name": str(name), **res})
 
     report["summary"] = {
-        "hosts": len([h for h in report["hosts"] if h.get("guid")]),
+        "hosts": count_created(report["hosts"]),
         "errors": len(report["errors"]),
     }
     return report

@@ -18,6 +18,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -70,10 +72,6 @@ def harvest_finance(
     """Catalog Firefly-III accounts into Egeria (financial data assets)."""
     report: dict[str, Any] = {"accounts": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     base_url, token = _resolve(base_url, token)
     if not base_url or not token:
         report["skipped"] = "no Firefly URL/token (set FIREFLY_URL / FIREFLY_TOKEN)"
@@ -93,7 +91,7 @@ def harvest_finance(
         deployed_implementation_type="Firefly-III",
         confidentiality_level=2,
     )
-    record_error("store:firefly", store)
+    note_error(report, "store:firefly", store)
     store_guid = store.get("guid")
 
     for acct in accounts:
@@ -115,13 +113,13 @@ def harvest_finance(
                 "source": "Firefly-III",
             },
         )
-        record_error(f"account:{name}", res)
+        note_error(report, f"account:{name}", res)
         report["accounts"].append({"name": name, "qualifiedName": qn, **res})
         if store_guid and res.get("guid"):
             api.link_data_flow(store_guid, res["guid"], label="hosts")
 
     report["summary"] = {
-        "accounts": len([a for a in report["accounts"] if a.get("guid")]),
+        "accounts": count_created(report["accounts"]),
         "errors": len(report["errors"]),
     }
     return report

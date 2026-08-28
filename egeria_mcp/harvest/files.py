@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -63,10 +65,6 @@ def harvest_files(
     """Catalog Nextcloud shares into Egeria as content data assets."""
     report: dict[str, Any] = {"shares": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("NEXTCLOUD_URL")
     user = user or setting("NEXTCLOUD_USERNAME")
     password = password or setting("NEXTCLOUD_PASSWORD")
@@ -102,11 +100,11 @@ def harvest_files(
                 "source": "Nextcloud",
             },
         )
-        record_error(f"share:{path}", res)
+        note_error(report, f"share:{path}", res)
         report["shares"].append({"path": path, **res})
 
     report["summary"] = {
-        "shares": len([s for s in report["shares"] if s.get("guid")]),
+        "shares": count_created(report["shares"]),
         "errors": len(report["errors"]),
     }
     return report

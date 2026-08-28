@@ -19,6 +19,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -88,10 +90,6 @@ def harvest_servicenow(
     """Catalog ServiceNow CMDB configuration items into Egeria."""
     report: dict[str, Any] = {"items": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     base_url, user, password, token = _resolve(base_url, user, password, token)
     if not base_url or not (token or (user and password)):
         report["skipped"] = (
@@ -126,14 +124,14 @@ def harvest_servicenow(
                     "source": "ServiceNow",
                 },
             )
-            record_error(f"ci:{name}", res)
+            note_error(report, f"ci:{name}", res)
             report["items"].append({"name": name, "table": table, **res})
 
     report["source"] = {"base_url": base_url, "configuration_items": total}
     if total == 0:
         report["skipped"] = "no CIs returned (unreachable or unauthorized)"
     report["summary"] = {
-        "items": len([i for i in report["items"] if i.get("guid")]),
+        "items": count_created(report["items"]),
         "errors": len(report["errors"]),
     }
     return report

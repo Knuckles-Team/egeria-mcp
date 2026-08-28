@@ -16,6 +16,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -64,10 +66,6 @@ def harvest_mailing(
     """Catalog Listmonk mailing lists into Egeria as PII data assets."""
     report: dict[str, Any] = {"lists": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("LISTMONK_URL")
     user = user or setting("LISTMONK_USER") or setting("OPENAPI_USERNAME")
     token = token or setting("LISTMONK_TOKEN") or setting("OPENAPI_PASSWORD")
@@ -99,11 +97,11 @@ def harvest_mailing(
                 "source": "Listmonk",
             },
         )
-        record_error(f"list:{name}", res)
+        note_error(report, f"list:{name}", res)
         report["lists"].append({"name": name, **res})
 
     report["summary"] = {
-        "lists": len([x for x in report["lists"] if x.get("guid")]),
+        "lists": count_created(report["lists"]),
         "errors": len(report["errors"]),
     }
     return report

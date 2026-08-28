@@ -21,6 +21,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -88,10 +90,6 @@ def harvest_identity(
     """Catalog Keycloak realms (security domains) + clients (apps) into Egeria."""
     report: dict[str, Any] = {"realms": [], "clients": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     base_url, token = _resolve(base_url, token)
     token = token or (_bearer(base_url, tls_profile) if base_url else None)
     if not base_url or not token:
@@ -115,7 +113,7 @@ def harvest_identity(
             description=f"Keycloak security realm '{rname}'.",
             category="SecurityDomain",
         )
-        record_error(f"realm:{rname}", col)
+        note_error(report, f"realm:{rname}", col)
         report["realms"].append({"realm": rname, **col})
         for client in (
             _get(base_url, token, f"/admin/realms/{rname}/clients", tls_profile) or []
@@ -138,12 +136,12 @@ def harvest_identity(
                     "source": "Keycloak",
                 },
             )
-            record_error(f"client:{rname}/{cid}", res)
+            note_error(report, f"client:{rname}/{cid}", res)
             report["clients"].append({"realm": rname, "clientId": cid, **res})
 
     report["summary"] = {
-        "realms": len([r for r in report["realms"] if r.get("guid")]),
-        "clients": len([c for c in report["clients"] if c.get("guid")]),
+        "realms": count_created(report["realms"]),
+        "clients": count_created(report["clients"]),
         "errors": len(report["errors"]),
     }
     return report

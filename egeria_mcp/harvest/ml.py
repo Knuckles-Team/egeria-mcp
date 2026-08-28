@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -56,10 +58,6 @@ def harvest_ml(
     """Catalog ML models + datasets into Egeria."""
     report: dict[str, Any] = {"models": [], "datasets": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("DATA_SCIENCE_MCP_URL") or setting("DATA_SCIENCE_URL")
     token = token or setting("DATA_SCIENCE_MCP_TOKEN") or setting("DATA_SCIENCE_TOKEN")
     if not url:
@@ -89,7 +87,7 @@ def harvest_ml(
                 "source": "DataScience",
             },
         )
-        record_error(f"model:{name}", res)
+        note_error(report, f"model:{name}", res)
         report["models"].append({"name": str(name), **res})
     for d in datasets:
         name = d.get("name") or d.get("id")
@@ -104,12 +102,12 @@ def harvest_ml(
             confidentiality_level=2,
             additional_properties={"source": "DataScience"},
         )
-        record_error(f"dataset:{name}", res)
+        note_error(report, f"dataset:{name}", res)
         report["datasets"].append({"name": str(name), **res})
 
     report["summary"] = {
-        "models": len([m for m in report["models"] if m.get("guid")]),
-        "datasets": len([d for d in report["datasets"] if d.get("guid")]),
+        "models": count_created(report["models"]),
+        "datasets": count_created(report["datasets"]),
         "errors": len(report["errors"]),
     }
     return report

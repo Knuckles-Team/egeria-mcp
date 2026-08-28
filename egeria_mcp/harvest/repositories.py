@@ -22,6 +22,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -106,10 +108,6 @@ def harvest_repositories(
     """
     report: dict[str, Any] = {"repositories": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     base_url, token = _resolve(base_url, token)
     if not base_url or not token:
         report["skipped"] = "no GitLab URL/token (set GITLAB_URL / GITLAB_TOKEN)"
@@ -145,11 +143,11 @@ def harvest_repositories(
                 "source": "GitLab",
             },
         )
-        record_error(f"repo:{path}", res)
+        note_error(report, f"repo:{path}", res)
         report["repositories"].append({"path": path, "qualifiedName": qn, **res})
 
     report["summary"] = {
-        "repositories": len([r for r in report["repositories"] if r.get("guid")]),
+        "repositories": count_created(report["repositories"]),
         "errors": len(report["errors"]),
     }
     return report
@@ -217,7 +215,7 @@ def harvest_github(
     """
     report: dict[str, Any] = {"repositories": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
+    def note_error(report, what: str, res: dict) -> None:
         if isinstance(res, dict) and res.get("error"):
             report["errors"].append({"item": what, "error": res["error"]})
 
@@ -258,11 +256,11 @@ def harvest_github(
                 "source": "GitHub",
             },
         )
-        record_error(f"repo:{full}", res)
+        note_error(report, f"repo:{full}", res)
         report["repositories"].append({"path": full, **res})
 
     report["summary"] = {
-        "repositories": len([r for r in report["repositories"] if r.get("guid")]),
+        "repositories": count_created(report["repositories"]),
         "errors": len(report["errors"]),
     }
     return report

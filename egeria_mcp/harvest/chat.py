@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -58,10 +60,6 @@ def harvest_chat(
     """Catalog Mattermost teams into Egeria as Collections."""
     report: dict[str, Any] = {"teams": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("MATTERMOST_URL")
     token = token or setting("MATTERMOST_TOKEN")
     if not url or not token:
@@ -85,11 +83,11 @@ def harvest_chat(
             description=f"Mattermost team '{name}'.",
             category="MattermostTeam",
         )
-        record_error(f"team:{name}", res)
+        note_error(report, f"team:{name}", res)
         report["teams"].append({"name": name, **res})
 
     report["summary"] = {
-        "teams": len([t for t in report["teams"] if t.get("guid")]),
+        "teams": count_created(report["teams"]),
         "errors": len(report["errors"]),
     }
     return report

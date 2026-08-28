@@ -21,6 +21,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -83,10 +85,6 @@ def harvest_archer(
     """Catalog RSA Archer GRC records into Egeria (risks/controls/findings)."""
     report: dict[str, Any] = {"records": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("ARCHER_URL")
     token = token or setting("ARCHER_TOKEN") or setting("ARCHER_SESSION_ID")
     apps = applications or [
@@ -108,7 +106,7 @@ def harvest_archer(
         deployed_implementation_type="RSA Archer",
         confidentiality_level=2,
     )
-    record_error("store:archer", store)
+    note_error(report, "store:archer", store)
 
     total = 0
     for application in apps:
@@ -142,14 +140,14 @@ def harvest_archer(
                     "source": "Archer",
                 },
             )
-            record_error(f"{application}:{name}", res)
+            note_error(report, f"{application}:{name}", res)
             report["records"].append({"kind": kind, "name": str(name), **res})
 
     report["source"] = {"url": url, "records": total}
     if total == 0:
         report["skipped"] = "no GRC records returned (unreachable or unauthorized)"
     report["summary"] = {
-        "records": len([r for r in report["records"] if r.get("guid")]),
+        "records": count_created(report["records"]),
         "errors": len(report["errors"]),
     }
     return report

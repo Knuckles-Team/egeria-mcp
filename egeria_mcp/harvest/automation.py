@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -60,10 +62,6 @@ def harvest_automation(
     """Catalog AWX/Tower job templates (Process) + inventories (Collection)."""
     report: dict[str, Any] = {"job_templates": [], "inventories": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("TOWER_URL") or setting("ANSIBLE_TOWER_URL")
     token = token or setting("TOWER_TOKEN") or setting("ANSIBLE_TOWER_TOKEN")
     if not url or not token:
@@ -90,7 +88,7 @@ def harvest_automation(
             description=inv.get("description") or f"Ansible inventory '{name}'.",
             category="AnsibleInventory",
         )
-        record_error(f"inventory:{name}", res)
+        note_error(report, f"inventory:{name}", res)
         report["inventories"].append({"name": name, **res})
 
     for jt in templates:
@@ -111,12 +109,12 @@ def harvest_automation(
                 "source": "Ansible",
             },
         )
-        record_error(f"job_template:{name}", res)
+        note_error(report, f"job_template:{name}", res)
         report["job_templates"].append({"name": name, "qualifiedName": qn, **res})
 
     report["summary"] = {
-        "inventories": len([i for i in report["inventories"] if i.get("guid")]),
-        "job_templates": len([j for j in report["job_templates"] if j.get("guid")]),
+        "inventories": count_created(report["inventories"]),
+        "job_templates": count_created(report["job_templates"]),
         "errors": len(report["errors"]),
     }
     return report

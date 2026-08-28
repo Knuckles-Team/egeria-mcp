@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -64,10 +66,6 @@ def harvest_kafka(
     """Catalog Kafka topics into Egeria as data assets."""
     report: dict[str, Any] = {"topics": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     rest_url = rest_url or setting("KAFKA_REST_URL")
     token = token or setting("KAFKA_TOKEN")
     if not rest_url:
@@ -95,11 +93,11 @@ def harvest_kafka(
             confidentiality_level=1,
             additional_properties={"topic": topic, "source": "Kafka"},
         )
-        record_error(f"topic:{topic}", res)
+        note_error(report, f"topic:{topic}", res)
         report["topics"].append({"topic": topic, "qualifiedName": qn, **res})
 
     report["summary"] = {
-        "topics": len([t for t in report["topics"] if t.get("guid")]),
+        "topics": count_created(report["topics"]),
         "errors": len(report["errors"]),
     }
     return report

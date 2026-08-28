@@ -18,6 +18,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -58,10 +60,6 @@ def harvest_m365(
     """Catalog M365 SharePoint sites + groups into Egeria as Collections."""
     report: dict[str, Any] = {"sites": [], "groups": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     token = token or setting("MSGRAPH_TOKEN") or setting("MS_GRAPH_TOKEN")
     base = base_url or setting("MSGRAPH_URL") or "https://graph.microsoft.com/v1.0"
     if not token:
@@ -90,7 +88,7 @@ def harvest_m365(
             description=f"SharePoint site '{name}'.",
             category="SharePointSite",
         )
-        record_error(f"site:{name}", res)
+        note_error(report, f"site:{name}", res)
         report["sites"].append({"name": name, **res})
     for g in groups:
         name = g.get("displayName")
@@ -101,12 +99,12 @@ def harvest_m365(
             description=f"Microsoft 365 group/team '{name}'.",
             category="M365Group",
         )
-        record_error(f"group:{name}", res)
+        note_error(report, f"group:{name}", res)
         report["groups"].append({"name": name, **res})
 
     report["summary"] = {
-        "sites": len([s for s in report["sites"] if s.get("guid")]),
-        "groups": len([g for g in report["groups"] if g.get("guid")]),
+        "sites": count_created(report["sites"]),
+        "groups": count_created(report["groups"]),
         "errors": len(report["errors"]),
     }
     return report

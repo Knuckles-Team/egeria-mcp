@@ -21,6 +21,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -99,10 +101,6 @@ def harvest_projects(
     """Catalog Plane and/or Jira projects into Egeria as Projects."""
     report: dict[str, Any] = {"projects": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     projects = _plane_projects(tls_profile) + _jira_projects(tls_profile)
     report["source"] = {"projects": len(projects)}
     if not projects:
@@ -119,13 +117,13 @@ def harvest_projects(
             f"{p['source']}: {name}",
             description=p.get("description") or f"{p['source']} project '{name}'.",
         )
-        record_error(f"project:{p['source']}/{name}", res)
+        note_error(report, f"project:{p['source']}/{name}", res)
         report["projects"].append(
             {"source": p["source"], "name": name, "key": p.get("key"), **res}
         )
 
     report["summary"] = {
-        "projects": len([p for p in report["projects"] if p.get("guid")]),
+        "projects": count_created(report["projects"]),
         "errors": len(report["errors"]),
     }
     return report

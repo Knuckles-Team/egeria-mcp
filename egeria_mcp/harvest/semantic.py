@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -54,10 +56,6 @@ def harvest_semantic(
     """Catalog Apache Jena Fuseki datasets into Egeria as data assets."""
     report: dict[str, Any] = {"datasets": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("JENA_FUSEKI_URL") or setting("JENA_URL")
     user, password = setting("JENA_USERNAME"), setting("JENA_PASSWORD")
     token = setting("JENA_TOKEN")
@@ -84,7 +82,7 @@ def harvest_semantic(
         deployed_implementation_type="Apache Jena Fuseki",
         confidentiality_level=1,
     )
-    record_error("store:fuseki", store)
+    note_error(report, "store:fuseki", store)
     store_guid = store.get("guid")
 
     for ds in datasets:
@@ -101,13 +99,13 @@ def harvest_semantic(
             confidentiality_level=1,
             additional_properties={"dataset": name, "source": "Jena"},
         )
-        record_error(f"dataset:{name}", res)
+        note_error(report, f"dataset:{name}", res)
         report["datasets"].append({"name": name, **res})
         if store_guid and res.get("guid"):
             api.link_data_flow(store_guid, res["guid"], label="hosts")
 
     report["summary"] = {
-        "datasets": len([d for d in report["datasets"] if d.get("guid")]),
+        "datasets": count_created(report["datasets"]),
         "errors": len(report["errors"]),
     }
     return report

@@ -13,6 +13,8 @@ from typing import Any
 
 from agent_utilities.core.config import setting
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 _SYSTEM_DBS = {"admin", "local", "config"}
 
 
@@ -31,10 +33,6 @@ def _resolve(uri: str | None) -> str | None:
 def harvest_documentdb(api: Any, uri: str | None = None) -> dict[str, Any]:
     """Catalog MongoDB/DocumentDB databases + collections into Egeria."""
     report: dict[str, Any] = {"databases": [], "collections": [], "errors": []}
-
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
 
     uri = _resolve(uri)
     if not uri:
@@ -63,7 +61,7 @@ def harvest_documentdb(api: Any, uri: str | None = None) -> dict[str, Any]:
             deployed_implementation_type="MongoDB Database",
             confidentiality_level=2,
         )
-        record_error(f"db:{dbname}", dres)
+        note_error(report, f"db:{dbname}", dres)
         report["databases"].append({"name": dbname, **dres})
         try:
             colls = client[dbname].list_collection_names()
@@ -80,12 +78,12 @@ def harvest_documentdb(api: Any, uri: str | None = None) -> dict[str, Any]:
                 confidentiality_level=2,
                 additional_properties={"database": dbname, "source": "MongoDB"},
             )
-            record_error(f"collection:{dbname}.{coll}", res)
+            note_error(report, f"collection:{dbname}.{coll}", res)
             report["collections"].append({"name": f"{dbname}.{coll}", **res})
 
     report["summary"] = {
-        "databases": len([d for d in report["databases"] if d.get("guid")]),
-        "collections": len([c for c in report["collections"] if c.get("guid")]),
+        "databases": count_created(report["databases"]),
+        "collections": count_created(report["collections"]),
         "errors": len(report["errors"]),
     }
     return report

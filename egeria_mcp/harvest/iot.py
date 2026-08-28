@@ -18,6 +18,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -58,10 +60,6 @@ def harvest_iot(
     """Catalog Home Assistant integration domains into Egeria as Collections."""
     report: dict[str, Any] = {"domains": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("HOME_ASSISTANT_URL")
     token = token or setting("HOME_ASSISTANT_TOKEN")
     if not url or not token:
@@ -84,7 +82,7 @@ def harvest_iot(
         deployed_implementation_type="Home Assistant",
         confidentiality_level=1,
     )
-    record_error("store:homeassistant", store)
+    note_error(report, "store:homeassistant", store)
 
     domains: dict[str, int] = {}
     for st in states:
@@ -97,11 +95,11 @@ def harvest_iot(
             description=f"Home Assistant '{domain}' domain ({count} entities).",
             category="HomeAssistantDomain",
         )
-        record_error(f"domain:{domain}", res)
+        note_error(report, f"domain:{domain}", res)
         report["domains"].append({"domain": domain, "entities": count, **res})
 
     report["summary"] = {
-        "domains": len([d for d in report["domains"] if d.get("guid")]),
+        "domains": count_created(report["domains"]),
         "errors": len(report["errors"]),
     }
     return report

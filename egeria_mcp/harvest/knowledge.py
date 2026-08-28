@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -67,10 +69,6 @@ def harvest_knowledge(
     """Catalog Confluence spaces into Egeria as Collections."""
     report: dict[str, Any] = {"spaces": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     env_url, env_user, env_token = _resolve()
     url, user, token = url or env_url, user or env_user, token or env_token
     if not url or not user or not token:
@@ -92,11 +90,11 @@ def harvest_knowledge(
             description=f"Confluence space '{name}' ({sp.get('key')}).",
             category="KnowledgeBase",
         )
-        record_error(f"space:{name}", res)
+        note_error(report, f"space:{name}", res)
         report["spaces"].append({"name": name, "key": sp.get("key"), **res})
 
     report["summary"] = {
-        "spaces": len([s for s in report["spaces"] if s.get("guid")]),
+        "spaces": count_created(report["spaces"]),
         "errors": len(report["errors"]),
     }
     return report

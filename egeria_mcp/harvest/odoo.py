@@ -20,6 +20,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -118,10 +120,6 @@ def harvest_odoo(
     """Catalog Odoo CRM customers + leads into Egeria."""
     report: dict[str, Any] = {"records": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("ODOO_URL")
     db = db or setting("ODOO_DB")
     user = user or setting("ODOO_USER")
@@ -147,7 +145,7 @@ def harvest_odoo(
         deployed_implementation_type="Odoo CRM",
         confidentiality_level=2,
     )
-    record_error("store:odoo", store)
+    note_error(report, "store:odoo", store)
 
     total = 0
     for model, kind, level in _MODELS:
@@ -174,14 +172,14 @@ def harvest_odoo(
                     "source": "Odoo",
                 },
             )
-            record_error(f"{model}:{name}", res)
+            note_error(report, f"{model}:{name}", res)
             report["records"].append({"kind": kind, "name": str(name), **res})
 
     report["source"] = {"url": url, "records": total}
     if total == 0:
         report["skipped"] = "no CRM records returned (unreachable or unauthorized)"
     report["summary"] = {
-        "records": len([r for r in report["records"] if r.get("guid")]),
+        "records": count_created(report["records"]),
         "errors": len(report["errors"]),
     }
     return report

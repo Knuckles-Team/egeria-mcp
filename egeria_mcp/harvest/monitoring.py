@@ -20,6 +20,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -68,10 +70,6 @@ def harvest_monitoring(
     """Catalog Uptime Kuma monitors into Egeria as monitored-service assets."""
     report: dict[str, Any] = {"monitors": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("UPTIME_KUMA_URL")
     token = token or setting("UPTIME_KUMA_TOKEN")
     if not url or not token:
@@ -100,11 +98,11 @@ def harvest_monitoring(
                 "source": "UptimeKuma",
             },
         )
-        record_error(f"monitor:{name}", res)
+        note_error(report, f"monitor:{name}", res)
         report["monitors"].append({"name": name, **res})
 
     report["summary"] = {
-        "monitors": len([m for m in report["monitors"] if m.get("guid")]),
+        "monitors": count_created(report["monitors"]),
         "errors": len(report["errors"]),
     }
     return report

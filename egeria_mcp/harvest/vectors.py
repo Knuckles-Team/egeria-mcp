@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -55,10 +57,6 @@ def harvest_vectors(
     """Catalog Qdrant vector collections into Egeria as data assets."""
     report: dict[str, Any] = {"collections": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("QDRANT_URL") or setting("VECTOR_URL")
     api_key = api_key or setting("QDRANT_API_KEY") or setting("VECTOR_TOKEN")
     if not url:
@@ -79,7 +77,7 @@ def harvest_vectors(
         deployed_implementation_type="Qdrant",
         confidentiality_level=1,
     )
-    record_error("store:qdrant", store)
+    note_error(report, "store:qdrant", store)
     store_guid = store.get("guid")
 
     for name in cols:
@@ -93,13 +91,13 @@ def harvest_vectors(
             confidentiality_level=1,
             additional_properties={"collection": name, "source": "Qdrant"},
         )
-        record_error(f"collection:{name}", res)
+        note_error(report, f"collection:{name}", res)
         report["collections"].append({"name": name, **res})
         if store_guid and res.get("guid"):
             api.link_data_flow(store_guid, res["guid"], label="hosts")
 
     report["summary"] = {
-        "collections": len([c for c in report["collections"] if c.get("guid")]),
+        "collections": count_created(report["collections"]),
         "errors": len(report["errors"]),
     }
     return report

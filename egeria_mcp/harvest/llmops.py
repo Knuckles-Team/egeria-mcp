@@ -17,6 +17,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -62,10 +64,6 @@ def harvest_llmops(
     """Catalog Langfuse datasets into Egeria as LLM data assets."""
     report: dict[str, Any] = {"datasets": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("LANGFUSE_BASE_URL")
     public = public or setting("LANGFUSE_PUBLIC_KEY")
     secret = secret or setting("LANGFUSE_SECRET_KEY")
@@ -95,11 +93,11 @@ def harvest_llmops(
             confidentiality_level=1,
             additional_properties={"source": "Langfuse"},
         )
-        record_error(f"dataset:{name}", res)
+        note_error(report, f"dataset:{name}", res)
         report["datasets"].append({"name": name, **res})
 
     report["summary"] = {
-        "datasets": len([d for d in report["datasets"] if d.get("guid")]),
+        "datasets": count_created(report["datasets"]),
         "errors": len(report["errors"]),
     }
     return report

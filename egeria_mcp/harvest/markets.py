@@ -21,6 +21,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -74,10 +76,6 @@ def harvest_markets(
     """Catalog financial instruments / holdings into Egeria."""
     report: dict[str, Any] = {"instruments": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("EMERALD_URL")
     token = token or setting("EMERALD_TOKEN")
     portfolio_path = portfolio_path or setting("EMERALD_PORTFOLIO")
@@ -100,7 +98,7 @@ def harvest_markets(
         deployed_implementation_type="Emerald Exchange",
         confidentiality_level=2,
     )
-    record_error("store:emerald", store)
+    note_error(report, "store:emerald", store)
 
     for h in holdings:
         symbol = h.get("symbol") or h.get("ticker") or h.get("name") or h.get("id")
@@ -121,11 +119,11 @@ def harvest_markets(
                 "source": "Emerald",
             },
         )
-        record_error(f"instrument:{symbol}", res)
+        note_error(report, f"instrument:{symbol}", res)
         report["instruments"].append({"symbol": str(symbol), **res})
 
     report["summary"] = {
-        "instruments": len([i for i in report["instruments"] if i.get("guid")]),
+        "instruments": count_created(report["instruments"]),
         "errors": len(report["errors"]),
     }
     return report

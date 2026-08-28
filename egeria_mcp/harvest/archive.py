@@ -18,6 +18,8 @@ from agent_utilities.core.transport_security import (
     resolve_tls_profile,
 )
 
+from egeria_mcp.harvest._reporting import count_created, note_error
+
 try:
     import httpx
 
@@ -65,10 +67,6 @@ def harvest_archive(
     """Catalog ArchiveBox snapshots into Egeria as content data assets."""
     report: dict[str, Any] = {"snapshots": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = url or setting("ARCHIVEBOX_URL")
     token = token or setting("ARCHIVEBOX_API_KEY") or setting("ARCHIVEBOX_TOKEN")
     if not url or not token:
@@ -104,11 +102,11 @@ def harvest_archive(
             confidentiality_level=1,
             additional_properties={"url": target, "source": "ArchiveBox"},
         )
-        record_error(f"snapshot:{target}", res)
+        note_error(report, f"snapshot:{target}", res)
         report["snapshots"].append({"url": target, **res})
 
     report["summary"] = {
-        "snapshots": len([s for s in report["snapshots"] if s.get("guid")]),
+        "snapshots": count_created(report["snapshots"]),
         "errors": len(report["errors"]),
     }
     return report

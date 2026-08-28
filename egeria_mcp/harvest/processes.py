@@ -30,6 +30,7 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 from egeria_mcp.harvest import topology
+from egeria_mcp.harvest._reporting import count_created, note_error
 
 
 def _camunda_base_url(base_url: str | None) -> str | None:
@@ -80,10 +81,6 @@ def harvest_processes(
     """
     report: dict[str, Any] = {"processes": [], "flows": [], "errors": []}
 
-    def record_error(what: str, res: dict) -> None:
-        if isinstance(res, dict) and res.get("error"):
-            report["errors"].append({"item": what, "error": res["error"]})
-
     url = _camunda_base_url(base_url)
     if not url:
         report["skipped"] = "no Camunda URL (set CAMUNDA7_URL / CAMUNDA_URL)"
@@ -122,7 +119,7 @@ def harvest_processes(
                 "resource": pd.get("resource"),
             },
         )
-        record_error(f"process:{key}", res)
+        note_error(report, f"process:{key}", res)
         if res.get("guid"):
             key_to_guid[key] = res["guid"]
         report["processes"].append(
@@ -147,13 +144,13 @@ def harvest_processes(
         res = api.link_data_flow(
             ds_guid, proc_guid, label=flow.get("label", "consumes")
         )
-        record_error(f"flow:{flow.get('dataset')}->{flow.get('process')}", res)
+        note_error(report, f"flow:{flow.get('dataset')}->{flow.get('process')}", res)
         report["flows"].append(
             {"dataset": flow.get("dataset"), "process": flow.get("process"), **res}
         )
 
     report["summary"] = {
-        "processes": len([p for p in report["processes"] if p.get("guid")]),
+        "processes": count_created(report["processes"]),
         "flows": len([f for f in report["flows"] if not f.get("error")]),
         "errors": len(report["errors"]),
     }

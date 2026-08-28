@@ -33,6 +33,24 @@ except Exception:  # pragma: no cover
 _DEFAULT_APPLICATIONS = ["risks", "controls", "findings"]
 
 
+def _unwrap_records(data: Any) -> list[dict]:
+    """Normalize an Archer content response into a flat record list.
+
+    Archer's OData-ish payload is either ``{"value":[{"RequestedObject":{...}}]}``
+    or a bare list; each item may itself wrap the real record under
+    ``RequestedObject``.
+    """
+    # Archer OData-ish: {"value":[{"RequestedObject":{...}}]} | [...]
+    if isinstance(data, dict):
+        recs = data.get("value") or data.get("Records") or data.get("data") or []
+    else:
+        recs = data
+    return [
+        rec.get("RequestedObject", rec) if isinstance(rec, dict) else rec
+        for rec in (recs if isinstance(recs, list) else [])
+    ]
+
+
 def fetch_records(
     url: str,
     token: str,
@@ -58,20 +76,52 @@ def fetch_records(
             )
         if r.status_code != 200:
             return []
-        data = r.json()
-        # Archer OData-ish: {"value":[{"RequestedObject":{...}}]} | [...]
-        if isinstance(data, dict):
-            recs = data.get("value") or data.get("Records") or data.get("data") or []
-        else:
-            recs = data
-        out = []
-        for rec in recs if isinstance(recs, list) else []:
-            out.append(
-                rec.get("RequestedObject", rec) if isinstance(rec, dict) else rec
-            )
-        return out
+        return _unwrap_records(r.json())
     except Exception:
         return []
+
+
+def _catalog_records(
+    api: Any, application: str, kind: str, recs: list[dict], report: dict[str, Any]
+) -> None:
+    """Catalog one Archer application's records as GRC data assets."""
+    for rec in recs:
+        name = (
+            rec.get("Name")
+            or rec.get("name")
+            or rec.get("Title")
+            or rec.get("id")
+            or rec.get("Id")
+        )
+        rid = rec.get("Id") or rec.get("id") or name
+        if not name:
+            continue
+        qn = f"RiskAsset::Archer::{kind}::{rid}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            str(name),
+            description=f"RSA Archer {kind} '{name}'.",
+            deployed_implementation_type=f"Archer {kind}",
+            confidentiality_level=2,
+            additional_properties={
+                "grcKind": kind,
+                "archerId": str(rid),
+                "application": application,
+                "capability": "grc",
+                "source": "Archer",
+            },
+        )
+        note_error(report, f"{application}:{name}", res)
+        report["records"].append({"kind": kind, "name": str(name), **res})
+
+
+def _resolve_applications(applications: list[str] | None) -> list[str]:
+    """Explicit ``applications`` override, else the ``ARCHER_APPLICATIONS`` setting."""
+    if applications:
+        return applications
+    configured = setting("ARCHER_APPLICATIONS", ",".join(_DEFAULT_APPLICATIONS))
+    return [a.strip() for a in configured.split(",") if a.strip()]
 
 
 def harvest_archer(
@@ -87,13 +137,7 @@ def harvest_archer(
 
     url = url or setting("ARCHER_URL")
     token = token or setting("ARCHER_TOKEN") or setting("ARCHER_SESSION_ID")
-    apps = applications or [
-        a.strip()
-        for a in setting("ARCHER_APPLICATIONS", ",".join(_DEFAULT_APPLICATIONS)).split(
-            ","
-        )
-        if a.strip()
-    ]
+    apps = _resolve_applications(applications)
     if not url or not token:
         report["skipped"] = "no Archer URL/token (set ARCHER_URL / ARCHER_TOKEN)"
         return report
@@ -113,35 +157,7 @@ def harvest_archer(
         recs = fetch_records(url, token, application, tls_profile=tls_profile)
         total += len(recs)
         kind = application.rstrip("s").capitalize() or application
-        for rec in recs:
-            name = (
-                rec.get("Name")
-                or rec.get("name")
-                or rec.get("Title")
-                or rec.get("id")
-                or rec.get("Id")
-            )
-            rid = rec.get("Id") or rec.get("id") or name
-            if not name:
-                continue
-            qn = f"RiskAsset::Archer::{kind}::{rid}"
-            res = api.create_asset(
-                "DeployedDatabaseSchema",
-                qn,
-                str(name),
-                description=f"RSA Archer {kind} '{name}'.",
-                deployed_implementation_type=f"Archer {kind}",
-                confidentiality_level=2,
-                additional_properties={
-                    "grcKind": kind,
-                    "archerId": str(rid),
-                    "application": application,
-                    "capability": "grc",
-                    "source": "Archer",
-                },
-            )
-            note_error(report, f"{application}:{name}", res)
-            report["records"].append({"kind": kind, "name": str(name), **res})
+        _catalog_records(api, application, kind, recs, report)
 
     report["source"] = {"url": url, "records": total}
     if total == 0:

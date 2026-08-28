@@ -55,6 +55,30 @@ def fetch_lists(
         return []
 
 
+def _catalog_lists(api: Any, lists: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Listmonk mailing lists as PII data assets."""
+    for lst in lists:
+        name = lst.get("name")
+        if not name:
+            continue
+        qn = f"Dataset::Listmonk::{lst.get('id')}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            name,
+            description=f"Listmonk mailing list '{name}' ({lst.get('subscriber_count', '?')} subscribers).",
+            deployed_implementation_type="Mailing List",
+            confidentiality_level=2,  # PII
+            additional_properties={
+                "type": lst.get("type"),
+                "subscriberCount": lst.get("subscriber_count"),
+                "source": "Listmonk",
+            },
+        )
+        note_error(report, f"list:{name}", res)
+        report["lists"].append({"name": name, **res})
+
+
 def harvest_mailing(
     api: Any,
     url: str | None = None,
@@ -79,26 +103,7 @@ def harvest_mailing(
         report["skipped"] = "no lists returned (unreachable or unauthorized)"
         return report
 
-    for lst in lists:
-        name = lst.get("name")
-        if not name:
-            continue
-        qn = f"Dataset::Listmonk::{lst.get('id')}"
-        res = api.create_asset(
-            "DeployedDatabaseSchema",
-            qn,
-            name,
-            description=f"Listmonk mailing list '{name}' ({lst.get('subscriber_count', '?')} subscribers).",
-            deployed_implementation_type="Mailing List",
-            confidentiality_level=2,  # PII
-            additional_properties={
-                "type": lst.get("type"),
-                "subscriberCount": lst.get("subscriber_count"),
-                "source": "Listmonk",
-            },
-        )
-        note_error(report, f"list:{name}", res)
-        report["lists"].append({"name": name, **res})
+    _catalog_lists(api, lists, report)
 
     report["summary"] = {
         "lists": count_created(report["lists"]),

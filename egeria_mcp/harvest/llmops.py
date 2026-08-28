@@ -53,6 +53,26 @@ def fetch_datasets(
         return []
 
 
+def _catalog_datasets(api: Any, datasets: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Langfuse datasets as LLM data assets."""
+    for ds in datasets:
+        name = ds.get("name")
+        if not name:
+            continue
+        qn = f"Dataset::Langfuse::{name}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            name,
+            description=ds.get("description") or f"Langfuse dataset '{name}'.",
+            deployed_implementation_type="Langfuse Dataset",
+            confidentiality_level=1,
+            additional_properties={"source": "Langfuse"},
+        )
+        note_error(report, f"dataset:{name}", res)
+        report["datasets"].append({"name": name, **res})
+
+
 def harvest_llmops(
     api: Any,
     url: str | None = None,
@@ -79,22 +99,7 @@ def harvest_llmops(
         report["skipped"] = "no datasets returned (unreachable or unauthorized)"
         return report
 
-    for ds in datasets:
-        name = ds.get("name")
-        if not name:
-            continue
-        qn = f"Dataset::Langfuse::{name}"
-        res = api.create_asset(
-            "DeployedDatabaseSchema",
-            qn,
-            name,
-            description=ds.get("description") or f"Langfuse dataset '{name}'.",
-            deployed_implementation_type="Langfuse Dataset",
-            confidentiality_level=1,
-            additional_properties={"source": "Langfuse"},
-        )
-        note_error(report, f"dataset:{name}", res)
-        report["datasets"].append({"name": name, **res})
+    _catalog_datasets(api, datasets, report)
 
     report["summary"] = {
         "datasets": count_created(report["datasets"]),

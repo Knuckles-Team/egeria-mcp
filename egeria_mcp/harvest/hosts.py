@@ -56,21 +56,8 @@ def _normalize(data: Any) -> list[dict]:
     return []
 
 
-def harvest_hosts(api: Any, inventory_path: str | None = None) -> dict[str, Any]:
-    """Catalog hosts from an inventory file into Egeria as SoftwareServers."""
-    report: dict[str, Any] = {"hosts": [], "errors": []}
-
-    path = inventory_path or setting("HOST_INVENTORY")
-    if not path or not os.path.isfile(path):
-        report["skipped"] = "no host inventory (set HOST_INVENTORY to a YAML/JSON file)"
-        return report
-
-    hosts = _normalize(_load(path))
-    report["source"] = {"inventory": path, "hosts": len(hosts)}
-    if not hosts:
-        report["skipped"] = "no hosts parsed from inventory"
-        return report
-
+def _catalog_hosts(api: Any, hosts: list[dict], report: dict[str, Any]) -> None:
+    """Catalog inventory hosts as ``SoftwareServer`` assets."""
     for h in hosts:
         name = h.get("name") or h.get("hostname")
         if not name:
@@ -91,6 +78,24 @@ def harvest_hosts(api: Any, inventory_path: str | None = None) -> dict[str, Any]
         )
         note_error(report, f"host:{name}", res)
         report["hosts"].append({"name": str(name), **res})
+
+
+def harvest_hosts(api: Any, inventory_path: str | None = None) -> dict[str, Any]:
+    """Catalog hosts from an inventory file into Egeria as SoftwareServers."""
+    report: dict[str, Any] = {"hosts": [], "errors": []}
+
+    path = inventory_path or setting("HOST_INVENTORY")
+    if not path or not os.path.isfile(path):
+        report["skipped"] = "no host inventory (set HOST_INVENTORY to a YAML/JSON file)"
+        return report
+
+    hosts = _normalize(_load(path))
+    report["source"] = {"inventory": path, "hosts": len(hosts)}
+    if not hosts:
+        report["skipped"] = "no hosts parsed from inventory"
+        return report
+
+    _catalog_hosts(api, hosts, report)
 
     report["summary"] = {
         "hosts": count_created(report["hosts"]),

@@ -58,6 +58,21 @@ def fetch_spaces(
         return []
 
 
+def _catalog_spaces(api: Any, spaces: list[dict], report: dict[str, Any]) -> None:
+    """Catalog Confluence spaces as Egeria Collections."""
+    for sp in spaces:
+        name = sp.get("name") or sp.get("key")
+        if not name:
+            continue
+        res = api.create_collection(
+            f"Confluence: {name}",
+            description=f"Confluence space '{name}' ({sp.get('key')}).",
+            category="KnowledgeBase",
+        )
+        note_error(report, f"space:{name}", res)
+        report["spaces"].append({"name": name, "key": sp.get("key"), **res})
+
+
 def harvest_knowledge(
     api: Any,
     url: str | None = None,
@@ -81,17 +96,7 @@ def harvest_knowledge(
         report["skipped"] = "no spaces returned (unreachable or unauthorized)"
         return report
 
-    for sp in spaces:
-        name = sp.get("name") or sp.get("key")
-        if not name:
-            continue
-        res = api.create_collection(
-            f"Confluence: {name}",
-            description=f"Confluence space '{name}' ({sp.get('key')}).",
-            category="KnowledgeBase",
-        )
-        note_error(report, f"space:{name}", res)
-        report["spaces"].append({"name": name, "key": sp.get("key"), **res})
+    _catalog_spaces(api, spaces, report)
 
     report["summary"] = {
         "spaces": count_created(report["spaces"]),

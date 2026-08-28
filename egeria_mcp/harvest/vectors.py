@@ -27,6 +27,11 @@ except Exception:  # pragma: no cover
     HTTPX_AVAILABLE = False
 
 
+def _collection_names(payload: dict) -> list[str]:
+    cols = (((payload or {}).get("result") or {}).get("collections")) or []
+    return [c.get("name") for c in cols if c.get("name")]
+
+
 def fetch_collections(
     url: str, api_key: str | None, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[str]:
@@ -39,10 +44,7 @@ def fetch_collections(
             **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
         ) as c:
             r = c.get(f"{url.rstrip('/')}/collections", headers=headers)
-        if r.status_code != 200:
-            return []
-        cols = (((r.json() or {}).get("result") or {}).get("collections")) or []
-        return [c.get("name") for c in cols if c.get("name")]
+        return _collection_names(r.json()) if r.status_code == 200 else []
     except Exception:
         return []
 

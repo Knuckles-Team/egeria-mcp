@@ -65,41 +65,21 @@ def _load_file(path: str) -> list[dict]:
     return [h for h in data if isinstance(h, dict)] if isinstance(data, list) else []
 
 
-def harvest_markets(
-    api: Any,
-    url: str | None = None,
-    token: str | None = None,
-    *,
-    portfolio_path: str | None = None,
-    tls_profile: ResolvedTLSProfile | None = None,
-) -> dict[str, Any]:
-    """Catalog financial instruments / holdings into Egeria."""
-    report: dict[str, Any] = {"instruments": [], "errors": []}
-
-    url = url or setting("EMERALD_URL")
-    token = token or setting("EMERALD_TOKEN")
-    portfolio_path = portfolio_path or setting("EMERALD_PORTFOLIO")
+def _resolve_holdings(
+    url: str | None,
+    token: str | None,
+    portfolio_path: str | None,
+    tls_profile: ResolvedTLSProfile | None,
+) -> list[dict]:
+    """Holdings from the portfolio API, falling back to the declared file."""
     holdings = _fetch_api(url, token, tls_profile) if url else []
     if not holdings and portfolio_path and os.path.isfile(portfolio_path):
         holdings = _load_file(portfolio_path)
-    if not url and not portfolio_path:
-        report["skipped"] = "no markets source (set EMERALD_URL or EMERALD_PORTFOLIO)"
-        return report
-    report["source"] = {"instruments": len(holdings)}
-    if not holdings:
-        report["skipped"] = "no holdings returned (unreachable / empty / unauthorized)"
-        return report
+    return holdings
 
-    store = api.create_asset(
-        "SoftwareServer",
-        "DataStore::emerald",
-        "emerald-exchange",
-        description="Emerald Exchange quant/trading store.",
-        deployed_implementation_type="Emerald Exchange",
-        confidentiality_level=2,
-    )
-    note_error(report, "store:emerald", store)
 
+def _catalog_instruments(api: Any, holdings: list[dict], report: dict[str, Any]) -> None:
+    """Catalog financial instruments/holdings as data assets."""
     for h in holdings:
         symbol = h.get("symbol") or h.get("ticker") or h.get("name") or h.get("id")
         if not symbol:
@@ -121,6 +101,42 @@ def harvest_markets(
         )
         note_error(report, f"instrument:{symbol}", res)
         report["instruments"].append({"symbol": str(symbol), **res})
+
+
+def harvest_markets(
+    api: Any,
+    url: str | None = None,
+    token: str | None = None,
+    *,
+    portfolio_path: str | None = None,
+    tls_profile: ResolvedTLSProfile | None = None,
+) -> dict[str, Any]:
+    """Catalog financial instruments / holdings into Egeria."""
+    report: dict[str, Any] = {"instruments": [], "errors": []}
+
+    url = url or setting("EMERALD_URL")
+    token = token or setting("EMERALD_TOKEN")
+    portfolio_path = portfolio_path or setting("EMERALD_PORTFOLIO")
+    holdings = _resolve_holdings(url, token, portfolio_path, tls_profile)
+    if not url and not portfolio_path:
+        report["skipped"] = "no markets source (set EMERALD_URL or EMERALD_PORTFOLIO)"
+        return report
+    report["source"] = {"instruments": len(holdings)}
+    if not holdings:
+        report["skipped"] = "no holdings returned (unreachable / empty / unauthorized)"
+        return report
+
+    store = api.create_asset(
+        "SoftwareServer",
+        "DataStore::emerald",
+        "emerald-exchange",
+        description="Emerald Exchange quant/trading store.",
+        deployed_implementation_type="Emerald Exchange",
+        confidentiality_level=2,
+    )
+    note_error(report, "store:emerald", store)
+
+    _catalog_instruments(api, holdings, report)
 
     report["summary"] = {
         "instruments": count_created(report["instruments"]),

@@ -80,6 +80,62 @@ def _get(
         return None
 
 
+def _catalog_realm_clients(
+    api: Any,
+    base_url: str,
+    token: str,
+    tls_profile: ResolvedTLSProfile | None,
+    rname: str,
+    report: dict[str, Any],
+) -> None:
+    """Catalog one realm's clients as ``DeployedSoftwareComponent`` assets."""
+    clients = _get(base_url, token, f"/admin/realms/{rname}/clients", tls_profile) or []
+    for client in clients:
+        cid = client.get("clientId")
+        if not cid:
+            continue
+        res = api.create_asset(
+            "DeployedSoftwareComponent",
+            f"Client::{rname}::{cid}",
+            cid,
+            description=client.get("description")
+            or f"Keycloak client '{cid}' in realm '{rname}'.",
+            deployed_implementation_type="OIDC Client",
+            confidentiality_level=1,
+            additional_properties={
+                "realm": rname,
+                "enabled": client.get("enabled"),
+                "publicClient": client.get("publicClient"),
+                "source": "Keycloak",
+            },
+        )
+        note_error(report, f"client:{rname}/{cid}", res)
+        report["clients"].append({"realm": rname, "clientId": cid, **res})
+
+
+def _catalog_realms(
+    api: Any,
+    base_url: str,
+    token: str,
+    realms: list[dict],
+    tls_profile: ResolvedTLSProfile | None,
+    report: dict[str, Any],
+) -> None:
+    """Catalog Keycloak realms (as Collections) and each realm's clients."""
+    for realm in realms:
+        rname = realm.get("realm")
+        if not rname:
+            continue
+        col = api.create_collection(
+            f"Keycloak Realm {rname}",
+            description=f"Keycloak security realm '{rname}'.",
+            category="SecurityDomain",
+        )
+        note_error(report, f"realm:{rname}", col)
+        report["realms"].append({"realm": rname, **col})
+        _catalog_realm_clients(api, base_url, token, tls_profile, rname, report)
+
+
 def harvest_identity(
     api: Any,
     base_url: str | None = None,
@@ -104,40 +160,7 @@ def harvest_identity(
         report["skipped"] = "no realms returned (unreachable or unauthorized)"
         return report
 
-    for realm in realms:
-        rname = realm.get("realm")
-        if not rname:
-            continue
-        col = api.create_collection(
-            f"Keycloak Realm {rname}",
-            description=f"Keycloak security realm '{rname}'.",
-            category="SecurityDomain",
-        )
-        note_error(report, f"realm:{rname}", col)
-        report["realms"].append({"realm": rname, **col})
-        for client in (
-            _get(base_url, token, f"/admin/realms/{rname}/clients", tls_profile) or []
-        ):
-            cid = client.get("clientId")
-            if not cid:
-                continue
-            res = api.create_asset(
-                "DeployedSoftwareComponent",
-                f"Client::{rname}::{cid}",
-                cid,
-                description=client.get("description")
-                or f"Keycloak client '{cid}' in realm '{rname}'.",
-                deployed_implementation_type="OIDC Client",
-                confidentiality_level=1,
-                additional_properties={
-                    "realm": rname,
-                    "enabled": client.get("enabled"),
-                    "publicClient": client.get("publicClient"),
-                    "source": "Keycloak",
-                },
-            )
-            note_error(report, f"client:{rname}/{cid}", res)
-            report["clients"].append({"realm": rname, "clientId": cid, **res})
+    _catalog_realms(api, base_url, token, realms, tls_profile, report)
 
     report["summary"] = {
         "realms": count_created(report["realms"]),

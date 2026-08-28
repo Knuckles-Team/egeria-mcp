@@ -63,6 +63,39 @@ def _fetch(
         return []
 
 
+def _record_name(rec: dict) -> str | None:
+    """A record's display name; Twenty person names are {firstName,lastName}."""
+    name = rec.get("name")
+    if isinstance(name, dict):  # person name {firstName,lastName}
+        name = (
+            " ".join(filter(None, [name.get("firstName"), name.get("lastName")]))
+            or rec.get("id")
+        )
+    return name or rec.get("id")
+
+
+def _catalog_records(
+    api: Any, resource: str, kind: str, level: int, recs: list[dict], report: dict[str, Any]
+) -> None:
+    """Catalog one CRM resource's records (companies/people) as data assets."""
+    for rec in recs:
+        name = _record_name(rec)
+        if not name:
+            continue
+        qn = f"Dataset::Twenty::{kind}::{rec.get('id')}"
+        res = api.create_asset(
+            "DeployedDatabaseSchema",
+            qn,
+            str(name),
+            description=f"Twenty CRM {kind.lower()} '{name}'.",
+            deployed_implementation_type=f"Twenty {kind}",
+            confidentiality_level=level,
+            additional_properties={"crmObject": kind, "source": "Twenty"},
+        )
+        note_error(report, f"{resource}:{name}", res)
+        report["records"].append({"kind": kind, "name": str(name), **res})
+
+
 def harvest_crm(
     api: Any,
     url: str | None = None,
@@ -94,27 +127,7 @@ def harvest_crm(
     for resource, level, kind in (("companies", 2, "Company"), ("people", 3, "Person")):
         recs = _fetch(url, token, prefix, resource, tls_profile)
         total += len(recs)
-        for rec in recs:
-            name = rec.get("name")
-            if isinstance(name, dict):  # person name {firstName,lastName}
-                name = " ".join(
-                    filter(None, [name.get("firstName"), name.get("lastName")])
-                ) or rec.get("id")
-            name = name or rec.get("id")
-            if not name:
-                continue
-            qn = f"Dataset::Twenty::{kind}::{rec.get('id')}"
-            res = api.create_asset(
-                "DeployedDatabaseSchema",
-                qn,
-                str(name),
-                description=f"Twenty CRM {kind.lower()} '{name}'.",
-                deployed_implementation_type=f"Twenty {kind}",
-                confidentiality_level=level,
-                additional_properties={"crmObject": kind, "source": "Twenty"},
-            )
-            note_error(report, f"{resource}:{name}", res)
-            report["records"].append({"kind": kind, "name": str(name), **res})
+        _catalog_records(api, resource, kind, level, recs, report)
 
     report["source"] = {"url": url, "records": total}
     if total == 0:

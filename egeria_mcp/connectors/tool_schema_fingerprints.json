@@ -1,9 +1,9 @@
 {
-  "algorithm": "agent-utilities:mcp-tool-schema-compat:v1",
+  "algorithm": "agent-connector-sdk:mcp-tool-contract-compat:v2",
   "connector": "egeria-mcp",
   "schema_version": "1",
   "tools": {
-    "egeria_glossary_lookup": "55f797757add396ac31a2f9ed9ec7ed7ecacd8f831178e0ab807722e1d17c85f",
-    "egeria_list_policies": "5fa78151ad2794cfdd67d4ed3a297b7115385c6ed2981e260e76934a52598bf2"
+    "egeria_glossary_lookup": "9b5c90b96311f84e97e7e22ec54d1616412d2d3b9c9b9e21008a1ede01562943",
+    "egeria_list_policies": "b4726912a7cad7243c95b43c666b0025e5f2b8cfb7ff6c7380069bf026b53cd7"
   }
 }

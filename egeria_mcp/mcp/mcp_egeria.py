@@ -44,7 +44,18 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         """Search the Egeria asset catalog; returns flat asset records with GUIDs."""
         return get_client().asset_search(query, type_filter)
 
-    @mcp.tool(tags={"glossary"})
+    @mcp.tool(
+        tags={"glossary"},
+        annotations={
+            "readOnlyHint": True,
+            "destructiveHint": False,
+            "idempotentHint": True,
+            "openWorldHint": True,
+        },
+        meta={
+            "eg.annotations": {"modalities_in": ["text"], "modalities_out": ["text"]}
+        },
+    )
     async def egeria_glossary_lookup(
         term: str = Field(description="Glossary term to look up (Egeria find syntax)."),
         glossary: str = Field(
@@ -100,7 +111,18 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         """
         return get_client().governance_for(element_guid)
 
-    @mcp.tool(tags={"governance"})
+    @mcp.tool(
+        tags={"governance"},
+        annotations={
+            "readOnlyHint": True,
+            "destructiveHint": False,
+            "idempotentHint": True,
+            "openWorldHint": True,
+        },
+        meta={
+            "eg.annotations": {"modalities_in": ["text"], "modalities_out": ["text"]}
+        },
+    )
     async def egeria_list_policies(
         domain: str = Field(
             default="",

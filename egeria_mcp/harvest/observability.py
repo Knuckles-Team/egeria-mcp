@@ -11,11 +11,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_utilities.core.config import setting
-from agent_utilities.core.transport_security import (
-    ResolvedTLSProfile,
-    resolve_tls_profile,
-)
+from agent_connector_sdk.config import setting
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
 from egeria_mcp.harvest._reporting import count_created, note_error
 
@@ -47,7 +45,9 @@ def _get(
         return None
 
 
-def _catalog_datasources(api: Any, datasources: list[dict], report: dict[str, Any]) -> None:
+def _catalog_datasources(
+    api: Any, datasources: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog Grafana data sources as ``DeployedSoftwareComponent`` assets."""
     for ds in datasources:
         name = ds.get("name")
@@ -66,7 +66,9 @@ def _catalog_datasources(api: Any, datasources: list[dict], report: dict[str, An
         report["datasources"].append({"name": name, **res})
 
 
-def _catalog_dashboards(api: Any, dashboards: list[dict], report: dict[str, Any]) -> None:
+def _catalog_dashboards(
+    api: Any, dashboards: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog Grafana dashboards as Egeria Collections."""
     for db in dashboards:
         title = db.get("title")

@@ -24,7 +24,7 @@ import os
 import sys
 from dataclasses import dataclass
 
-from agent_utilities.core.config import setting
+from agent_connector_sdk.config import setting
 
 DEFAULT_ENV = os.path.expanduser("~/.config/agent-utilities/egeria-harvest.env")
 

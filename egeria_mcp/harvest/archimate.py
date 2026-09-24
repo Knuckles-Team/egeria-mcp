@@ -13,7 +13,7 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from agent_utilities.core.config import setting
+from agent_connector_sdk.config import setting
 
 from egeria_mcp.harvest._reporting import count_created, note_error
 from egeria_mcp.harvest.xml_security import parse_xml_root
@@ -64,9 +64,7 @@ def parse_model(path: str) -> list[dict]:
         root = parse_xml_root(path)
     except Exception:
         return []
-    records = (
-        _element_record(el) for el in root.iter() if _local(el.tag) == "element"
-    )
+    records = (_element_record(el) for el in root.iter() if _local(el.tag) == "element")
     return [record for record in records if record is not None]
 
 

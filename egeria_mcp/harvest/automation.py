@@ -11,11 +11,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_utilities.core.config import setting
-from agent_utilities.core.transport_security import (
-    ResolvedTLSProfile,
-    resolve_tls_profile,
-)
+from agent_connector_sdk.config import setting
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
 from egeria_mcp.harvest._reporting import count_created, note_error
 
@@ -52,7 +50,9 @@ def _fetch(
         return []
 
 
-def _catalog_inventories(api: Any, inventories: list[dict], report: dict[str, Any]) -> None:
+def _catalog_inventories(
+    api: Any, inventories: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog Tower inventories as Egeria Collections."""
     for inv in inventories:
         name = inv.get("name")
@@ -67,7 +67,9 @@ def _catalog_inventories(api: Any, inventories: list[dict], report: dict[str, An
         report["inventories"].append({"name": name, **res})
 
 
-def _catalog_job_templates(api: Any, templates: list[dict], report: dict[str, Any]) -> None:
+def _catalog_job_templates(
+    api: Any, templates: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog Tower job templates as Egeria Process assets."""
     for jt in templates:
         name = jt.get("name")

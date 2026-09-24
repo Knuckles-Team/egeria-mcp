@@ -14,11 +14,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_utilities.core.config import setting
-from agent_utilities.core.transport_security import (
-    ResolvedTLSProfile,
-    resolve_tls_profile,
-)
+from agent_connector_sdk.config import setting
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
 from egeria_mcp.harvest._reporting import count_created, note_error
 
@@ -109,7 +107,12 @@ def fetch_records(
 
 
 def _catalog_records(
-    api: Any, model: str, kind: str, level: int, recs: list[dict], report: dict[str, Any]
+    api: Any,
+    model: str,
+    kind: str,
+    level: int,
+    recs: list[dict],
+    report: dict[str, Any],
 ) -> None:
     """Catalog one Odoo model's records (customers/leads) as data assets."""
     for rec in recs:

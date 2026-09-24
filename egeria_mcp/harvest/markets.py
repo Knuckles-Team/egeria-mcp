@@ -15,11 +15,9 @@ import json
 import os
 from typing import Any
 
-from agent_utilities.core.config import setting
-from agent_utilities.core.transport_security import (
-    ResolvedTLSProfile,
-    resolve_tls_profile,
-)
+from agent_connector_sdk.config import setting
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
 from egeria_mcp.harvest._reporting import count_created, note_error
 
@@ -78,7 +76,9 @@ def _resolve_holdings(
     return holdings
 
 
-def _catalog_instruments(api: Any, holdings: list[dict], report: dict[str, Any]) -> None:
+def _catalog_instruments(
+    api: Any, holdings: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog financial instruments/holdings as data assets."""
     for h in holdings:
         symbol = h.get("symbol") or h.get("ticker") or h.get("name") or h.get("id")

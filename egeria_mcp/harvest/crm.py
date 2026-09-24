@@ -12,11 +12,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_utilities.core.config import setting
-from agent_utilities.core.transport_security import (
-    ResolvedTLSProfile,
-    resolve_tls_profile,
-)
+from agent_connector_sdk.config import setting
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
 from egeria_mcp.harvest._reporting import count_created, note_error
 
@@ -67,15 +65,19 @@ def _record_name(rec: dict) -> str | None:
     """A record's display name; Twenty person names are {firstName,lastName}."""
     name = rec.get("name")
     if isinstance(name, dict):  # person name {firstName,lastName}
-        name = (
-            " ".join(filter(None, [name.get("firstName"), name.get("lastName")]))
-            or rec.get("id")
-        )
+        name = " ".join(
+            filter(None, [name.get("firstName"), name.get("lastName")])
+        ) or rec.get("id")
     return name or rec.get("id")
 
 
 def _catalog_records(
-    api: Any, resource: str, kind: str, level: int, recs: list[dict], report: dict[str, Any]
+    api: Any,
+    resource: str,
+    kind: str,
+    level: int,
+    recs: list[dict],
+    report: dict[str, Any],
 ) -> None:
     """Catalog one CRM resource's records (companies/people) as data assets."""
     for rec in recs:

@@ -23,7 +23,7 @@ import json
 import os
 from typing import Any
 
-from agent_utilities.core.config import setting
+from agent_connector_sdk.config import setting
 
 # ── Business glossary backbone (the ``:Concept`` layer the KG federates) ──────
 GLOSSARY: dict[str, str] = {

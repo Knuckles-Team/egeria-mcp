@@ -185,7 +185,7 @@ Pick the extra that matches what you want to run:
 |-------|----------|----------|
 | `egeria-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | You run the **MCP server** (smallest install / image) |
 | `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | You run the data-store / connector harvests |
-| `egeria-mcp[all]` | Everything (`mcp` + `agent` + `harvest`) | Development / full surface |
+| `egeria-mcp[all]` | Everything (`mcp` + `harvest`) | Development / full surface |
 
 ```bash
 # Connector-focused MCP server (includes the shared graph engine)
@@ -211,9 +211,8 @@ EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
 
 ### Knowledge-graph database (`epistemic-graph`)
 
-Both `[mcp]` and `[agent]` carry `epistemic-graph[full]` through the required
-Agent Utilities core. The `[mcp]` surface is connector-focused; `[agent]` additionally
-enables model orchestration.
+The `[mcp]` extra carries `epistemic-graph[full]` through the required Agent Utilities
+core; the connector surface is MCP-only.
 
 Egeria is federated alongside the **epistemic-graph** Knowledge Graph: Egeria is the
 metadata / governance / lineage system-of-record, the KG is the cognition / orchestration
@@ -275,7 +274,7 @@ to **"deploy `egeria-mcp` with agent-utilities-deployment"**.
 | Install mode | Command |
 |------|---------|
 | Installed package | `uv tool install "egeria-mcp[mcp]"`, then run `egeria-mcp` |
-| Editable source | `uv pip install -e ".[agent]"`, then run `egeria-mcp` |
+| Editable source | `uv pip install -e ".[mcp]"`, then run `egeria-mcp` |
 | Immutable container | deploy `registry.example.invalid/egeria-mcp@sha256:<digest>` through the operator-selected orchestrator |
 
 The repository embeds no deployment profile, credential value, certificate path, or

@@ -1,7 +1,7 @@
 # Usage — API / CLI / MCP
 
 `egeria-mcp` exposes the same capability three ways: as **MCP tools** an agent calls,
-as a **Python API** (`EgeriaApi`) you import, and as a **harvest CLI**. The complete
+as a **Python API** (`EgeriaApi`) the operator import, and as a **harvest CLI**. The complete
 tool surface and the verified Egeria 6.0 REST contract are in [Overview](overview.md).
 
 ## As an MCP server
@@ -73,7 +73,7 @@ api.assert_lineage(source_guid, target_guid, label="DataFlow")
 
 ## As a harvest CLI
 
-The **bottom-up harvest** populates Egeria *from* your data estate (needs writes
+The **bottom-up harvest** populates Egeria *from* the operator's data estate (needs writes
 enabled). Run a single layer or `all`:
 
 ```bash

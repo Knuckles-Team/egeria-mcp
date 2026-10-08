@@ -128,7 +128,7 @@ re-runs add nothing.
 (`ERP`/`ITSM`/`PM` on ERPNext, `vcs` on GitLab/GitHub, `enterprise-architecture` on
 LeanIX/ArchiMate, `ITSM` on ServiceNow, …); where untagged, reconcile derives it from
 the asset's `source`/prefix. P22/P23 use it to connect first-party and open-source
-adapters that serve the same capability, so a query spans both regardless of vendor.
+adapters that serve the same capability, so a query spans both in either case of vendor.
 
 The **audit** (`audit()` / `egeria_audit`) reports which assets remain unlinked
 islands and per-layer coverage % — the radar for which layers to harvest next.

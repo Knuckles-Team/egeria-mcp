@@ -101,9 +101,9 @@ volumes:
 docker compose -f docker/stack.compose.yml up -d
 ```
 
-## Populate Egeria from your estate
+## Populate Egeria from the operator's estate
 
 With the platform running and `EGERIA_ENABLE_WRITE=true`, the
-[harvest CLI](usage.md#as-a-harvest-cli) populates Egeria bottom-up from your data
+[harvest CLI](usage.md#as-a-harvest-cli) populates Egeria bottom-up from the operator's data
 stores, ERPNext, GitLab, and 30+ other sources, then `reconcile` cross-links them
 into one lineage/governance graph.

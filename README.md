@@ -174,17 +174,17 @@ The table above is the **required** set. The bottom-up harvest connectors
 (ServiceNow, ERPNext, GitLab, Camunda, Keycloak, Grafana, Portainer, …) each read
 their own optional credential vars — every variable, grouped by source system with
 required-vs-optional separation, is documented in [`.env.example`](.env.example).
-Copy it to `.env` and populate only the connectors you use; blank connector
+Copy it to `.env` and populate only the connectors the operator use; blank connector
 credentials leave the corresponding harvest inactive.
 
 ## Install & run
 
-Pick the extra that matches what you want to run:
+Pick the extra that matches what the operator want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `egeria-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | You run the **MCP server** (smallest install / image) |
-| `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | You run the data-store / connector harvests |
+| `egeria-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator run the **MCP server** (smallest install / image) |
+| `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | The operator run the data-store / connector harvests |
 | `egeria-mcp[all]` | Everything (`mcp` + `agent` + `harvest`) | Development / full surface |
 
 ```bash
@@ -212,7 +212,7 @@ EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
 ### Knowledge-graph database (`epistemic-graph`)
 
 Both `[mcp]` and `[agent]` carry `epistemic-graph[full]` through the required
-Agent Utilities core. The `[mcp]` surface is connector-focused; `[agent]` additionally
+Agent Utilities core. The `[mcp]` surface is connector-focused; `[agent]` also
 enables model orchestration.
 
 Egeria is federated alongside the **epistemic-graph** Knowledge Graph: Egeria is the

@@ -30,7 +30,7 @@ cognition/orchestration plane). Two hard invariants hold:
     connector-types, endpoints, infrastructure, technology types, schema
     types/attributes), `egeria_data_design` (data structures/fields/value specs),
     `egeria_collection` (collections, digital products), `egeria_solution`
-    (information supply chains, blueprints, components), `egeria_governance_catalog`
+    (information provide chains, blueprints, components), `egeria_governance_catalog`
     (governance definitions, external references, valid values), `egeria_actors`
     (actor profiles/roles, user identities, projects, communities, locations,
     cohorts), `egeria_metadata` (generic find/get across all element types).
@@ -92,7 +92,7 @@ between them. Run it with `python -m egeria_mcp.harvest` (needs
 gracefully (reported, not raised) when its source is unconfigured/unreachable.
 
 The estate is declared in `harvest/topology.py` as a **generic, non-sensitive
-example**. Point the harvest at your real data stores with the
+example**. Point the harvest at the operator's real data stores with the
 `EGERIA_HARVEST_TOPOLOGY` environment variable (path to a JSON file of the same
 shape) — keep that file outside any public repository so internal
 hostnames/addresses are never published.

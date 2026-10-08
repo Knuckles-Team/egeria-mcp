@@ -64,14 +64,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `enterprise-architecture`). Two new reconcile matchers — `capability-cohort`
   (first-party + open-source assets of the same capability grouped under a
   `Capability::<cap>` collection) and `cross-vendor-identity` (same entity tracked in
-  two vendor tools) — so a query spans both regardless of vendor. Documented as a
+  two vendor tools) — so a query spans both in either case of vendor. Documented as a
   first-party ↔ open-source capability matrix in agent-utilities + egeria-mcp docs.
 
 ## [0.2.0] - 2026-06-08
 ### Added
 - `EgeriaApi` — tolerant raw-httpx REST facade over the Egeria View Server (OMVS),
   with no `pyegeria` runtime dependency (works on Python 3.11–3.14).
-- Comprehensive OMVS coverage across 11 View Services (asset catalog, data designer,
+- Complete OMVS coverage across 11 View Services (asset catalog, data designer,
   collections, solution architecture, governance, actors/projects/communities,
   generic metadata) plus glossary, lineage, and classification.
 - `governed_route()` and the `egeria_governed_route` MCP tool — policy-aware routing

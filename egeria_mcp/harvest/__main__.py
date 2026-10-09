@@ -19,12 +19,13 @@ present (``EGERIA_HARVEST_ENV``, default ``~/.config/agent-utilities/egeria-harv
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import sys
 from dataclasses import dataclass
 
-from agent_utilities.core.config import setting
+from agent_connector_sdk.config import setting
 
 DEFAULT_ENV = os.path.expanduser("~/.config/agent-utilities/egeria-harvest.env")
 
@@ -142,7 +143,9 @@ def main() -> int:
         print("EGERIA_ENABLE_WRITE is not true — refusing to harvest.", file=sys.stderr)
         return 2
 
-    reports = {} if request.no_harvest else harvest_all(api, request.layers)
+    reports = (
+        {} if request.no_harvest else asyncio.run(harvest_all(api, request.layers))
+    )
     out: dict = {
         "env_file": loaded,
         "layers": {

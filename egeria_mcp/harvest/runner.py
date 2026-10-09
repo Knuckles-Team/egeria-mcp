@@ -89,7 +89,7 @@ LAYERS: dict[str, Any] = {
 }
 
 
-def harvest_all(api: Any, layers: list[str] | None = None) -> dict[str, Any]:
+async def harvest_all(api: Any, layers: list[str] | None = None) -> dict[str, Any]:
     """Run all (or the named) harvest layers; return ``{layer: report}``.
 
     After harvesting sources into Egeria, natively mirror the resulting catalog
@@ -109,5 +109,5 @@ def harvest_all(api: Any, layers: list[str] | None = None) -> dict[str, Any]:
     if os.getenv("EGERIA_KG_INGEST", "true").lower() not in ("false", "0", "no"):
         from egeria_mcp.kg_ingest import ingest_catalog
 
-        out["_kg_ingest"] = ingest_catalog(api)
+        out["_kg_ingest"] = await ingest_catalog(api)
     return out

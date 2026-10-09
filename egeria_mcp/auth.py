@@ -1,12 +1,13 @@
 """Identity / connection loader for the Egeria client facade."""
 
-from agent_utilities.base_utilities import get_logger
-from agent_utilities.core.config import setting
-from agent_utilities.core.transport_security import resolve_configured_tls_profile
+import logging
+
+from agent_connector_sdk.config import setting
+from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
 from egeria_mcp.api_client import EgeriaApi
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_client() -> EgeriaApi:
@@ -25,7 +26,7 @@ def get_client() -> EgeriaApi:
         view_server=setting("EGERIA_VIEW_SERVER", "qs-view-server"),
         user_id=setting("EGERIA_USER"),
         user_pwd=setting("EGERIA_USER_PASSWORD"),
-        tls_profile=resolve_configured_tls_profile(
+        tls_profile=resolve_tls_profile(
             "EGERIA",
             profile_name=setting("EGERIA_TLS_PROFILE"),
         ),

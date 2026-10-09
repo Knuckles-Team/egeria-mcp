@@ -7,8 +7,7 @@ governance / lineage system-of-record into the ONE epistemic-graph engine as
 ``:GlossaryCategory``) plus ``:flowsTo`` / ``:dependsOn`` **lineage edges**, and
 the term/policy definition text as ``:Document`` nodes (semantic-search fodder).
 
-The txn write path is the required
-``agent_utilities.knowledge_graph.memory.native_ingest`` authority. Node ids follow
+The txn write path is the ``agent_connector_sdk.ingest`` facade. Node ids follow
 ``egeria:<class>:<guid>``; ``node_type`` on each entity
 matches a class federated by ``egeria_mcp.ontology`` (``egeria.ttl``).
 """
@@ -18,55 +17,94 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    ingest_documents as _native_ingest_documents,
-)
-from agent_utilities.knowledge_graph.memory.native_ingest import (
-    ingest_entities as _native_ingest_entities,
+from agent_connector_sdk.ingest import (
+    ChangeSet,
+    Document,
+    Entity,
+    IngestBinding,
+    IngestError,
+    KnowledgeIngest,
+    Relationship,
+    current_ingest,
 )
 
 logger = logging.getLogger("egeria_mcp.kg")
 
-_SOURCE = "egeria-mcp"
-_DOMAIN = "egeria"
+_ENTITY_BINDING = IngestBinding(connector="egeria-mcp", stream="egeria")
+_DOCUMENT_BINDING = IngestBinding(connector="egeria-mcp", stream="egeria-documents")
 
 
-def ingest_entities(
-    entities: list[dict[str, Any]],
-    relationships: list[dict[str, Any]] | None = None,
-    *,
-    client: Any | None = None,
-    graph: str | None = None,
-) -> dict[str, int]:
-    """Write canonical typed nodes and relationships through native ingestion."""
-    return _native_ingest_entities(
-        entities,
-        relationships,
-        source=_SOURCE,
-        domain=_DOMAIN,
-        client=client,
-        graph=graph,
+def _to_entity(record: dict[str, Any]) -> Entity:
+    return Entity(
+        id=record.get("id"),
+        node_type=record.get("node_type"),
+        properties={k: v for k, v in record.items() if k not in ("id", "node_type")},
     )
 
 
-def ingest_documents(
+def _to_relationship(record: dict[str, Any]) -> Relationship:
+    props = {
+        k: v
+        for k, v in record.items()
+        if k not in ("source", "target", "relationship")
+    }
+    return Relationship(
+        source=record["source"],
+        target=record["target"],
+        relationship=record["relationship"],
+        properties=props or None,
+    )
+
+
+async def ingest_entities(
+    entities: list[dict[str, Any]],
+    relationships: list[dict[str, Any]] | None = None,
+    *,
+    ingest: KnowledgeIngest | None = None,
+) -> dict[str, int]:
+    """Write canonical typed nodes and relationships through the SDK ingest facade."""
+    if not entities:
+        raise IngestError("ingest_entities needs at least one entity")
+    change_set = ChangeSet(
+        entities=tuple(_to_entity(e) for e in entities),
+        relationships=tuple(_to_relationship(r) for r in relationships or ()),
+    )
+    service = ingest or current_ingest()
+    receipt = await service.submit(_ENTITY_BINDING, change_set)
+    return {"nodes": receipt.affected_count, "edges": receipt.relationship_count}
+
+
+async def ingest_documents(
     documents: list[dict[str, Any]],
     *,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """Write text records as ``:Document`` nodes (semantic-search fodder).
 
     Each doc: ``{"id":..., "text":..., "title"?:..., "source_uri"?:..., ...props}``.
-    Validation and engine failures are surfaced as ``NativeIngestError``.
+    Validation and transport failures are surfaced as ``IngestError``.
     """
-    return _native_ingest_documents(
-        documents,
-        source=_SOURCE,
-        domain=_DOMAIN,
-        client=client,
-        graph=graph,
+    if not documents:
+        return {"nodes": 0, "edges": 0}
+    change_set = ChangeSet(
+        documents=tuple(
+            Document(
+                id=d["id"],
+                text=d["text"],
+                title=d.get("title"),
+                source_uri=d.get("source_uri"),
+                properties={
+                    k: v
+                    for k, v in d.items()
+                    if k not in ("id", "text", "title", "source_uri")
+                },
+            )
+            for d in documents
+        ),
     )
+    service = ingest or current_ingest()
+    receipt = await service.submit(_DOCUMENT_BINDING, change_set)
+    return {"nodes": receipt.affected_count, "edges": receipt.relationship_count}
 
 
 # ── record → entity/document mappers ─────────────────────────────────────────
@@ -232,11 +270,10 @@ def map_lineage(
 
 
 # ── high-level ingest entry points (Wire-First + default-on) ─────────────────
-def ingest_catalog(
+async def ingest_catalog(
     api: Any,
     *,
-    client: Any | None = None,
-    graph: str | None = None,
+    ingest: KnowledgeIngest | None = None,
 ) -> dict[str, int]:
     """List the Egeria catalog via ``api`` and push it into the KG (typed + docs + lineage).
 
@@ -280,11 +317,9 @@ def ingest_catalog(
         deduped_entities.append(entity)
     entities = deduped_entities
 
-    node_res = ingest_entities(entities, relationships, client=client, graph=graph)
+    node_res = await ingest_entities(entities, relationships, ingest=ingest)
     doc_res = (
-        ingest_documents(documents, client=client, graph=graph)
-        if documents
-        else {"nodes": 0}
+        await ingest_documents(documents, ingest=ingest) if documents else {"nodes": 0}
     )
     return {
         "nodes": node_res["nodes"],

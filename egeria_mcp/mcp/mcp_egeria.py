@@ -146,7 +146,7 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
         if layer and layer != "all" and layer not in LAYERS:
             return {"error": f"unknown layer '{layer}'", "valid_layers": sorted(LAYERS)}
-        return harvest_all(get_client(), None if layer == "all" else [layer])
+        return await harvest_all(get_client(), None if layer == "all" else [layer])
 
     @mcp.tool(tags={"harvest", "write"})
     async def egeria_reconcile() -> Any:
@@ -189,7 +189,7 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         """
         from egeria_mcp.kg_ingest import ingest_catalog
 
-        return {"ingested": ingest_catalog(get_client())}
+        return {"ingested": await ingest_catalog(get_client())}
 
     @mcp.tool(tags={"asset"})
     async def egeria_asset_for_kg_node(

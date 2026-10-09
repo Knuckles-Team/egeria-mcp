@@ -10,11 +10,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_utilities.core.config import setting
-from agent_utilities.core.transport_security import (
-    ResolvedTLSProfile,
-    resolve_tls_profile,
-)
+from agent_connector_sdk.config import setting
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
 from egeria_mcp.harvest._reporting import count_created, note_error
 

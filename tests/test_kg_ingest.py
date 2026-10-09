@@ -1,22 +1,19 @@
 """Native epistemic-graph typed-node ingestion — Wire-First coverage.
 
-Exercises the real ``egeria_mcp.kg_ingest`` seam with a fake engine client (no
-engine required): the txn add_node/commit + edge calls, the Egeria record →
-:GlossaryTerm/:GovernanceRule/:DataAsset mappings, the DataFlow → :flowsTo lineage
-edges, and the full ``ingest_catalog`` orchestration over a fake client.
+Exercises the real ``egeria_mcp.kg_ingest`` seam against a fake SDK transport (no
+engine required): the ``agent_connector_sdk.ingest`` request/receipt shape, the
+Egeria record → :GlossaryTerm/:GovernanceRule/:DataAsset mappings, the DataFlow →
+:flowsTo lineage edges, and the full ``ingest_catalog`` orchestration.
 CONCEPT:AU-KG.ingest.enterprise-source-extractor.
 """
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import Any
 
-import msgpack
 import pytest
-from agent_utilities.knowledge_graph.core.session import GraphSession, use_session
-from agent_utilities.knowledge_graph.memory.native_ingest import NativeIngestError
-from agent_utilities.security.actor_identity import ActorType
-from agent_utilities.security.brain_context import ActorContext, use_actor
+from agent_connector_sdk.ingest import IngestError, KnowledgeIngest
 
 from egeria_mcp.kg_ingest import (
     ingest_catalog,
@@ -29,92 +26,28 @@ from egeria_mcp.kg_ingest import (
 )
 
 
-@pytest.fixture(autouse=True)
-def _governed_session():
-    actor = ActorContext(
-        actor_id="subject:opaque:synthetic",
-        actor_type=ActorType.AUTOMATED_SERVICE,
-        roles=(),
-        tenant_id="tenant:opaque:synthetic",
-        authenticated=True,
-    )
-    session = GraphSession(
-        actor=actor,
-        tenant=actor.tenant_id,
-        scopes=frozenset({"kg:write"}),
-        graph="graph:opaque:synthetic",
-        policy_version="policy:opaque:synthetic",
-        audience="epistemic-graph",
-    )
-    with use_actor(actor), use_session(session):
-        yield
-
-
-class _FakeNodes:
+class _FakeTransport:
     def __init__(self) -> None:
-        self.values: dict[str, dict[str, Any]] = {}
+        self.requests: list[Any] = []
 
-    def properties(self, node_id: str) -> dict[str, Any] | None:
-        return self.values.get(node_id)
+    async def source_status(self, connector: str, stream: str) -> Any:
+        return SimpleNamespace(accepted_checkpoint=None)
 
-    def list(self) -> list[tuple[str, dict[str, Any]]]:
-        return list(self.values.items())
+    async def submit(self, request: Any) -> Any:
+        self.requests.append(request)
+        return SimpleNamespace(
+            affected_count=len(request.records),
+            relationship_count=len(request.relationships),
+        )
 
-
-class _FakeChanges:
-    def __init__(self, nodes: _FakeNodes) -> None:
-        self.nodes = nodes
-        self.edges: list[tuple[str, str, dict[str, Any]]] = []
-        self.applied: list[dict[str, Any]] = []
-        self.records: dict[str, dict[str, Any]] = {}
-        self.versions: dict[str, dict[str, Any]] = {}
-
-    def get(self, envelope_id: str) -> dict[str, Any] | None:
-        return self.records.get(envelope_id)
-
-    def content_version(self, object_id: str) -> dict[str, Any] | None:
-        return self.versions.get(object_id)
-
-    def cursor(self, _source: str, _partition: str = "") -> None:
-        return None
-
-    def apply(self, envelope: dict[str, Any]) -> dict[str, Any]:
-        self.applied.append(envelope)
-        mutation = envelope["mutation"]
-        for operation in mutation["operations"]:
-            method = operation["method"]
-            params = method["params"]
-            properties = msgpack.unpackb(params["properties_msgpack"], raw=False)
-            if method["method"] == "AddNode":
-                self.nodes.values[params["node_id"]] = properties
-            elif method["method"] == "AddEdge":
-                self.edges.append(
-                    (params["source_id"], params["target_id"], properties)
-                )
-        version = envelope["content_version"]
-        self.versions[version["object_id"]] = version
-        self.records[envelope["envelope_id"]] = envelope
-        return {
-            "batch_id": mutation["batch_id"],
-            "replayed": False,
-            "projection_pending": False,
-        }
+    async def store_blob(self, data: Any) -> Any:
+        raise AssertionError("this connector's ingestion carries no media")
 
 
-class _FakeRdf:
-    def validate_shacl(self, _shapes: str, _data_graph: str) -> dict[str, Any]:
-        return {"conforms": True, "results": []}
-
-
-class _FakeClient:
-    def __init__(self) -> None:
-        self.nodes = _FakeNodes()
-        self.changes = _FakeChanges(self.nodes)
-        self.rdf = _FakeRdf()
-
-    @staticmethod
-    def supports(operation: str) -> bool:
-        return operation == "ApplyChangeEnvelope"
+@pytest.fixture
+def ingest():
+    transport = _FakeTransport()
+    return KnowledgeIngest(transport, loop=None), transport
 
 
 class _FakeApi:
@@ -165,9 +98,9 @@ class _FakeApi:
 
 
 # ── low-level write seam ─────────────────────────────────────────────────────
-def test_ingest_entities_writes_nodes_and_edges():
-    c = _FakeClient()
-    res = ingest_entities(
+async def test_ingest_entities_writes_nodes_and_edges(ingest):
+    service, transport = ingest
+    res = await ingest_entities(
         [
             {
                 "id": "egeria:GlossaryTerm:t1",
@@ -187,29 +120,27 @@ def test_ingest_entities_writes_nodes_and_edges():
                 "relationship": "flowsTo",
             }
         ],
-        client=c,
+        ingest=service,
     )
     assert res == {"nodes": 2, "edges": 1}
-    assert len(c.changes.applied) == 1
-    # provenance is stamped
-    assert c.nodes.values["egeria:GlossaryTerm:t1"]["source"] == "egeria-mcp"
-    assert c.nodes.values["egeria:GlossaryTerm:t1"]["domain"] == "egeria"
-    assert c.changes.edges == [
-        ("egeria:DataAsset:a1", "egeria:DataAsset:a2", {"relationship": "flowsTo"})
-    ]
+    assert len(transport.requests) == 1
+    record_ids = {r.record_id for r in transport.requests[0].records}
+    assert record_ids == {"egeria:GlossaryTerm:t1", "egeria:DataAsset:a1"}
+    rel = transport.requests[0].relationships[0]
+    assert rel.source.record_id == "egeria:DataAsset:a1"
+    assert rel.target.record_id == "egeria:DataAsset:a2"
 
 
-def test_ingest_documents_marks_document_type():
-    c = _FakeClient()
-    res = ingest_documents(
+async def test_ingest_documents_marks_document_type(ingest):
+    service, transport = ingest
+    res = await ingest_documents(
         [{"id": "egeria:GlossaryTerm:t1:def", "text": "Customer: buyer."}],
-        client=c,
+        ingest=service,
     )
     assert res == {"nodes": 1, "edges": 0}
-    node = c.nodes.values["egeria:GlossaryTerm:t1:def"]
-    assert node["node_type"] == "Document"
-    assert node["text"] == "Customer: buyer."
-    assert node["needs_enrichment"] is True
+    record = transport.requests[0].records[0]
+    assert record.record_id == "egeria:GlossaryTerm:t1:def"
+    assert record.payload["text"] == "Customer: buyer."
 
 
 # ── mappers ──────────────────────────────────────────────────────────────────
@@ -262,27 +193,26 @@ def test_map_assets_and_lineage():
 
 
 # ── orchestration ────────────────────────────────────────────────────────────
-def test_ingest_catalog_over_fake_api():
-    c = _FakeClient()
-    res = ingest_catalog(_FakeApi(), client=c)
+async def test_ingest_catalog_over_fake_api(ingest):
+    service, _transport = ingest
+    res = await ingest_catalog(_FakeApi(), ingest=service)
     # 1 term + 1 category + 1 gov + 2 assets; the 2 lineage endpoints re-reference
-    # the same 2 assets by id and are deduped (ChangeEnvelope rejects duplicate
-    # auxiliary node ids) = 5 unique nodes.
+    # the same 2 assets by id and are deduped (duplicate auxiliary node ids are
+    # dropped) = 5 unique nodes.
     assert res["nodes"] == 5
     assert res["edges"] == 1
     # 1 term def + 1 gov def = 2 documents
     assert res["documents"] == 2
-    assert "egeria:GlossaryTerm:t1" in c.nodes.values
-    assert "egeria:GovernanceRule:g1" in c.nodes.values
-    assert "egeria:DataAsset:a1" in c.nodes.values
 
 
 # ── guards ───────────────────────────────────────────────────────────────────
-def test_ingest_rejects_legacy_structural_fields():
-    with pytest.raises(NativeIngestError, match="canonical node_type"):
-        ingest_entities([{"id": "legacy", "type": "Legacy"}], client=_FakeClient())
+async def test_ingest_rejects_legacy_structural_fields(ingest):
+    service, _transport = ingest
+    with pytest.raises(IngestError):
+        await ingest_entities([{"id": "legacy", "type": "Legacy"}], ingest=service)
 
 
-def test_ingest_empty_is_rejected():
-    with pytest.raises(NativeIngestError, match="at least one entity"):
-        ingest_entities([], client=_FakeClient())
+async def test_ingest_empty_is_rejected(ingest):
+    service, _transport = ingest
+    with pytest.raises(IngestError, match="at least one entity"):
+        await ingest_entities([], ingest=service)

@@ -22,10 +22,8 @@ from __future__ import annotations
 import json as _json
 from typing import Any
 
-from agent_utilities.core.transport_security import (
-    ResolvedTLSProfile,
-    resolve_tls_profile,
-)
+from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
 try:  # httpx is always present (agent-utilities dep); guard anyway
     import httpx

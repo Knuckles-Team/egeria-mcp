@@ -76,7 +76,9 @@ def _resolve_holdings(
     return holdings
 
 
-def _catalog_instruments(api: Any, holdings: list[dict], report: dict[str, Any]) -> None:
+def _catalog_instruments(
+    api: Any, holdings: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog financial instruments/holdings as data assets."""
     for h in holdings:
         symbol = h.get("symbol") or h.get("ticker") or h.get("name") or h.get("id")

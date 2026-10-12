@@ -36,7 +36,8 @@ def _parse_monitor_names(metrics_text: str) -> list[dict]:
     seen: dict[str, str] = {}
     for line in metrics_text.splitlines():
         if not (
-            line.startswith("monitor_status") or line.startswith("monitor_response_time")
+            line.startswith("monitor_status")
+            or line.startswith("monitor_response_time")
         ):
             continue
         n = _NAME.search(line)

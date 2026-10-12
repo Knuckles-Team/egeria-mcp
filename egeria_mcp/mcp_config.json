@@ -7,7 +7,6 @@
         "egeria-mcp"
       ],
       "env": {
-        "MCP_TOOL_MODE": "intent",
         "ARCHER_APPLICATIONS": "risks,controls,findings",
         "ARIS_API_PATH": "/abs/api/models",
         "CADDY_ADMIN_URL": "http://localhost:2019",

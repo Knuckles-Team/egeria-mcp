@@ -64,9 +64,7 @@ def parse_model(path: str) -> list[dict]:
         root = parse_xml_root(path)
     except Exception:
         return []
-    records = (
-        _element_record(el) for el in root.iter() if _local(el.tag) == "element"
-    )
+    records = (_element_record(el) for el in root.iter() if _local(el.tag) == "element")
     return [record for record in records if record is not None]
 
 

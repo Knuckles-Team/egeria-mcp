@@ -57,105 +57,53 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 
 <!-- MCP-TOOLS-TABLE:START -->
 
-#### Condensed action-routed tools (`MCP_TOOL_MODE=condensed`)
+#### Intent tools
 
-| MCP Tool | Toggle Env Var | Description |
-|----------|----------------|-------------|
-| `egeria_actors` | `EGERIATOOL` | Browse people/teams, projects, communities, locations, cohorts. |
-| `egeria_asset_for_kg_node` | `EGERIATOOL` | Resolve a KG node id to its Egeria GUID. |
-| `egeria_audit` | `EGERIATOOL` | Completeness audit: report unlinked 'island' assets + per-layer coverage. |
-| `egeria_catalog` | `EGERIATOOL` | Browse the technical catalog: assets, connections, endpoints, schema. |
-| `egeria_collection` | `EGERIATOOL` | Browse collections and digital products. |
-| `egeria_data_design` | `EGERIATOOL` | Browse data-designer artifacts: data structures, fields, value specs. |
-| `egeria_governance_catalog` | `EGERIATOOL` | Browse governance definitions, external references, valid-value sets. |
-| `egeria_governed_route` | `EGERIATOOL` | Policy-aware routing decision for acting on an Egeria-catalogued asset. |
-| `egeria_harvest` | `EGERIATOOL` | Run a bottom-up harvest layer (or 'all') into Egeria. |
-| `egeria_harvest_archer` | `EGERIATOOL` | Catalog RSA Archer GRC records (risks/controls/findings) into Egeria. |
-| `egeria_harvest_aris` | `EGERIATOOL` | Catalog ARIS models into Egeria — process models (BPM) + architecture |
-| `egeria_harvest_containers` | `EGERIATOOL` | Catalog the Docker Swarm estate (nodes + services) into Egeria — the |
-| `egeria_harvest_crm` | `EGERIATOOL` | Catalog Twenty CRM companies + people into Egeria (crm cohort with Odoo). |
-| `egeria_harvest_datastores` | `EGERIATOOL` | Catalog the data-store estate into Egeria (bottom-up harvest, anchor layer). |
-| `egeria_harvest_erpnext` | `EGERIATOOL` | Catalog ERPNext DocTypes into Egeria (ERP layer). |
-| `egeria_harvest_finance` | `EGERIATOOL` | Catalog Firefly-III accounts into Egeria (financial data assets). |
-| `egeria_harvest_github` | `EGERIATOOL` | Catalog GitHub repositories into Egeria (GITHUB_TOKEN [+ GITHUB_ORG]). |
-| `egeria_harvest_identity` | `EGERIATOOL` | Catalog Keycloak realms (security domains) + clients (apps) into Egeria. |
-| `egeria_harvest_odoo` | `EGERIATOOL` | Catalog Odoo CRM customers + leads into Egeria (crm cohort with Twenty). |
-| `egeria_harvest_processes` | `EGERIATOOL` | Catalog Camunda BPMN process definitions into Egeria (process layer). |
-| `egeria_harvest_projects` | `EGERIATOOL` | Catalog Plane/Jira projects into Egeria as Projects. |
-| `egeria_harvest_repositories` | `EGERIATOOL` | Catalog GitLab projects into Egeria (code/CI layer). |
-| `egeria_harvest_servicenow` | `EGERIATOOL` | Catalog ServiceNow CMDB configuration items into Egeria. |
-| `egeria_ingest_catalog` | `EGERIATOOL` | Natively ingest the Egeria catalog into epistemic-graph as typed OWL nodes. |
-| `egeria_lineage_scan` | `EGERIATOOL` | Scan the catalog's hub prefixes and return every DataFlow lineage edge. |
-| `egeria_metadata` | `EGERIATOOL` | Generic open-metadata access: search across all types, or get by GUID. |
-| `egeria_reconcile` | `EGERIATOOL` | Cross-link the harvested layers into one connected lineage/governance graph. |
-| `egeria_reconcile_openlineage_asset` | `EGERIATOOL` | Reconcile one OpenLineage dataset into Egeria (requires EGERIA_ENABLE_WRITE=true). |
-| `egeria_solution` | `EGERIATOOL` | Browse solution architecture: supply chains, blueprints, components. |
+| MCP Tool | Kind | Description |
+|----------|------|-------------|
+| `egeria_actors` | intent | Browse people/teams, projects, communities, locations, cohorts. |
+| `egeria_assert_lineage` | intent | Assert a data-flow lineage edge (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_asset_for_kg_node` | intent | Resolve a KG node id to its Egeria GUID. |
+| `egeria_asset_search` | intent | Search the Egeria asset catalog; returns flat asset records with GUIDs. |
+| `egeria_audit` | intent | Completeness audit: report unlinked 'island' assets + per-layer coverage. |
+| `egeria_catalog` | intent | Browse the technical catalog: assets, connections, endpoints, schema. |
+| `egeria_classify` | intent | Apply a classification to an element (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_collection` | intent | Browse collections and digital products. |
+| `egeria_create_asset` | intent | Create a data asset, optionally classified (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_create_collection` | intent | Create a collection / digital-product folder (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_create_project` | intent | Create a project (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_create_term` | intent | Create a glossary term (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_data_design` | intent | Browse data-designer artifacts: data structures, fields, value specs. |
+| `egeria_glossary_categories` | intent | List the glossary category tree. |
+| `egeria_glossary_lookup` | intent | Look up business glossary terms (definitions, categories, relationships). |
+| `egeria_governance_catalog` | intent | Browse governance definitions, external references, valid-value sets. |
+| `egeria_governance_for` | intent | Return governance definitions + classifications applying to an element. |
+| `egeria_governed_route` | intent | Policy-aware routing decision for acting on an Egeria-catalogued asset. |
+| `egeria_harvest` | intent | Run a bottom-up harvest layer (or 'all') into Egeria. |
+| `egeria_harvest_archer` | intent | Catalog RSA Archer GRC records (risks/controls/findings) into Egeria. |
+| `egeria_harvest_aris` | intent | Catalog ARIS models into Egeria — process models (BPM) + architecture |
+| `egeria_harvest_containers` | intent | Catalog the Docker Swarm estate (nodes + services) into Egeria — the |
+| `egeria_harvest_crm` | intent | Catalog Twenty CRM companies + people into Egeria (crm cohort with Odoo). |
+| `egeria_harvest_datastores` | intent | Catalog the data-store estate into Egeria (bottom-up harvest, anchor layer). |
+| `egeria_harvest_erpnext` | intent | Catalog ERPNext DocTypes into Egeria (ERP layer). |
+| `egeria_harvest_finance` | intent | Catalog Firefly-III accounts into Egeria (financial data assets). |
+| `egeria_harvest_github` | intent | Catalog GitHub repositories into Egeria (GITHUB_TOKEN [+ GITHUB_ORG]). |
+| `egeria_harvest_identity` | intent | Catalog Keycloak realms (security domains) + clients (apps) into Egeria. |
+| `egeria_harvest_odoo` | intent | Catalog Odoo CRM customers + leads into Egeria (crm cohort with Twenty). |
+| `egeria_harvest_processes` | intent | Catalog Camunda BPMN process definitions into Egeria (process layer). |
+| `egeria_harvest_projects` | intent | Catalog Plane/Jira projects into Egeria as Projects. |
+| `egeria_harvest_repositories` | intent | Catalog GitLab projects into Egeria (code/CI layer). |
+| `egeria_harvest_servicenow` | intent | Catalog ServiceNow CMDB configuration items into Egeria. |
+| `egeria_ingest_catalog` | intent | Natively ingest the Egeria catalog into epistemic-graph as typed OWL nodes. |
+| `egeria_lineage` | intent | Return the data-lineage graph (upstream/downstream assets + processes). |
+| `egeria_lineage_scan` | intent | Scan the catalog's hub prefixes and return every DataFlow lineage edge. |
+| `egeria_list_policies` | intent | List Egeria governance policies/rules (optionally filtered by domain). |
+| `egeria_metadata` | intent | Generic open-metadata access: search across all types, or get by GUID. |
+| `egeria_reconcile` | intent | Cross-link the harvested layers into one connected lineage/governance graph. |
+| `egeria_reconcile_openlineage_asset` | intent | Reconcile one OpenLineage dataset into Egeria (requires EGERIA_ENABLE_WRITE=true). |
+| `egeria_solution` | intent | Browse solution architecture: supply chains, blueprints, components. |
 
-#### Verbose 1:1 API-mapped tools (`MCP_TOOL_MODE=verbose` or `both`)
-
-<details>
-<summary>54 per-operation tools — one per public API method (click to expand)</summary>
-
-| MCP Tool | Toggle Env Var | Description |
-|----------|----------------|-------------|
-| `egeria_assert_lineage` | `EGERIATOOL` | Assert source → process → target as two ``DataFlow`` edges. |
-| `egeria_asset_search` | `EGERIATOOL` | Invoke the asset_search operation. |
-| `egeria_classify` | `EGERIATOOL` | Invoke the classify operation. |
-| `egeria_create_asset` | `EGERIATOOL` | Create (or reuse) a data asset, optionally classified at creation. |
-| `egeria_create_collection` | `EGERIATOOL` | Create (or reuse) a collection (e.g. a digital-product folder). |
-| `egeria_create_glossary` | `EGERIA_APITOOL` | Create (or reuse) a business glossary; returns ``{guid, reused?}``. |
-| `egeria_create_project` | `EGERIATOOL` | Create (or reuse) a project. |
-| `egeria_create_term` | `EGERIATOOL` | Create (or reuse) a glossary term anchored to ``glossary`` (its GUID). |
-| `egeria_delete_element` | `EGERIA_APITOOL` | Delete an asset element by GUID. |
-| `egeria_find_actor_profiles` | `EGERIA_APITOOL` | Invoke the find_actor_profiles operation. |
-| `egeria_find_actor_roles` | `EGERIA_APITOOL` | Invoke the find_actor_roles operation. |
-| `egeria_find_asset` | `EGERIA_APITOOL` | Return the GUID of an existing asset by qualifiedName, or None. |
-| `egeria_find_cohorts` | `EGERIA_APITOOL` | Invoke the find_cohorts operation. |
-| `egeria_find_collections` | `EGERIA_APITOOL` | Invoke the find_collections operation. |
-| `egeria_find_communities` | `EGERIA_APITOOL` | Invoke the find_communities operation. |
-| `egeria_find_connections` | `EGERIA_APITOOL` | Invoke the find_connections operation. |
-| `egeria_find_connector_types` | `EGERIA_APITOOL` | Invoke the find_connector_types operation. |
-| `egeria_find_data_assets` | `EGERIA_APITOOL` | Invoke the find_data_assets operation. |
-| `egeria_find_data_fields` | `EGERIA_APITOOL` | Invoke the find_data_fields operation. |
-| `egeria_find_data_structures` | `EGERIA_APITOOL` | Invoke the find_data_structures operation. |
-| `egeria_find_data_value_specifications` | `EGERIA_APITOOL` | Invoke the find_data_value_specifications operation. |
-| `egeria_find_digital_products` | `EGERIA_APITOOL` | Invoke the find_digital_products operation. |
-| `egeria_find_endpoints` | `EGERIA_APITOOL` | Invoke the find_endpoints operation. |
-| `egeria_find_external_references` | `EGERIA_APITOOL` | Invoke the find_external_references operation. |
-| `egeria_find_glossary` | `EGERIA_APITOOL` | Return the GUID of an existing glossary by qualifiedName, or None. |
-| `egeria_find_information_supply_chains` | `EGERIA_APITOOL` | Invoke the find_information_supply_chains operation. |
-| `egeria_find_infrastructure_assets` | `EGERIA_APITOOL` | Invoke the find_infrastructure_assets operation. |
-| `egeria_find_locations` | `EGERIA_APITOOL` | Invoke the find_locations operation. |
-| `egeria_find_metadata_elements` | `EGERIA_APITOOL` | Search across all open-metadata element types (generic find). |
-| `egeria_find_projects` | `EGERIA_APITOOL` | Invoke the find_projects operation. |
-| `egeria_find_schema_attributes` | `EGERIA_APITOOL` | Invoke the find_schema_attributes operation. |
-| `egeria_find_schema_types` | `EGERIA_APITOOL` | Invoke the find_schema_types operation. |
-| `egeria_find_solution_blueprints` | `EGERIA_APITOOL` | Invoke the find_solution_blueprints operation. |
-| `egeria_find_solution_components` | `EGERIA_APITOOL` | Invoke the find_solution_components operation. |
-| `egeria_find_technology_types` | `EGERIA_APITOOL` | Invoke the find_technology_types operation. |
-| `egeria_find_term` | `EGERIA_APITOOL` | Return the GUID of an existing glossary term by qualifiedName, or None. |
-| `egeria_find_user_identities` | `EGERIA_APITOOL` | Invoke the find_user_identities operation. |
-| `egeria_find_valid_values` | `EGERIA_APITOOL` | Invoke the find_valid_values operation. |
-| `egeria_get_element` | `EGERIA_APITOOL` | Retrieve any element by GUID (with its classifications). |
-| `egeria_glossary_categories` | `EGERIATOOL` | Invoke the glossary_categories operation. |
-| `egeria_glossary_lookup` | `EGERIATOOL` | Invoke the glossary_lookup operation. |
-| `egeria_governance_for` | `EGERIATOOL` | Return classifications + confidentiality level applying to an element. |
-| `egeria_lineage` | `EGERIATOOL` | Return the asset lineage graph (``AssetLineageGraph``) for a GUID. |
-| `egeria_link_data_flow` | `EGERIA_APITOOL` | Create a ``DataFlow`` lineage edge ``source → target``. |
-| `egeria_list_assets` | `EGERIA_APITOOL` | Invoke the list_assets operation. |
-| `egeria_list_connections` | `EGERIA_APITOOL` | Invoke the list_connections operation. |
-| `egeria_list_data_flows` | `EGERIA_APITOOL` | Enumerate ``DataFlow`` lineage edges across the catalogue. |
-| `egeria_list_glossary_categories` | `EGERIA_APITOOL` | Invoke the list_glossary_categories operation. |
-| `egeria_list_glossary_terms` | `EGERIA_APITOOL` | Invoke the list_glossary_terms operation. |
-| `egeria_list_governance_definitions` | `EGERIA_APITOOL` | Invoke the list_governance_definitions operation. |
-| `egeria_list_policies` | `EGERIATOOL` | Invoke the list_policies operation. |
-| `egeria_list_software_servers` | `EGERIA_APITOOL` | Invoke the list_software_servers operation. |
-| `egeria_set_classification` | `EGERIA_APITOOL` | Apply any classification to an element (generic). |
-| `egeria_set_confidentiality` | `EGERIA_APITOOL` | Apply/refresh a ``Confidentiality`` classification at ``level`` (0–4). |
-
-</details>
-
-_29 action-routed tool(s) · 54 verbose 1:1 tool(s). Each is enabled unless its `<DOMAIN>TOOL` toggle is set false; `MCP_TOOL_MODE` selects the surface (**`intent` default** — the six verb-tools, granular set loaded on demand · `condensed` action-routed · `verbose` 1:1 · `both`). Auto-generated — do not edit._
+_41 intent tool(s) · 0 operation(s). Call an operation as `act(action='<operation>', params={...})` (`ask` for reads); `find(action='describe', params={'action': '<operation>'})` returns its arguments. An operation is enabled unless its `<DOMAIN>TOOL` toggle is set false. Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
 ## Configuration (environment)
@@ -433,7 +381,6 @@ configured secret provider.
 
 | Variable | Example | Description |
 |----------|---------|-------------|
-| `MCP_TOOL_MODE` | `intent` | Tool surface: `intent` \| `condensed` \| `verbose` \| `both` |
 | `MCP_ENABLED_TOOLS` | — | Comma-separated tool allow-list |
 | `MCP_DISABLED_TOOLS` | — | Comma-separated tool deny-list |
 | `MCP_ENABLED_TAGS` | — | Comma-separated tag allow-list |
@@ -448,11 +395,11 @@ configured secret provider.
 | `DEBUG` | `False` | Verbose logging |
 | `PYTHONUNBUFFERED` | `1` | Unbuffered stdout (recommended in containers) |
 | `MCP_URL` | `http://localhost:8000/mcp` | URL of the MCP server the agent connects to |
-| `PROVIDER` | `openai` | LLM provider for the agent |
-| `MODEL_ID` | `gpt-4o` | Model id for the agent |
+| `PROVIDER` | — | Operator-configured LLM provider for the agent |
+| `MODEL_ID` | — | Operator-configured model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_136 package + 18 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_136 package + 17 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 <!-- GOVERNED-CAPABILITY:START -->

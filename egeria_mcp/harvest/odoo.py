@@ -107,7 +107,12 @@ def fetch_records(
 
 
 def _catalog_records(
-    api: Any, model: str, kind: str, level: int, recs: list[dict], report: dict[str, Any]
+    api: Any,
+    model: str,
+    kind: str,
+    level: int,
+    recs: list[dict],
+    report: dict[str, Any],
 ) -> None:
     """Catalog one Odoo model's records (customers/leads) as data assets."""
     for rec in recs:

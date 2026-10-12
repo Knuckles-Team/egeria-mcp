@@ -370,7 +370,10 @@ def test_reconcile_confidentiality_propagation_raises_store_to_dataset_level():
 
 def test_reconcile_propagate_confidentiality_false_skips_the_pattern():
     api = FakeReconcileApi(
-        governance={"s1": {"confidentialityLevel": 1}, "d1": {"confidentialityLevel": 3}}
+        governance={
+            "s1": {"confidentialityLevel": 1},
+            "d1": {"confidentialityLevel": 3},
+        }
     )
     report = reconcile(api, propagate_confidentiality=False)
     assert report["summary"]["confidentiality-propagation"] == 0
@@ -416,7 +419,9 @@ def test_bug_monitoring_precedence_last_writer_wins_route_over_store_svc_node():
     """
     report, api = _run()
     m1_targets = [tg for sg, tg, _label in api.link_calls if sg == "m1"]
-    assert m1_targets == ["rt1"]  # Route::shared1 — NOT s2 (store) or sv2 (service) or n3 (node)
+    assert m1_targets == [
+        "rt1"
+    ]  # Route::shared1 — NOT s2 (store) or sv2 (service) or n3 (node)
 
 
 def test_bug_cmdb_identity_precedence_disagrees_with_monitoring_for_same_collision():
@@ -428,7 +433,9 @@ def test_bug_cmdb_identity_precedence_disagrees_with_monitoring_for_same_collisi
     """
     report, api = _run()
     ci3_targets = [tg for sg, tg, _label in api.link_calls if sg == "ci3"]
-    assert ci3_targets == ["sv2"]  # Service::shared1 — a DIFFERENT winner than monitoring's route
+    assert ci3_targets == [
+        "sv2"
+    ]  # Service::shared1 — a DIFFERENT winner than monitoring's route
 
 
 def test_bug_ea_realization_precedence_repo_silently_overwrites_service():

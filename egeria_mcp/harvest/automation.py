@@ -50,7 +50,9 @@ def _fetch(
         return []
 
 
-def _catalog_inventories(api: Any, inventories: list[dict], report: dict[str, Any]) -> None:
+def _catalog_inventories(
+    api: Any, inventories: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog Tower inventories as Egeria Collections."""
     for inv in inventories:
         name = inv.get("name")
@@ -65,7 +67,9 @@ def _catalog_inventories(api: Any, inventories: list[dict], report: dict[str, An
         report["inventories"].append({"name": name, **res})
 
 
-def _catalog_job_templates(api: Any, templates: list[dict], report: dict[str, Any]) -> None:
+def _catalog_job_templates(
+    api: Any, templates: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog Tower job templates as Egeria Process assets."""
     for jt in templates:
         name = jt.get("name")

@@ -65,15 +65,19 @@ def _record_name(rec: dict) -> str | None:
     """A record's display name; Twenty person names are {firstName,lastName}."""
     name = rec.get("name")
     if isinstance(name, dict):  # person name {firstName,lastName}
-        name = (
-            " ".join(filter(None, [name.get("firstName"), name.get("lastName")]))
-            or rec.get("id")
-        )
+        name = " ".join(
+            filter(None, [name.get("firstName"), name.get("lastName")])
+        ) or rec.get("id")
     return name or rec.get("id")
 
 
 def _catalog_records(
-    api: Any, resource: str, kind: str, level: int, recs: list[dict], report: dict[str, Any]
+    api: Any,
+    resource: str,
+    kind: str,
+    level: int,
+    recs: list[dict],
+    report: dict[str, Any],
 ) -> None:
     """Catalog one CRM resource's records (companies/people) as data assets."""
     for rec in recs:

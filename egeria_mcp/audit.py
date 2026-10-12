@@ -74,7 +74,9 @@ def _layer_coverage(
     return coverage, total_islands
 
 
-def _capability_coverage(index: dict[str, dict], connected: set[str]) -> dict[str, dict]:
+def _capability_coverage(
+    index: dict[str, dict], connected: set[str]
+) -> dict[str, dict]:
     """Per-capability vendor-breadth + lineage coverage roll-up."""
     caps: dict[str, dict] = defaultdict(
         lambda: {"assets": 0, "linked": 0, "vendors": set()}
@@ -149,7 +151,9 @@ def audit(
     by_capability = _capability_coverage(index, connected)
 
     return {
-        "summary": _audit_summary(index, edges, connected, total_islands, by_capability),
+        "summary": _audit_summary(
+            index, edges, connected, total_islands, by_capability
+        ),
         "by_layer": coverage,
         "by_capability": by_capability,
     }

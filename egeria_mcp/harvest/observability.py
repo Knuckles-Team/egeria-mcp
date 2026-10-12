@@ -45,7 +45,9 @@ def _get(
         return None
 
 
-def _catalog_datasources(api: Any, datasources: list[dict], report: dict[str, Any]) -> None:
+def _catalog_datasources(
+    api: Any, datasources: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog Grafana data sources as ``DeployedSoftwareComponent`` assets."""
     for ds in datasources:
         name = ds.get("name")
@@ -64,7 +66,9 @@ def _catalog_datasources(api: Any, datasources: list[dict], report: dict[str, An
         report["datasources"].append({"name": name, **res})
 
 
-def _catalog_dashboards(api: Any, dashboards: list[dict], report: dict[str, Any]) -> None:
+def _catalog_dashboards(
+    api: Any, dashboards: list[dict], report: dict[str, Any]
+) -> None:
     """Catalog Grafana dashboards as Egeria Collections."""
     for db in dashboards:
         title = db.get("title")

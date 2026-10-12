@@ -126,7 +126,9 @@ def governed_route(api: Any, asset_guid: str) -> dict[str, Any]:
     # AssetLineageGraph carries connected edges in ``lineageLinkage``.
     impact = _downstream_impact(lin)
 
-    decision, reasons = _route_decision(classified_restricted, gating, conf_level, impact)
+    decision, reasons = _route_decision(
+        classified_restricted, gating, conf_level, impact
+    )
 
     return {
         "asset_guid": asset_guid,

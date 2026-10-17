@@ -43,7 +43,7 @@ def get_mcp_instance(command_args: list[str] | None = None) -> tuple[Any, ...]:
     # given (library/test callers), isolate sys.argv around the build so the
     # server's -p/--port parser doesn't consume the host process's argv. Done via
     # argv isolation (not a kwarg) so it works regardless of the installed
-    # agent_utilities version.
+    # agent_connector_sdk version.
     saved_argv = sys.argv
     if command_args is not None:
         sys.argv = [saved_argv[0] if saved_argv else "egeria-mcp", *command_args]

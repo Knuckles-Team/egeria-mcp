@@ -25,7 +25,7 @@ from typing import Any
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
 from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
-try:  # httpx is always present (agent-utilities dep); guard anyway
+try:  # httpx is always present (agent-connector-sdk dep); guard anyway
     import httpx
 
     HTTPX_AVAILABLE = True

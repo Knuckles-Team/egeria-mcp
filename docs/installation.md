@@ -21,7 +21,7 @@ The base install is intentionally minimal. Install the extra for what the operat
 
 | Extra | Install | Pulls in |
 |---|---|---|
-| `mcp` | `pip install "egeria-mcp[mcp]"` | FastMCP MCP-server runtime (`agent-utilities[mcp]`) |
+| `mcp` | `pip install "egeria-mcp[mcp]"` | FastMCP MCP-server runtime (`agent-connector-sdk[mcp]`) |
 | `agent` | `pip install "egeria-mcp[agent]"` | Pydantic-AI agent + Logfire tracing |
 | `harvest` | `pip install "egeria-mcp[harvest]"` | `pymongo`, `pyyaml` for the bottom-up harvest |
 | `all` | `pip install "egeria-mcp[all]"` | Everything above |

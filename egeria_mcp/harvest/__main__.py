@@ -13,7 +13,7 @@ Usage::
     python -m egeria_mcp.harvest audit       # read-only; no write needed
 
 Credentials/URLs come from the environment. A private env file is sourced first if
-present (``EGERIA_HARVEST_ENV``, default ``~/.config/agent-utilities/egeria-harvest.env``)
+present (``EGERIA_HARVEST_ENV``, default ``~/.config/agent-connectors/egeria-harvest.env``)
 — values already set in the environment win. Keep that file out of any public repo.
 """
 
@@ -27,7 +27,7 @@ from dataclasses import dataclass
 
 from agent_connector_sdk.config import setting
 
-DEFAULT_ENV = os.path.expanduser("~/.config/agent-utilities/egeria-harvest.env")
+DEFAULT_ENV = os.path.expanduser("~/.config/agent-connectors/egeria-harvest.env")
 
 
 @dataclass

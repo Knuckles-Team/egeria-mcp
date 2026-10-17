@@ -1,5 +1,5 @@
 site_name: "egeria-mcp"
-site_description: "Apache Egeria open-metadata API + MCP Server — the metadata / governance / lineage system-of-record for the agent-utilities ecosystem."
+site_description: "Apache Egeria open-metadata API + MCP Server — the metadata / governance / lineage system-of-record for the Graph OS ecosystem."
 site_url: "https://knuckles-team.github.io/egeria-mcp/"
 repo_name: "Knuckles-Team/egeria-mcp"
 repo_url: "https://github.com/Knuckles-Team/egeria-mcp"

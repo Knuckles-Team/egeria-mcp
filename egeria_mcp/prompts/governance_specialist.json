@@ -4,7 +4,7 @@
   "schema_version": "1.0",
   "prompt_version": "0.1.0",
   "source": "egeria-mcp",
-  "extends": "agent-utilities:base",
+  "extends": "agent-connector-sdk:base",
   "compose": "append",
   "description": "Egeria open-metadata governance specialist: glossary, lineage, classification, and KG federation over the egeria-mcp MCP server.",
   "metadata": {

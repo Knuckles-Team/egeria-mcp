@@ -1,5 +1,5 @@
 {
-  "api_version": "graphos.io/v1",
+  "api_version": "arbora.io/v1",
   "artifacts": {
     "connector_manifest.yml": "78f84f185cca236d9eb45cc59b583127285399646befe7531e47fd64d458f699",
     "egeria_mcp/connectors/mcp_source_presets.json": "c6b5b099f1c012ad0743f821a49e7eaceca8777852c27059247fd011760318ae",

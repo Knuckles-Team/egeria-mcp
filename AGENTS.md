@@ -6,7 +6,7 @@
 ## What this is
 
 `egeria-mcp` is the **API + MCP server** for Apache Egeria (the OMAG open-metadata
-platform), federated into the Graph OS ecosystem as the
+platform), federated into the Arbora ecosystem as the
 **metadata / governance / lineage system-of-record** alongside the epistemic-graph
 Knowledge Graph (the cognition/orchestration plane).
 

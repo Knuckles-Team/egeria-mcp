@@ -20,7 +20,7 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/egeria-mcp)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/egeria-mcp)
 
-Apache Egeria open-metadata **API + MCP Server** for the Graph OS ecosystem.
+Apache Egeria open-metadata **API + MCP Server** for the Arbora ecosystem.
 
 *Version: 2.1.0*
 
@@ -415,5 +415,5 @@ historical per-task skill wrappers.
 Runtime endpoints, credentials, certificate trust, tenant identity, retention,
 and observability policy are deployment inputs and are never packaged values.
 See [Configuration, trust, and privacy](docs/configuration.md) before enabling a
-network transport, connector ingestion, GraphOS delegation, or trace export.
+network transport, connector ingestion, Arbora delegation, or trace export.
 <!-- GOVERNED-CAPABILITY:END -->

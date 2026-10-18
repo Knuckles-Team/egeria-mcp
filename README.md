@@ -22,7 +22,7 @@
 
 Apache Egeria open-metadata **API + MCP Server** for the Arbora ecosystem.
 
-*Version: 2.2.0*
+*Version: 2.2.1*
 
 > **Documentation** — Installation, deployment, usage across the API, CLI, and MCP
 > interfaces, and guidance for provisioning the Apache Egeria platform are maintained

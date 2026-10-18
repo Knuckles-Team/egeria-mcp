@@ -1,6 +1,6 @@
 # egeria-mcp
 
-Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosystem
+Apache Egeria open-metadata **API + MCP Server** for the Arbora ecosystem
 — the metadata / governance / lineage **system-of-record** federated with the
 epistemic-graph Knowledge Graph.
 

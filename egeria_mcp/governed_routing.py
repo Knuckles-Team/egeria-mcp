@@ -7,7 +7,7 @@ decision the orchestrator can enforce — proceed, require approval, or treat as
 impact-bearing. Egeria provides the metadata model the workflow *references*; it
 does not orchestrate.
 
-Wire point: this maps onto the agent-utilities ``policy`` routing strategy
+Wire point: this maps onto the agent-connector-sdk ``policy`` routing strategy
 (``graph/routing/strategies/policy``) — a governed step calls :func:`governed_route`
 and the strategy denies / escalates / sequences accordingly.
 """

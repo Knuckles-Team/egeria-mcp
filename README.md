@@ -20,9 +20,9 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/egeria-mcp)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/egeria-mcp)
 
-Apache Egeria open-metadata **API + MCP Server** for the agent-utilities ecosystem.
+Apache Egeria open-metadata **API + MCP Server** for the Arbora ecosystem.
 
-*Version: 2.1.0*
+*Version: 2.2.0*
 
 > **Documentation** — Installation, deployment, usage across the API, CLI, and MCP
 > interfaces, and guidance for provisioning the Apache Egeria platform are maintained
@@ -131,7 +131,7 @@ Pick the extra that matches what the operator want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `egeria-mcp[mcp]` | Connector-focused MCP server (`agent-utilities[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator run the **MCP server** (smallest install / image) |
+| `egeria-mcp[mcp]` | Connector-focused MCP server (`agent-connector-sdk[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator run the **MCP server** (smallest install / image) |
 | `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | The operator run the data-store / connector harvests |
 | `egeria-mcp[all]` | Everything (`mcp` + `agent` + `harvest`) | Development / full surface |
 
@@ -210,15 +210,15 @@ recommended reference for installation, deployment, and day-to-day operation.
 `AGENTS.md` is the canonical contributor/agent guidance.
 
 
-<!-- BEGIN agent-utilities-deployment (generated; do not edit between markers) -->
+<!-- BEGIN agent-connector-sdk-deployment (generated; do not edit between markers) -->
 
-## Deploy with `agent-utilities-deployment`
+## Deploy with `agent-connector-sdk-deployment`
 
-Provision this package with the consolidated **`agent-utilities-deployment`**
+Provision this package with the consolidated **`agent-connector-sdk-deployment`**
 workflow. It selects an installed-package, editable-source, or immutable-container
 path; records only runtime secret and TLS-profile references in `AgentConfig`; and
 runs doctor, registration, policy, observability, and rollback gates. Ask your agent
-to **"deploy `egeria-mcp` with agent-utilities-deployment"**.
+to **"deploy `egeria-mcp` with agent-connector-sdk-deployment"**.
 
 | Install mode | Command |
 |------|---------|
@@ -230,7 +230,7 @@ The repository embeds no deployment profile, credential value, certificate path,
 environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
 configured secret provider.
 
-<!-- END agent-utilities-deployment -->
+<!-- END agent-connector-sdk-deployment -->
 
 ## Environment Variables
 
@@ -243,7 +243,7 @@ configured secret provider.
 | `HOST` | `0.0.0.0` | REQUIRED — MCP server runtime |
 | `PORT` | `8000` |  |
 | `TRANSPORT` | `stdio` | stdio \| streamable-http \| sse |
-| `AUTH_TYPE` | `none` | none \| oauth \| oidc (agent-utilities auth) |
+| `AUTH_TYPE` | `none` | none \| oauth \| oidc (agent-connector-sdk auth) |
 | `EGERIA_PLATFORM_URL` | `https://egeria.example.invalid:9443` | REQUIRED — Apache Egeria platform / View Server (OMVS) |
 | `EGERIA_VIEW_SERVER` | `qs-view-server` |  |
 | `EGERIA_USER` | — |  |
@@ -254,10 +254,10 @@ configured secret provider.
 | `EGERIATOOL` | `True` | register the Egeria tool set |
 | `EGERIA_HARVEST_TOPOLOGY` | — | path to a topology.json override (blank = built-in) |
 | `HOST_INVENTORY` | — | path to an Ansible-style hosts inventory |
-| `EGERIA_HARVEST_ENV` | `${XDG_CONFIG_HOME}/agent-utilities/egeria-harvest.env` | EGERIA_HARVEST_ENV defaults to ~/.config/agent-utilities/egeria-harvest.env; uncomment with an ABSOLUTE path to override (a literal ~ is not expanded here). |
+| `EGERIA_HARVEST_ENV` | `${XDG_CONFIG_HOME}/agent-connector-sdk/egeria-harvest.env` | EGERIA_HARVEST_ENV defaults to ~/.config/agent-connector-sdk/egeria-harvest.env; uncomment with an ABSOLUTE path to override (a literal ~ is not expanded here). |
 | `EGERIA_KG_INGEST` | `True` | default-on: mirror the harvested catalog into the KG; set False to skip |
 | `EGERIA_MCP_AGENT_IMAGE` | `registry.example.com/egeria-mcp-agent@sha256:...` | OPTIONAL — Container image pins (docker/*compose*.yml; set by CI/CD, not local dev) |
-| `ENABLE_OTEL` | `True` | OPTIONAL — OTEL tracing (agent-utilities framework) |
+| `ENABLE_OTEL` | `True` | OPTIONAL — OTEL tracing (agent-connector-sdk framework) |
 | `LANGFUSE_BASE_URL` | — | OPTIONAL — Langfuse / LLMOps harvest connector (egeria_mcp.harvest.llmops) |
 | `LANGFUSE_PUBLIC_KEY` | secret-injected |  |
 | `LANGFUSE_SECRET_KEY` | secret-injected |  |
@@ -377,7 +377,7 @@ configured secret provider.
 | `VECTOR_URL` | — |  |
 | `VECTOR_TOKEN` | secret-injected |  |
 
-#### Inherited agent-utilities variables (apply to every connector)
+#### Inherited agent-connector-sdk variables (apply to every connector)
 
 | Variable | Example | Description |
 |----------|---------|-------------|
@@ -399,7 +399,7 @@ configured secret provider.
 | `MODEL_ID` | — | Operator-configured model id for the agent |
 | `ENABLE_WEB_UI` | `True` | Serve the AG-UI web interface |
 
-_136 package + 17 inherited variable(s). Auto-generated from `.env.example` + the shared agent-utilities set — do not edit._
+_136 package + 17 inherited variable(s). Auto-generated from `.env.example` + the shared agent-connector-sdk set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
 
 <!-- GOVERNED-CAPABILITY:START -->
@@ -415,5 +415,5 @@ historical per-task skill wrappers.
 Runtime endpoints, credentials, certificate trust, tenant identity, retention,
 and observability policy are deployment inputs and are never packaged values.
 See [Configuration, trust, and privacy](docs/configuration.md) before enabling a
-network transport, connector ingestion, GraphOS delegation, or trace export.
+network transport, connector ingestion, Arbora delegation, or trace export.
 <!-- GOVERNED-CAPABILITY:END -->

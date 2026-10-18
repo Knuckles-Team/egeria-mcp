@@ -19,7 +19,7 @@ from egeria_mcp.api_client import EgeriaApi
 from egeria_mcp.auth import get_client
 from egeria_mcp.mcp.mcp_egeria import register_egeria_tools  # noqa: F401
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 logger = get_logger(name="egeria_mcp")
 
 
@@ -43,7 +43,7 @@ def get_mcp_instance(command_args: list[str] | None = None) -> tuple[Any, ...]:
     # given (library/test callers), isolate sys.argv around the build so the
     # server's -p/--port parser doesn't consume the host process's argv. Done via
     # argv isolation (not a kwarg) so it works regardless of the installed
-    # agent_utilities version.
+    # agent_connector_sdk version.
     saved_argv = sys.argv
     if command_args is not None:
         sys.argv = [saved_argv[0] if saved_argv else "egeria-mcp", *command_args]

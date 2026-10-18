@@ -14,7 +14,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential \
     && rm -rf /var/lib/apt/lists/*
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system --break-system-packages egeria-mcp[all]==0.2.0
+    uv pip install --system --break-system-packages egeria-mcp[mcp]==2.2.0
 
 # egeria-mcp is an MCP-only package (no agent surface); the pipeline's agent leg is
 # auto-skipped since this Dockerfile has no `AS agent` stage.

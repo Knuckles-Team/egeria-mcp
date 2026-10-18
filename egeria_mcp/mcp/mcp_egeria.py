@@ -175,7 +175,9 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(tags={"asset"})
     async def egeria_catalog(
-        action: str = Field(description=f"One of: {', '.join(sorted(_CATALOG))}."),
+        action: str = Field(
+            description=f"One of: {', '.join(repr(a) for a in sorted(_CATALOG))}."
+        ),
         query: str = Field(default="", description="Search string ('' = match-all)."),
     ) -> Any:
         """Browse the technical catalog: assets, connections, endpoints, schema."""
@@ -189,7 +191,9 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(tags={"data-design"})
     async def egeria_data_design(
-        action: str = Field(description=f"One of: {', '.join(sorted(_DATA_DESIGN))}."),
+        action: str = Field(
+            description=f"One of: {', '.join(repr(a) for a in sorted(_DATA_DESIGN))}."
+        ),
         query: str = Field(default="", description="Search string ('' = match-all)."),
     ) -> Any:
         """Browse data-designer artifacts: data structures, fields, value specs."""
@@ -202,7 +206,9 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(tags={"collection"})
     async def egeria_collection(
-        action: str = Field(description=f"One of: {', '.join(sorted(_COLLECTION))}."),
+        action: str = Field(
+            description=f"One of: {', '.join(repr(a) for a in sorted(_COLLECTION))}."
+        ),
         query: str = Field(default="", description="Search string ('' = match-all)."),
     ) -> Any:
         """Browse collections and digital products."""
@@ -216,7 +222,9 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(tags={"solution-architecture"})
     async def egeria_solution(
-        action: str = Field(description=f"One of: {', '.join(sorted(_SOLUTION))}."),
+        action: str = Field(
+            description=f"One of: {', '.join(repr(a) for a in sorted(_SOLUTION))}."
+        ),
         query: str = Field(default="", description="Search string ('' = match-all)."),
     ) -> Any:
         """Browse solution architecture: supply chains, blueprints, components."""
@@ -230,7 +238,9 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(tags={"governance"})
     async def egeria_governance_catalog(
-        action: str = Field(description=f"One of: {', '.join(sorted(_GOV_CATALOG))}."),
+        action: str = Field(
+            description=f"One of: {', '.join(repr(a) for a in sorted(_GOV_CATALOG))}."
+        ),
         query: str = Field(default="", description="Search string ('' = match-all)."),
     ) -> Any:
         """Browse governance definitions, external references, valid-value sets."""
@@ -257,7 +267,9 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(tags={"actor"})
     async def egeria_actors(
-        action: str = Field(description=f"One of: {', '.join(sorted(_ACTORS))}."),
+        action: str = Field(
+            description=f"One of: {', '.join(repr(a) for a in sorted(_ACTORS))}."
+        ),
         query: str = Field(default="", description="Search string ('' = match-all)."),
     ) -> Any:
         """Browse people/teams, projects, communities, locations, cohorts."""

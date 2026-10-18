@@ -31,45 +31,6 @@ def register_egeria_tools(mcp: FastMCP) -> None:
     """
 
     # ── Read tools ───────────────────────────────────────────────────────────
-    @mcp.tool(tags={"asset"})
-    async def egeria_asset_search(
-        query: str = Field(
-            default="*", description="Search string (Egeria find syntax; '*' = all)."
-        ),
-        type_filter: str = Field(
-            default="",
-            description="Optional Egeria typeName substring filter (e.g. 'Database').",
-        ),
-    ) -> Any:
-        """Search the Egeria asset catalog; returns flat asset records with GUIDs."""
-        return get_client().asset_search(query, type_filter)
-
-    @mcp.tool(tags={"glossary"})
-    async def egeria_glossary_lookup(
-        term: str = Field(description="Glossary term to look up (Egeria find syntax)."),
-        glossary: str = Field(
-            default="", description="Optional glossary qualifiedName filter."
-        ),
-    ) -> Any:
-        """Look up business glossary terms (definitions, categories, relationships)."""
-        return get_client().glossary_lookup(term, glossary)
-
-    @mcp.tool(tags={"glossary"})
-    async def egeria_glossary_categories() -> Any:
-        """List the glossary category tree."""
-        return get_client().glossary_categories()
-
-    @mcp.tool(tags={"lineage"})
-    async def egeria_lineage(
-        asset_guid: str = Field(description="Egeria asset GUID to trace lineage for."),
-        direction: str = Field(
-            default="both", description="'upstream', 'downstream', or 'both'."
-        ),
-        depth: int = Field(default=2, description="Lineage traversal depth."),
-    ) -> Any:
-        """Return the data-lineage graph (upstream/downstream assets + processes)."""
-        return get_client().lineage(asset_guid, direction, depth)
-
     @mcp.tool(tags={"lineage"})
     async def egeria_lineage_scan(
         max_total: int = Field(
@@ -86,29 +47,6 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         from egeria_mcp.lineage_scan import catalog_lineage_edges
 
         return catalog_lineage_edges(get_client(), max_total=max_total)
-
-    @mcp.tool(tags={"governance"})
-    async def egeria_governance_for(
-        element_guid: str = Field(
-            description="GUID of the element to fetch governance for."
-        ),
-    ) -> Any:
-        """Return governance definitions + classifications applying to an element.
-
-        The load-bearing tool for policy-aware routing: returns classifications
-        (e.g. Confidentiality, Retention) and the policies governing the element.
-        """
-        return get_client().governance_for(element_guid)
-
-    @mcp.tool(tags={"governance"})
-    async def egeria_list_policies(
-        domain: str = Field(
-            default="",
-            description="Optional governance domain filter (e.g. 'data-privacy').",
-        ),
-    ) -> Any:
-        """List Egeria governance policies/rules (optionally filtered by domain)."""
-        return get_client().list_policies(domain)
 
     @mcp.tool(tags={"governance", "routing"})
     async def egeria_governed_route(
@@ -486,41 +424,6 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         return harvest_odoo(get_client())
 
     # ── Write tools (gated by EGERIA_ENABLE_WRITE) ───────────────────────────
-    @mcp.tool(tags={"governance", "write"})
-    async def egeria_classify(
-        element_guid: str = Field(description="GUID of the element to classify."),
-        classification: str = Field(
-            description="Classification typeName (e.g. 'Confidentiality')."
-        ),
-        properties_json: str = Field(
-            default="{}", description="JSON properties for the classification."
-        ),
-    ) -> Any:
-        """Apply a classification to an element (requires EGERIA_ENABLE_WRITE=true)."""
-        return get_client().classify(element_guid, classification, _p(properties_json))
-
-    @mcp.tool(tags={"glossary", "write"})
-    async def egeria_create_term(
-        glossary: str = Field(description="Target glossary GUID or qualifiedName."),
-        name: str = Field(description="Term display name."),
-        definition: str = Field(default="", description="Term definition / summary."),
-    ) -> Any:
-        """Create a glossary term (requires EGERIA_ENABLE_WRITE=true)."""
-        return get_client().create_term(glossary, name, definition)
-
-    @mcp.tool(tags={"lineage", "write"})
-    async def egeria_assert_lineage(
-        source_guid: str = Field(description="Source asset GUID."),
-        process_guid: str = Field(description="Process GUID linking source to target."),
-        target_guid: str = Field(description="Target asset GUID."),
-    ) -> Any:
-        """Assert a data-flow lineage edge (requires EGERIA_ENABLE_WRITE=true).
-
-        Used for KG→Egeria provenance write-back: records that a run consumed
-        ``source`` and produced ``target`` via ``process``.
-        """
-        return get_client().assert_lineage(source_guid, process_guid, target_guid)
-
     @mcp.tool(tags={"lineage", "write"})
     async def egeria_reconcile_openlineage_asset(
         dataset_name: str = Field(
@@ -583,49 +486,3 @@ def register_egeria_tools(mcp: FastMCP) -> None:
                 "dataset_name": str(e),
                 "expected_format": "iceberg://<catalog>/<ns>/<table>@<snapshot>",
             }
-
-    @mcp.tool(tags={"asset", "write"})
-    async def egeria_create_asset(
-        type_name: str = Field(
-            description="Egeria asset type (e.g. 'SoftwareServer', 'RelationalDatabase')."
-        ),
-        qualified_name: str = Field(description="Unique qualifiedName for the asset."),
-        display_name: str = Field(description="Human-readable display name."),
-        description: str = Field(default="", description="Asset description."),
-        deployed_implementation_type: str = Field(
-            default="", description="e.g. 'PostgreSQL Server'."
-        ),
-        confidentiality_level: int = Field(
-            default=-1, description="0–4 Confidentiality level (-1 = none)."
-        ),
-    ) -> Any:
-        """Create a data asset, optionally classified (requires EGERIA_ENABLE_WRITE=true)."""
-        return get_client().create_asset(
-            type_name,
-            qualified_name,
-            display_name,
-            description=description,
-            deployed_implementation_type=deployed_implementation_type,
-            confidentiality_level=None
-            if confidentiality_level < 0
-            else confidentiality_level,
-        )
-
-    @mcp.tool(tags={"collection", "write"})
-    async def egeria_create_collection(
-        display_name: str = Field(description="Collection display name."),
-        description: str = Field(default="", description="Collection description."),
-        category: str = Field(default="", description="Optional collectionType."),
-    ) -> Any:
-        """Create a collection / digital-product folder (requires EGERIA_ENABLE_WRITE=true)."""
-        return get_client().create_collection(
-            display_name, description, category=category
-        )
-
-    @mcp.tool(tags={"project", "write"})
-    async def egeria_create_project(
-        display_name: str = Field(description="Project name."),
-        description: str = Field(default="", description="Project description."),
-    ) -> Any:
-        """Create a project (requires EGERIA_ENABLE_WRITE=true)."""
-        return get_client().create_project(display_name, description)

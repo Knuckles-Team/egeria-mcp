@@ -3,23 +3,23 @@
   "egeria-glossary-terms": {
     "server": "egeria-mcp",
     "tool": "egeria_glossary_lookup",
-    "action": "list",
     "records_path": "",
     "id_field": "guid",
     "title_field": "displayName",
     "text_field": "summary",
     "updated_field": "updateTime",
-    "doc_type": "glossary_term"
+    "doc_type": "glossary_term",
+    "params_style": "args"
   },
   "egeria-governance-definitions": {
     "server": "egeria-mcp",
     "tool": "egeria_list_policies",
-    "action": "list",
     "records_path": "",
     "id_field": "guid",
     "title_field": "displayName",
     "text_field": "summary",
     "updated_field": "updateTime",
-    "doc_type": "governance_rule"
+    "doc_type": "governance_rule",
+    "params_style": "args"
   }
 }

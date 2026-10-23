@@ -17,16 +17,9 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 
 def _as_plane_project(p: dict) -> dict:
@@ -42,10 +35,7 @@ def _fetch_plane_projects(
     url: str, token: str, workspace: str, tls_profile: ResolvedTLSProfile | None
 ) -> list[dict]:
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/v1/workspaces/{workspace}/projects/",
                 headers={"X-API-Key": token, "Accept": "application/json"},
@@ -63,7 +53,7 @@ def _plane_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     url = setting("PLANE_URL")
     token = setting("PLANE_TOKEN")
     workspace = setting("PLANE_WORKSPACE")
-    if not (url and token and workspace and HTTPX_AVAILABLE):
+    if not (url and token and workspace):
         return []
     return _fetch_plane_projects(url, token, workspace, tls_profile)
 
@@ -72,13 +62,10 @@ def _jira_projects(tls_profile: ResolvedTLSProfile | None) -> list[dict]:
     url = setting("JIRA_URL")
     user = setting("JIRA_USER")
     token = setting("JIRA_TOKEN")
-    if not (url and user and token and HTTPX_AVAILABLE):
+    if not (url and user and token):
         return []
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.get(
                 f"{url.rstrip('/')}/rest/api/3/project/search",
                 auth=(user, token),

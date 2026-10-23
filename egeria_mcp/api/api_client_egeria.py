@@ -25,12 +25,7 @@ from typing import Any
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
 from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
-try:  # httpx is always present (agent-connector-sdk dep); guard anyway
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
+from egeria_mcp.governed_http import governed_client
 
 # Back-compat flag some callers/tests import; REST path needs no pyegeria.
 PYEGERIA_AVAILABLE = False
@@ -126,11 +121,10 @@ class EgeriaApi:
     # ── HTTP plumbing ────────────────────────────────────────────────────────
     def _http(self) -> Any:
         if self._client is None:
-            if not HTTPX_AVAILABLE:
-                raise RuntimeError("httpx is required for egeria-mcp.")
-            self._client = httpx.Client(
+            self._client = governed_client(
+                self.platform_url,
                 timeout=self.timeout,
-                **self.tls_profile.httpx_kwargs(),
+                tls_profile=self.tls_profile,
             )
         return self._client
 

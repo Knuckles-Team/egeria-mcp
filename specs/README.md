@@ -12,4 +12,4 @@ Read the existing specs first. Extend the spec that owns the behavior. Create a 
 
 ## Local specifications
 
-This repository has no local spec yet.
+[`CONN-EGERIA-MCP-SDK-CENTRALIZATION`](sdk-centralization/spec.md) — An operator must run the Egeria connector on the shared SDK capabilities.

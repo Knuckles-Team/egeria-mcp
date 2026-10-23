@@ -14,36 +14,43 @@ from __future__ import annotations
 from typing import Any
 
 from agent_connector_sdk.config import setting
+from agent_connector_sdk.credentials.references import SecretReferenceError
+from agent_connector_sdk.credentials.resolution import resolve_secret_reference
+from agent_connector_sdk.credentials.resolver import CredentialUnavailableError
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
 
-try:
-    import httpx
 
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
+def _token(token: str | None) -> str | None:
+    """The OpenBao token: a reference is resolved by the SDK credential resolver."""
+    value = (
+        token
+        or setting("OPENBAO_TOKEN_REF")
+        or setting("OPENBAO_TOKEN")
+        or setting("VAULT_TOKEN")
+    )
+    if not value or "://" not in str(value):
+        return value or None
+    try:
+        return resolve_secret_reference(str(value))
+    except (SecretReferenceError, CredentialUnavailableError):
+        return None
 
 
 def _resolve(url: str | None, token: str | None):
     return (
         url or setting("OPENBAO_URL") or setting("BAO_ADDR") or setting("VAULT_ADDR"),
-        token or setting("OPENBAO_TOKEN") or setting("VAULT_TOKEN"),
+        _token(token),
     )
 
 
 def _get(
     url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None, params=None
 ) -> Any:
-    if not HTTPX_AVAILABLE:
-        return None
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.get(
                 f"{url.rstrip('/')}{path}",
                 headers={"X-Vault-Token": token},

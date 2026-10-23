@@ -1,9 +1,6 @@
 {
   "api_version": "arbora.io/v1",
   "artifacts": {
-    "connector_manifest.yml": "51d667727bb5c072d4e2e4a702dbb029a39b5d248b73e7375d5541ec2026faec",
-    "egeria_mcp/connectors/mcp_source_presets.json": "93585dc9e90f75064f5b51af082fbf86400076f4fdefdbb05340273bdbfc103b",
-    "egeria_mcp/connectors/tool_schema_fingerprints.json": "74f055afdd2884e8d99f78891691e7eb62cf64834c61c38f24d5244eec5d97d2",
     "egeria_mcp/ontology/egeria.ttl": "e273821a3333f76b9cc88474c150f2459ef530845cd36891757b27d635a16188",
     "egeria_mcp/ontology/fixtures/records.json": "8982ec355eba18ad8ab0c36e6dd8fe424e07327070cd504a9c0a57e41629da87",
     "egeria_mcp/ontology/mappings/source.yaml": "caf020aef56fc30d6389502d8708cf173af2ee6f4dbc324ff5bf66b52524ccce",

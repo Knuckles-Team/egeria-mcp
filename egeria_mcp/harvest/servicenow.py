@@ -15,16 +15,9 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 # CMDB CI tables to catalog (servers/databases/apps). Override via the harvest args.
 _DEFAULT_TABLES = ["cmdb_ci_server", "cmdb_ci_database", "cmdb_ci_appl"]
@@ -51,14 +44,9 @@ def fetch_cis(
     tls_profile: ResolvedTLSProfile | None = None,
 ) -> list[dict]:
     """Fetch configuration items from a ServiceNow CMDB table."""
-    if not HTTPX_AVAILABLE:
-        return []
     url = f"{base_url.rstrip('/')}/api/now/table/{table}"
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.get(
                 url,
                 params={

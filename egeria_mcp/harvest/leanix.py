@@ -14,16 +14,9 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 _QUERY = "{allFactSheets(first:500){edges{node{id name type}}}}"
 
@@ -32,10 +25,7 @@ def _bearer(
     base_url: str, api_token: str, tls_profile: ResolvedTLSProfile | None
 ) -> str | None:
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(base_url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.post(
                 f"{base_url.rstrip('/')}/services/mtm/v1/oauth2/token",
                 data={"grant_type": "client_credentials"},
@@ -58,10 +48,7 @@ def _query_factsheets(
     base_url: str, bearer: str, tls_profile: ResolvedTLSProfile | None
 ) -> list[dict]:
     try:
-        with httpx.Client(
-            timeout=30.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(base_url, timeout=30.0, tls_profile=tls_profile) as c:
             r = c.post(
                 f"{base_url.rstrip('/')}/services/pathfinder/v1/graphql",
                 headers={
@@ -78,8 +65,6 @@ def _query_factsheets(
 def fetch_factsheets(
     base_url: str, api_token: str, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[dict]:
-    if not HTTPX_AVAILABLE:
-        return []
     bearer = _bearer(base_url, api_token, tls_profile)
     if not bearer:
         return []

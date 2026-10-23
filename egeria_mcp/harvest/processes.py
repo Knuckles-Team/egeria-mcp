@@ -18,15 +18,8 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
-
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest import topology
 from egeria_mcp.harvest._reporting import count_created, note_error
 
@@ -43,15 +36,10 @@ def fetch_process_definitions(
     timeout: float = 15.0,
 ) -> list[dict]:
     """Fetch process definitions from a Camunda 7 engine-REST endpoint."""
-    if not HTTPX_AVAILABLE:
-        return []
     url = f"{base_url.rstrip('/')}/process-definition"
     params = {"latestVersion": "true"} if latest_only else {}
     try:
-        with httpx.Client(
-            timeout=timeout,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=timeout, tls_profile=tls_profile) as c:
             r = c.get(url, params=params)
         if r.status_code != 200:
             return []

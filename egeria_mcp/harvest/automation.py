@@ -13,28 +13,16 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 
 def _fetch(
     url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None
 ) -> list[dict]:
-    if not HTTPX_AVAILABLE:
-        return []
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.get(
                 f"{url.rstrip('/')}/api/v2/{path}/",
                 headers={

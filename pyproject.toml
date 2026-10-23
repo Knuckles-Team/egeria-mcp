@@ -9,7 +9,7 @@ description = "Apache Egeria open-metadata API + MCP Server for Agentic AI!"
 readme = "README.md"
 classifiers = [ "Development Status :: 3 - Alpha", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
-dependencies = [ "agent-connector-sdk[mcp]>=0.3.6,<1.0.0", "defusedxml>=0.7.1", "httpx>=0.28.1",]
+dependencies = [ "agent-connector-sdk[mcp]>=0.3.11,<1.0.0", "defusedxml>=0.7.1",]
 [[project.authors]]
 name = "Project Maintainers"
 email = "maintainers@users.noreply.github.com"
@@ -18,9 +18,9 @@ email = "maintainers@users.noreply.github.com"
 text = "MIT"
 
 [project.optional-dependencies]
-mcp = [ "agent-connector-sdk[mcp]>=0.3.6,<1.0.0",]
-harvest = [ "pymongo>=4.19.0", "pyyaml>=6.0.3",]
-all = [ "agent-connector-sdk[mcp]>=0.3.6,<1.0.0", "pymongo>=4.19.0", "pyyaml>=6.0.3",]
+mcp = [ "agent-connector-sdk[mcp]>=0.3.11,<1.0.0",]
+harvest = [ "agent-connector-sdk[db]>=0.3.11,<1.0.0", "pyyaml>=6.0.3",]
+all = [ "agent-connector-sdk[mcp,db]>=0.3.11,<1.0.0", "pyyaml>=6.0.3",]
 test = [ "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0",]
 
 [project.scripts]

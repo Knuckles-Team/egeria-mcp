@@ -17,16 +17,9 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 
 def _resolve(base_url: str | None, token: str | None):
@@ -38,14 +31,11 @@ def _bearer(base_url: str, tls_profile: ResolvedTLSProfile | None) -> str | None
     cid = setting("KEYCLOAK_CLIENT_ID")
     secret = setting("KEYCLOAK_CLIENT_SECRET")
     realm = setting("KEYCLOAK_REALM", "master")
-    if not (cid and secret) or not HTTPX_AVAILABLE:
+    if not (cid and secret):
         return None
     url = f"{base_url.rstrip('/')}/realms/{realm}/protocol/openid-connect/token"
     try:
-        with httpx.Client(
-            timeout=15.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=15.0, tls_profile=tls_profile) as c:
             r = c.post(
                 url,
                 data={
@@ -62,13 +52,8 @@ def _bearer(base_url: str, tls_profile: ResolvedTLSProfile | None) -> str | None
 def _get(
     base_url: str, token: str, path: str, tls_profile: ResolvedTLSProfile | None
 ) -> Any:
-    if not HTTPX_AVAILABLE:
-        return None
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(base_url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.get(
                 f"{base_url.rstrip('/')}{path}",
                 headers={"Authorization": f"Bearer {token}"},

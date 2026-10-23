@@ -14,16 +14,9 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 
 def _resolve(base_url: str | None, token: str | None):
@@ -38,13 +31,8 @@ def fetch_accounts(
     limit: int = 100,
 ) -> list[dict]:
     """Fetch accounts from Firefly-III (v1 API)."""
-    if not HTTPX_AVAILABLE:
-        return []
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(base_url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.get(
                 f"{base_url.rstrip('/')}/api/v1/accounts",
                 headers={

@@ -16,16 +16,9 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 # (odoo model, asset display kind, confidentiality level)
 _MODELS = [
@@ -36,13 +29,8 @@ _MODELS = [
 
 def _rpc(url: str, payload: dict, tls_profile: ResolvedTLSProfile | None) -> Any:
     """One Odoo JSON-RPC call; returns the ``result`` or ``None`` on any failure."""
-    if not HTTPX_AVAILABLE:
-        return None
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.post(
                 f"{url.rstrip('/')}/jsonrpc",
                 json={"jsonrpc": "2.0", "method": "call", "params": payload},

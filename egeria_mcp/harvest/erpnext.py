@@ -17,14 +17,8 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
+from egeria_mcp.governed_http import governed_client
 
 # Curated, business-critical DocTypes (a full ERPNext has ~800 — this is the
 # meaningful master/transaction core). ERPNext is multi-role: alongside ERP it is the
@@ -111,14 +105,9 @@ def fetch_doctype(
     tls_profile: ResolvedTLSProfile | None = None,
 ) -> dict | None:
     """Fetch a single DocType definition (module, fields count) from Frappe REST."""
-    if not HTTPX_AVAILABLE:
-        return None
     url = f"{base_url.rstrip('/')}/api/resource/DocType/{name.replace(' ', '%20')}"
     try:
-        with httpx.Client(
-            timeout=15.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=15.0, tls_profile=tls_profile) as c:
             r = c.get(url, headers={"Authorization": f"token {token}"})
         if r.status_code != 200:
             return None

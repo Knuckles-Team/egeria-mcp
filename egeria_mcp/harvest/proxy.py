@@ -13,16 +13,9 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 
 def _route_hosts(route: dict) -> list[str]:
@@ -59,13 +52,8 @@ def _fetch_server_configs(
     admin_url: str, tls_profile: ResolvedTLSProfile | None
 ) -> dict:
     """Fetch Caddy's ``apps.http.servers`` config (``{}`` on any failure)."""
-    if not HTTPX_AVAILABLE:
-        return {}
     try:
-        with httpx.Client(
-            timeout=15.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(admin_url, timeout=15.0, tls_profile=tls_profile) as c:
             r = c.get(f"{admin_url.rstrip('/')}/config/apps/http/servers")
         return r.json() or {} if r.status_code == 200 else {}
     except Exception:

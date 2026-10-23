@@ -16,16 +16,9 @@ from typing import Any
 
 from agent_connector_sdk.config import setting
 from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
 
+from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest._reporting import count_created, note_error
-
-try:
-    import httpx
-
-    HTTPX_AVAILABLE = True
-except Exception:  # pragma: no cover
-    HTTPX_AVAILABLE = False
 
 _NAME = re.compile(r'monitor_name="([^"]+)"')
 _TYPE = re.compile(r'monitor_type="([^"]+)"')
@@ -50,13 +43,8 @@ def _parse_monitor_names(metrics_text: str) -> list[dict]:
 def fetch_monitors(
     url: str, token: str, *, tls_profile: ResolvedTLSProfile | None = None
 ) -> list[dict]:
-    if not HTTPX_AVAILABLE:
-        return []
     try:
-        with httpx.Client(
-            timeout=20.0,
-            **(tls_profile or resolve_tls_profile("EGERIA")).httpx_kwargs(),
-        ) as c:
+        with governed_client(url, timeout=20.0, tls_profile=tls_profile) as c:
             r = c.get(f"{url.rstrip('/')}/metrics", auth=("", token))
         if r.status_code != 200:
             return []

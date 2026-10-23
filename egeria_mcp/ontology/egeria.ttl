@@ -35,14 +35,8 @@
     federating with the broader :Concept vocabulary. Egeria: GlossaryTerm.""" ;
     rdfs:subClassOf :Concept .
 
-:GovernanceRule a owl:Class ;
-    rdfs:label "Governance Rule" ;
-    rdfs:comment """An Egeria GovernanceDefinition of a rule/policy nature
-    (GovernancePolicy, GovernanceRule, GovernanceObligation, …) — a governing
-    statement that assets are :governedBy. Typed here so the native extractor can
-    ingest governance definitions as nodes the confidentiality/routing layer can
-    reason over. Egeria: GovernanceDefinition (rule subtypes). Complements :Policy.""" ;
-    rdfs:subClassOf :Policy .
+:GovernanceRule a owl:Class .
+
 
 :DataAsset a owl:Class ;
     rdfs:label "Data Asset" ;
@@ -117,5 +111,4 @@
     (Confidentiality, Retention, ...) are modelled as node properties plus a
     :governedBy edge to the relevant :Policy — not as nodes.
 
-    CONCEPT:KG-2.9 — self-registering enterprise source extractors.""" ;
-    owl:imports <http://knuckles.team/kg/enterprise> .
+    CONCEPT:KG-2.9 — self-registering enterprise source extractors.""" .

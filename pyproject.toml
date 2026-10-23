@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "egeria-mcp"
-version = "2.3.2"
+version = "2.3.3"
 description = "Apache Egeria open-metadata API + MCP Server for Agentic AI!"
 readme = "README.md"
 classifiers = [ "Development Status :: 3 - Alpha", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
-dependencies = [ "agent-connector-sdk[mcp]>=0.3.18,<1.0.0", "defusedxml>=0.7.1",]
+dependencies = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0", "defusedxml>=0.7.1",]
 [[project.authors]]
 name = "Project Maintainers"
 email = "maintainers@users.noreply.github.com"
@@ -18,9 +18,9 @@ email = "maintainers@users.noreply.github.com"
 text = "MIT"
 
 [project.optional-dependencies]
-mcp = [ "agent-connector-sdk[mcp]>=0.3.18,<1.0.0",]
-harvest = [ "agent-connector-sdk[db]>=0.3.18,<1.0.0", "pyyaml>=6.0.3",]
-all = [ "agent-connector-sdk[mcp,db]>=0.3.18,<1.0.0", "pyyaml>=6.0.3",]
+mcp = [ "agent-connector-sdk[mcp]>=0.4.1,<1.0.0",]
+harvest = [ "agent-connector-sdk[db]>=0.4.1,<1.0.0", "pyyaml>=6.0.3",]
+all = [ "agent-connector-sdk[mcp,db]>=0.4.1,<1.0.0", "pyyaml>=6.0.3",]
 test = [ "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0",]
 
 [project.scripts]
@@ -37,11 +37,6 @@ egeria-mcp = "egeria_mcp.prompts"
 # via iter_provider_dirs like the skill/prompt providers.
 [project.entry-points."agent_connector_sdk.ontology_providers"]
 egeria-mcp = "egeria_mcp.ontology"
-
-# Tier-1 mcp_tool source-preset leg (AU-KG.ingest.mcp-tool-connector): declares how
-# the KG hub can sync Egeria glossary terms via this package's MCP server.
-[project.entry-points."agent_connector_sdk.source_connector_providers"]
-egeria-mcp = "egeria_mcp.connectors"
 
 # The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
 [project.entry-points."agent_connector_sdk.connector"]

@@ -340,7 +340,7 @@ def asset_for_kg_node(api: Any, node_id: str) -> dict[str, Any]:
     qualifiedName — e.g. ``DEC-CA-05``'s ``iceberg://<catalog>/<ns>/<table>@
     <snapshot>`` dataset-naming rule, the node-id convention this package
     proposes (shared with, not binding on, CA-25/CA-30/CA-40; see
-    ``connector_manifest.yml``'s ``review_todos``) — and resolved via
+    ``egeria_mcp.connector_sources``'s ``review_todos``) — and resolved via
     :meth:`EgeriaApi.find_asset` (exact qualifiedName match). Read-only.
     """
     parts = (node_id or "").split(":", 2)

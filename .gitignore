@@ -14,3 +14,8 @@ dist/
 # P0.2/P0.3 (arbora-completion-program): materialized, dev-machine-only
 # standalone against its own tracked lock instead of the ecosystem workspace.
 # Never tracked.
+docker/Dockerfile
+docker/debug.Dockerfile
+docker/*.compose.yml
+egeria_mcp/ontology/shapes/connector.shacl.ttl
+egeria_mcp/ontology/certification.json

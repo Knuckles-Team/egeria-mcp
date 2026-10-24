@@ -7,9 +7,6 @@ Served live as ``connector://resources``. Regenerate by editing the declarations
 from __future__ import annotations
 
 from agent_connector_sdk.ingest.live_declaration import source_meta
-from agent_connector_sdk.ingest.sources import IngestSourceDeclaration, IngestSourceSpec
-
-CONNECTOR = "egeria-mcp"
 
 SOURCES = (
     source_meta(
@@ -44,45 +41,35 @@ SOURCES = (
     ),
 )
 
+SCHEMA_VERSION = 2
+
+FIELD_SETS = {
+    "fields_1": {
+        "confidentialityLevel": "xsd:string",
+        "qualifiedName": "xsd:string",
+        "retentionPeriod": "xsd:string",
+    },
+}
+
 SCHEMA_MAPPINGS = {
     "DataAsset": {
-        "fields": {
-            "confidentialityLevel": "xsd:string",
-            "qualifiedName": "xsd:string",
-            "retentionPeriod": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "DataConnector",
     },
     "Endpoint": {
-        "fields": {
-            "confidentialityLevel": "xsd:string",
-            "qualifiedName": "xsd:string",
-            "retentionPeriod": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "TechnologyLayer",
     },
     "GlossaryCategory": {
-        "fields": {
-            "confidentialityLevel": "xsd:string",
-            "qualifiedName": "xsd:string",
-            "retentionPeriod": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "Concept",
     },
     "GlossaryTerm": {
-        "fields": {
-            "confidentialityLevel": "xsd:string",
-            "qualifiedName": "xsd:string",
-            "retentionPeriod": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "Concept",
     },
     "GovernanceRule": {
-        "fields": {
-            "confidentialityLevel": "xsd:string",
-            "qualifiedName": "xsd:string",
-            "retentionPeriod": "xsd:string",
-        },
+        "field_sets": ["fields_1"],
         "ontology_class": "Policy",
     },
 }
@@ -114,22 +101,3 @@ RESOURCES = (
         "name": "GovernanceRule",
     },
 )
-
-
-def declaration() -> IngestSourceDeclaration:
-    """The declaration the server assembles from this module."""
-    specs = []
-    for item in SOURCES:
-        for entry in item["connector_sources"]:
-            body = {k: v for k, v in entry.items() if k not in ("tool", "mapping")}
-            specs.append(
-                IngestSourceSpec.model_validate({**body, "tools": (entry["tool"],)})
-            )
-    return IngestSourceDeclaration.model_validate(
-        {
-            "connector": CONNECTOR,
-            "sources": specs,
-            "schema_mappings": SCHEMA_MAPPINGS,
-            "resources": RESOURCES,
-        }
-    )

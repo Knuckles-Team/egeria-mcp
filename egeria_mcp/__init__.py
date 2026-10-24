@@ -13,7 +13,6 @@ import importlib
 import inspect
 from typing import Any
 
-__version__ = "2.3.3"
 __all__: list[str] = []
 
 CORE_MODULES = ["egeria_mcp.api_client"]
@@ -85,3 +84,16 @@ def __getattr__(name: str) -> Any:
 
 def __dir__() -> list[str]:
     return sorted(list(globals().keys()) + __all__)
+
+
+from agent_connector_sdk.connector import Connector
+
+from egeria_mcp.api_client import EgeriaApi
+from egeria_mcp.auth import get_client
+
+connector = Connector(
+    api=EgeriaApi,
+    get_client=get_client,
+    tools="egeria_mcp.mcp_server",
+    instructions="Egeria MCP Server - granular open-metadata access over the Apache Egeria View Server (OMVS): asset catalog search, business glossary lookup, data lineage, and governance/classification reads, plus write-gated classify / create-term / assert-lineage tools.",
+)

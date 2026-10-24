@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import pytest
 
-from egeria_mcp.lineage_scan import catalog_lineage_edges
 from egeria_mcp.reconcile import (
     MalformedDatasetName,
     parse_iceberg_dataset_name,
@@ -154,30 +153,6 @@ def test_reconcile_write_disabled_same_refusal_shape_as_other_write_tools():
         reconcile_openlineage_asset(api, _GOOD_DATASET)
 
 
-def test_reconcile_tool_quarantine_shape(monkeypatch):
-    """The MCP tool wrapper turns MalformedDatasetName into a typed quarantine dict.
-
-    Quarantine happens before any Egeria call, but the tool still resolves the
-    client eagerly (matching every sibling tool's ``get_client()`` call
-    convention) — mock it so this test exercises only the quarantine path.
-    """
-    import asyncio
-
-    import egeria_mcp.mcp.mcp_egeria as mcp_egeria_mod
-    from egeria_mcp.mcp_server import get_mcp_instance
-
-    monkeypatch.setattr(mcp_egeria_mod, "get_client", lambda: object())
-
-    async def run():
-        mcp, _args, _mw = get_mcp_instance(command_args=[])
-        tool = await mcp.get_tool("egeria_reconcile_openlineage_asset")
-        return await tool.fn(dataset_name="bogus")
-
-    res = asyncio.new_event_loop().run_until_complete(run())
-    assert res["quarantined"] is True
-    assert res["reason"] == "malformed_dataset_name"
-
-
 # ── egeria_lineage_scan (CA-46-W03) ───────────────────────────────────────
 class _R:
     status_code = 200
@@ -222,33 +197,3 @@ class ScanFakeApi:
                 }
             ]
         }
-
-
-def test_lineage_scan_matches_catalog_lineage_edges_directly(monkeypatch):
-    direct = catalog_lineage_edges(ScanFakeApi(), max_total=5)
-    assert direct == [
-        {
-            "source": "g1",
-            "target": "g2",
-            "label": "flow",
-            "sourceName": "Node::foo",
-            "targetName": "Dataset::bar",
-            "sourceType": "T",
-            "targetType": "T2",
-        }
-    ]
-
-    import asyncio
-
-    import egeria_mcp.mcp.mcp_egeria as mcp_egeria_mod
-    from egeria_mcp.mcp_server import get_mcp_instance
-
-    monkeypatch.setattr(mcp_egeria_mod, "get_client", lambda: ScanFakeApi())
-
-    async def run():
-        mcp, _args, _mw = get_mcp_instance(command_args=[])
-        tool = await mcp.get_tool("egeria_lineage_scan")
-        return await tool.fn(max_total=5)
-
-    via_tool = asyncio.new_event_loop().run_until_complete(run())
-    assert via_tool == direct

@@ -630,7 +630,7 @@ class MalformedDatasetName(ValueError):
     """A dataset name did not parse as ``iceberg://<catalog>/<ns>/<table>@<snapshot>``.
 
     Named typed error for the quarantine path — never guess a dataset's identity
-    from an unparseable name (mirrors the ``DEC-CA-03``/``DEC-CA-06`` quarantine
+    from an unparsable name (mirrors the ``DEC-CA-03``/``DEC-CA-06`` quarantine
     pattern for unmapped CDC tables).
     """
 

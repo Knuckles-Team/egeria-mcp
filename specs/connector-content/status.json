@@ -2,7 +2,7 @@
   "schema_version": 2,
   "spec_id": "CONN-EGERIA-MCP-CONNECTOR-CONTENT",
   "owner_repo": "egeria-mcp",
-  "delivery_state": "VERIFIED",
+  "delivery_state": "LANDED",
   "requirement_ids": [
     "CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001"
   ],
@@ -10,13 +10,11 @@
     {
       "id": "CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001",
       "title": "Default content",
-      "delivery_state": "VERIFIED",
+      "delivery_state": "LANDED",
       "landed_in": [
         "49159f58eae9"
       ],
-      "verified_by": [
-        "tests/test_default_content_surfaces.py:15"
-      ]
+      "verified_by": []
     }
   ]
 }

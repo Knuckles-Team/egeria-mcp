@@ -9,7 +9,7 @@ description = "Apache Egeria open-metadata API + MCP Server for Agentic AI!"
 readme = "README.md"
 classifiers = [ "Development Status :: 3 - Alpha", "License :: OSI Approved :: MIT License", "Environment :: Console", "Operating System :: POSIX :: Linux", "Programming Language :: Python :: 3",]
 requires-python = ">=3.12, <3.15"
-dependencies = [ "agent-connector-sdk[mcp]>=0.5.4,<0.6.0", "defusedxml>=0.7.1",]
+dependencies = [ "scion-sdk[mcp]>=0.5.9,<0.6.0", "defusedxml>=0.7.1",]
 [[project.authors]]
 name = "Repository Maintainers"
 email = "maintainers@knuckles.team"
@@ -18,8 +18,8 @@ email = "maintainers@knuckles.team"
 text = "MIT"
 
 [project.optional-dependencies]
-harvest = [ "agent-connector-sdk[db]>=0.4.1,<1.0.0", "pyyaml>=6.0.3",]
-all = [ "agent-connector-sdk[mcp,db]>=0.4.1,<1.0.0", "pyyaml>=6.0.3",]
+harvest = [ "scion-sdk[db]>=0.5.9,<0.6.0", "pyyaml>=6.0.3",]
+all = [ "scion-sdk[mcp,db]>=0.5.9,<0.6.0", "pyyaml>=6.0.3",]
 test = [ "pytest-xdist>=3.8.0", "pytest>=9.1.1", "pytest-asyncio>=1.4.0", "pytest-cov>=7.1.0",]
 
 [project.scripts]
@@ -32,7 +32,7 @@ egeria-mcp = "egeria_mcp.prompts"
 # agent-connector-sdk hub (open-metadata assets, glossaries, governance). Resolved
 # via iter_provider_dirs like the skill/prompt providers.
 
-# The one declared connector identity: the fleet name (SDK-CONNECTOR-CONTROL-R071).
+# The one declared connector identity: the fleet name (SCION-CONNECTOR-CONTROL-R071).
 [project.entry-points."agent_connector_sdk.connector"]
 egeria-mcp = "egeria_mcp:connector"
 

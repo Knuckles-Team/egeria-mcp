@@ -1,6 +1,6 @@
 # CONN-EGERIA-MCP-SDK-CENTRALIZATION — SDK centralized capabilities
 
-Owner: egeria-mcp. Cross-repo IDs: SDK-CENTRALIZED-CAPABILITIES.
+Owner: egeria-mcp. Cross-repo IDs: SCION-CENTRALIZED-CAPABILITIES.
 
 ## Purpose and user stories
 
@@ -19,7 +19,7 @@ An operator must run the Egeria connector on the shared SDK capabilities. The co
 
 The `specs/` tree held only the template and the index.
 No local spec owned how this connector uses the shared SDK capabilities, so this spec owns it.
-It cites the SDK-CENTRALIZED-CAPABILITIES rows by ID and adds no capability of its own.
+It cites the SCION-CENTRALIZED-CAPABILITIES rows by ID and adds no capability of its own.
 
 ## Scope and interfaces
 

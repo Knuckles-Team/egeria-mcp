@@ -43,5 +43,5 @@ def test_database_driver_comes_from_sdk_extra():
     extras = project["optional-dependencies"]
     for name in ("harvest", "all"):
         pins = extras[name]
-        assert any(p.startswith("agent-connector-sdk[") and "db" in p for p in pins)
+        assert any(p.startswith("scion-sdk[") and "db" in p for p in pins)
         assert not any(p.startswith("pymongo") for p in pins)

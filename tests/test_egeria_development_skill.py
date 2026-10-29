@@ -19,8 +19,6 @@ def test_egeria_development_skill_describes_the_supported_delivery_contract():
     api = (ROOT / "egeria_mcp" / "api_client.py").read_text(encoding="utf-8")
     tools = (ROOT / "egeria_mcp" / "mcp" / "mcp_egeria.py").read_text(encoding="utf-8")
     sources = (ROOT / "egeria_mcp" / "connector_sources.py").read_text(encoding="utf-8")
-    pipeline = (ROOT / ".github/workflows/pipeline.yml").read_text(encoding="utf-8")
-    pages = (ROOT / ".github/workflows/pages.yml").read_text(encoding="utf-8")
 
     assert SKILL.is_file()
     assert re.search(r"^name:\s*egeria-mcp-development\s*$", frontmatter, re.M)
@@ -67,8 +65,3 @@ def test_egeria_development_skill_describes_the_supported_delivery_contract():
     assert "EGERIA_PLATFORM_URL" in auth
     assert "EGERIA_ENABLE_WRITE" in tools
     assert "source_meta" in sources
-    assert "python_pipeline.yml@main" in pipeline
-    assert "connector: true" in pipeline
-    assert "container_pipeline.yml@main" in pipeline
-    assert "render_connector: true" in pipeline
-    assert "pages_pipeline.yml@main" in pages

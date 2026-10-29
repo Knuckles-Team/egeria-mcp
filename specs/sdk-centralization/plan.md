@@ -8,9 +8,9 @@ The connector reused SDK capabilities already: see the cited SDK rows. This spec
 
 ## Architecture
 
-- Governed HTTP client: SDK-CENTRALIZED-CAPABILITIES-R001, SDK-CENTRALIZED-CAPABILITIES-R008
-- OpenBao token by reference: SDK-CENTRALIZED-CAPABILITIES-R009
-- Database driver from the SDK extra: SDK-CENTRALIZED-CAPABILITIES-R040
+- Governed HTTP client: SCION-CENTRALIZED-CAPABILITIES-R001, SCION-CENTRALIZED-CAPABILITIES-R008
+- OpenBao token by reference: SCION-CENTRALIZED-CAPABILITIES-R009
+- Database driver from the SDK extra: SCION-CENTRALIZED-CAPABILITIES-R040
 
 ## Interfaces and data model
 

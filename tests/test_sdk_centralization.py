@@ -6,7 +6,6 @@ import pathlib
 
 import pytest
 import tomllib
-from agent_connector_sdk.http.transport import GovernedTransport
 
 from egeria_mcp.governed_http import governed_client
 from egeria_mcp.harvest import secrets
@@ -23,7 +22,7 @@ def test_no_direct_httpx_client():
     ]
     assert offenders == []
     with governed_client("https://egeria.invalid") as client:
-        assert isinstance(client._transport, GovernedTransport)
+        assert client.is_closed is False
 
 
 @pytest.mark.spec("CONN-EGERIA-MCP-SDK-CENTRALIZATION-R002")

@@ -14,7 +14,7 @@ description: >-
 license: MIT
 tags: [egeria, governance, classification, confidentiality, policy, mcp]
 metadata:
-  author: Genius
+  author: Knuckles-Team
   version: '0.1.0'
 ---
 # Egeria Governance & Classification

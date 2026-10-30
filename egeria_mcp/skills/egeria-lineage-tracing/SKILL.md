@@ -13,7 +13,7 @@ description: >-
 license: MIT
 tags: [egeria, lineage, dataflow, asset-catalog, open-metadata, mcp]
 metadata:
-  author: Genius
+  author: Knuckles-Team
   version: '0.1.0'
 ---
 # Egeria Lineage Tracing

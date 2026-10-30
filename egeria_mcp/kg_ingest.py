@@ -7,7 +7,7 @@ governance / lineage system-of-record into the ONE epistemic-graph engine as
 ``:GlossaryCategory``) plus ``:flowsTo`` / ``:dependsOn`` **lineage edges**, and
 the term/policy definition text as ``:Document`` nodes (semantic-search fodder).
 
-The txn write path is the ``agent_connector_sdk.ingest`` facade. Node ids follow
+The txn write path is the ``scion_sdk.ingest`` facade. Node ids follow
 ``egeria:<class>:<guid>``; ``node_type`` on each entity
 matches a class federated by ``egeria_mcp.ontology`` (``egeria.ttl``).
 """
@@ -17,7 +17,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from agent_connector_sdk.ingest import (
+from scion_sdk.ingest import (
     ChangeSet,
     Document,
     Entity,

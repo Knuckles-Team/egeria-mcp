@@ -15,7 +15,7 @@ import json
 import os
 from typing import Any
 
-from agent_connector_sdk.config import setting
+from scion_sdk.config import setting
 
 from egeria_mcp.harvest._reporting import count_created, note_error
 

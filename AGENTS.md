@@ -46,7 +46,7 @@ Two hard invariants of the federation:
 ## Tech Stack
 - Python 3.11+ (raw `httpx` REST — **no pyegeria runtime dependency**; pyegeria's
   sync wrappers call `asyncio.get_event_loop()`, which raises on Python 3.14).
-- agent-connector-sdk `[mcp]` (FastMCP, `create_mcp_server`).
+- scion-sdk `[mcp]` (FastMCP, `create_mcp_server`).
 - Apache Egeria 6.0 OMAG platform / View Server (OMVS) REST.
 
 ## Egeria REST contract (confirmed against Egeria 6.0)
@@ -81,7 +81,7 @@ Two hard invariants of the federation:
 - MCP tool tags are strictly lowercase with hyphens (e.g. `tags={"governance"}`).
 - Keep `api/` the single source of API surface; `mcp/` tools add no logic.
 - Federation key: every Egeria-sourced KG node carries `externalToolId` (the Egeria
-  GUID) + `domain="egeria"` (see the KG `egeria` extractor in agent-connector-sdk).
+  GUID) + `domain="egeria"` (see the KG `egeria` extractor in scion-sdk).
 
 ## Concept Registry
 Stable concept IDs (prefix `CONCEPT:EG-*`) trace the federation's core ideas across
@@ -103,7 +103,7 @@ Stable concept IDs (prefix `CONCEPT:EG-*`) trace the federation's core ideas acr
 KG node ids follow `<domain>:<class>:<externalId>`. For a lakehouse table the
 `externalId` is the DEC-CA-05 dataset-naming string
 `iceberg://<catalog>/<ns>/<table>@<snapshot>` — the **same** string used as the
-`agent-connector-sdk` PROV-O `prov:Entity` id and as this connector's Egeria `DataAsset`
+`scion-sdk` PROV-O `prov:Entity` id and as this connector's Egeria `DataAsset`
 `qualifiedName`. One deterministic key, no separate mapping table.
 
 This is **binding on this lane's own tools only** (`egeria_asset_for_kg_node`) until
@@ -111,7 +111,7 @@ CA-25 / CA-30 / CA-40 confirm it. It is offered to those lanes, not imposed on t
 
 ## ActionSpec / DEC-CA-07 status (BLOCKER shared with CA-44 and CA-45)
 
-`agent_connector_sdk/knowledge_graph/ontology/connector_manifest.py`'s `ActionSpec` model is
+`scion_sdk/knowledge_graph/ontology/connector_manifest.py`'s `ActionSpec` model is
 still the three-field `{id, name, description}` shape with `extra="forbid"`, so it does
 **not** accept DEC-CA-07's extended `actions:` schema
 (`parameters` / `target_resource` / `conflict_policy` / `requires_approval`).
@@ -123,7 +123,7 @@ upstream schema gap, not a per-connector omission.
 
 > **Do not hand-edit `connector_manifest.yml` to record notes like these.** That file is
 > machine-generated and its sha256 is pinned in `egeria_mcp/ontology/certification.json`;
-> editing it breaks the certification hash and turns `agent-connector-sdk`' `always_run`
+> editing it breaks the certification hash and turns `scion-sdk`' `always_run`
 > `check-release-catalogs` gate red for **every** lane committing to that repo. Prose
 > belongs here in `AGENTS.md`.
 
@@ -214,7 +214,7 @@ alone).
 Working in parallel with other sessions/worktrees? **Reserve a concept id before you write its `CONCEPT:` marker** so two sessions never collide:
 
 ```bash
-agent-connector-sdk --json concept reserve --ns EG-KG.compute.backend   # or a package prefix, e.g. KEY
+scion-sdk --json concept reserve --ns EG-KG.compute.backend   # or a package prefix, e.g. KEY
 ```
 
 Full protocol (ledger, merge=union, reconcile, MCP/REST): <https://knuckles-team.github.io/agent-connector-sdk/concept_coordination/>
@@ -245,14 +245,14 @@ is what Dependabot flags. Rules:
 ## Upstream currency edict — target the newest release; a pin is a hypothesis, not a fact (READ BEFORE capping, deferring, or opt-in-gating an upgrade)
 
 This governs how this repository treat **other people's** releases, deprecations, and version caps in
-this repo (fleet-wide edict, propagated from `agent-connector-sdk/AGENTS.md`).
+this repo (fleet-wide edict, propagated from `scion-sdk/AGENTS.md`).
 
 1. **Latest by default.** Target the newest upstream release -- including a pre-release
    where the ecosystem has already moved onto it. Sitting on an old major because the
    upgrade is work is not a reason to defer it.
 2. **A conservative upstream pin is a hypothesis, not a fact -- test it, don't inherit
    it.** Upstream maintainers cap defensively (an unreleased major, an untested surface)
-   as often as they cap for a known break. Worked example (from `agent-connector-sdk`):
+   as often as they cap for a known break. Worked example (from `scion-sdk`):
    `pydantic-ai-slim` 2.18.0 declared `fastmcp-slim[client]>=3.3.0` with no upper bound;
    2.19.0 added `<4` purely as a defensive guard while fastmcp 4 was still pre-release --
    not because of an observed incompatibility. Blocking an upgrade on that kind of cap

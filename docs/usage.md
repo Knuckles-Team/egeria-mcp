@@ -31,7 +31,7 @@ error rather than raising, so it is safe to use without a reachable platform.
 import os
 
 from egeria_mcp.api.api_client_egeria import EgeriaApi
-from agent_connector_sdk.core.transport_security import resolve_configured_tls_profile
+from scion_sdk.core.transport_security import resolve_configured_tls_profile
 
 api = EgeriaApi(
     platform_url="https://your-egeria:9443",

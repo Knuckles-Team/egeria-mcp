@@ -22,8 +22,8 @@ from __future__ import annotations
 import json as _json
 from typing import Any
 
-from agent_connector_sdk.tls.profile import ResolvedTLSProfile
-from agent_connector_sdk.tls.resolve import resolve_tls_profile
+from scion_sdk.tls.profile import ResolvedTLSProfile
+from scion_sdk.tls.resolve import resolve_tls_profile
 
 from egeria_mcp.governed_http import governed_client
 

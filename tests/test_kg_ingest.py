@@ -1,7 +1,7 @@
 """Native epistemic-graph typed-node ingestion — Wire-First coverage.
 
 Exercises the real ``egeria_mcp.kg_ingest`` seam against a fake SDK transport (no
-engine required): the ``agent_connector_sdk.ingest`` request/receipt shape, the
+engine required): the ``scion_sdk.ingest`` request/receipt shape, the
 Egeria record → :GlossaryTerm/:GovernanceRule/:DataAsset mappings, the DataFlow →
 :flowsTo lineage edges, and the full ``ingest_catalog`` orchestration.
 CONCEPT:AU-KG.ingest.enterprise-source-extractor.
@@ -13,7 +13,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
-from agent_connector_sdk.ingest import IngestError, KnowledgeIngest
+from scion_sdk.ingest import IngestError, KnowledgeIngest
 
 from egeria_mcp.kg_ingest import (
     ingest_catalog,

@@ -10,7 +10,7 @@ An operator must run the Egeria connector on the shared SDK capabilities. The co
 
 - FR-001: Every harvest module and the OMVS client must build HTTP clients with `governed_client`, which wraps `create_http_client` with the resolved TLS profile.
 - FR-002: The OpenBao harvest must resolve its token through the SDK credential resolver when the value is a reference.
-- FR-003: The `harvest` and `all` extras must take the database driver from `agent-connector-sdk[db]` and must not pin it.
+- FR-003: The `harvest` and `all` extras must take the database driver from `scion-sdk[db]` and must not pin it.
 - SC-001: `tests/test_sdk_centralization.py::test_no_direct_httpx_client` must pass, and `governed_client` must return a client on the SDK governed transport.
 - SC-002: `tests/test_sdk_centralization.py::test_openbao_token_reference_is_resolved` must pass.
 - SC-003: `tests/test_sdk_centralization.py::test_database_driver_comes_from_sdk_extra` must pass.

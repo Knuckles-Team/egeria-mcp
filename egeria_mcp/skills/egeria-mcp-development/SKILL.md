@@ -10,7 +10,7 @@ license: MIT
 tags: [egeria, development, connector, mcp, lineage, glossary, governance]
 tier: repository
 metadata:
-  author: Genius
+  author: Knuckles-Team
   version: '0.1.0'
 ---
 

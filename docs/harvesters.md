@@ -97,8 +97,8 @@ where the estate runs both:
 ERPNext is intentionally **multi-role** — its `capability` property (`ERP` / `ITSM` /
 `PM`) lets the federation reconcile it with whichever first-party tool it substitutes
 for. The canonical capability map (every capability × first-party × open-source ×
-canonical concept) lives in the agent-connector-sdk
-[vendor-neutral ontology doc](https://github.com/Knuckles-Team/agent-connector-sdk/blob/main/docs/architecture/vendor_neutral_enterprise_ontology.md#capability-matrix--first-party-and-open-source).
+canonical concept) lives in the scion-sdk
+[vendor-neutral ontology doc](https://github.com/Knuckles-Team/scion-sdk/blob/main/docs/architecture/vendor_neutral_enterprise_ontology.md#capability-matrix--first-party-and-open-source).
 
 ## 2. Cross-link patterns (13) — `reconcile()`
 
@@ -136,7 +136,7 @@ islands and per-layer coverage % — the radar for which layers to harvest next.
 ## 3. Federation back into the KG (bidirectional)
 
 `EgeriaApi.list_data_flows()` enumerates the catalogue's `DataFlow` edges (shared
-scanner `lineage_scan.py`, scanning the low-cardinality hubs). The agent-connector-sdk
+scanner `lineage_scan.py`, scanning the low-cardinality hubs). The scion-sdk
 `egeria` extractor turns them into KG edges:
 
 | Reconcile edge label | KG edge type |

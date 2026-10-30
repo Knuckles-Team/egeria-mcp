@@ -15,8 +15,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_connector_sdk.config import setting
-from agent_connector_sdk.tls.profile import ResolvedTLSProfile
+from scion_sdk.config import setting
+from scion_sdk.tls.profile import ResolvedTLSProfile
 
 from egeria_mcp.governed_http import governed_client
 

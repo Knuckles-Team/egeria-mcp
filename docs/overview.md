@@ -3,7 +3,7 @@
 `egeria-mcp` wraps the Apache Egeria OMAG platform's **View Server (OMVS)** REST
 surface with thin MCP tools, and is the write side of the Egeria↔KG federation.
 
-Egeria is federated into agent-connector-sdk as the **metadata / governance / lineage
+Egeria is federated into scion-sdk as the **metadata / governance / lineage
 system-of-record**, alongside the epistemic-graph Knowledge Graph (the
 cognition/orchestration plane). Two hard invariants hold:
 
@@ -54,7 +54,7 @@ cognition/orchestration plane). Two hard invariants hold:
     per-layer lineage coverage % — what reconciliation/harvest still misses.
 
 The reconciled graph also federates **back into the KG**: `EgeriaApi.list_data_flows()`
-enumerates the catalogue's lineage edges and the agent-connector-sdk `egeria` extractor
+enumerates the catalogue's lineage edges and the scion-sdk `egeria` extractor
 turns each into a `:flowsTo` (data movement) or `:dependsOn` (structural) edge — so
 the epistemic-graph sees the whole estate as one dependency graph.
   - **Write (gated by `EGERIA_ENABLE_WRITE`):** `egeria_classify`,
@@ -109,11 +109,11 @@ hostnames/addresses are never published.
 | Lineage write | `POST .../lineage-linker/from-elements/{a}/via/DataFlow/to-elements/{b}/attach` | `DataFlowProperties` |
 | Lineage read | `POST .../asset-catalog/assets/{guid}/as-lineage-graph` | edges in `element.lineageLinkage` |
 
-## Integration with agent-connector-sdk
+## Integration with scion-sdk
 
-- **Extractor:** `agent_connector_sdk/knowledge_graph/enrichment/extractors/egeria.py`
+- **Extractor:** `scion_sdk/knowledge_graph/enrichment/extractors/egeria.py`
   (CONCEPT:AU-KG.ingest.enterprise-source-extractor) — pure transform; `EgeriaApi` injected as `config["client"]`.
-- **Ontology:** `agent_connector_sdk/knowledge_graph/ontology_egeria.ttl` — ArchiMate
+- **Ontology:** `scion_sdk/knowledge_graph/ontology_egeria.ttl` — ArchiMate
   crosswalk reusing the enterprise classes (GlossaryTerm→`:Concept`,
   Asset/Connection→`:DataConnector`, Policy→`:Policy`, DataFlow→`:flowsTo`).
 - **Federation key:** every Egeria-sourced node carries `externalToolId` (the Egeria

@@ -44,7 +44,7 @@ flowchart TB
     OMVS["Egeria View Server (OMVS REST)<br/>by-search-string · asset-maker · collection-manager<br/>glossary-manager · classification-explorer · lineage-linker"]
     MCP --> HARV --> API --> OMVS
     MCP --> API
-    EXT["agent-connector-sdk KG 'egeria' extractor"] -->|"list_* / list_data_flows"| API
+    EXT["scion-sdk KG 'egeria' extractor"] -->|"list_* / list_data_flows"| API
 ```
 
 No `pyegeria` runtime dependency — the facade speaks REST directly so it runs

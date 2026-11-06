@@ -1,0 +1,40 @@
+{
+  "schema_version": 2,
+  "spec_id": "CONN-EGERIA-MCP-ERROR-SURFACE",
+  "owner_repo": "egeria-mcp",
+  "delivery_state": "SPECIFIED",
+  "requirement_ids": [
+    "CONN-EGERIA-MCP-ERROR-SURFACE-R001",
+    "CONN-EGERIA-MCP-ERROR-SURFACE-R002",
+    "CONN-EGERIA-MCP-ERROR-SURFACE-R003"
+  ],
+  "requirements": [
+    {
+      "id": "CONN-EGERIA-MCP-ERROR-SURFACE-R001",
+      "title": "Unreachable platform is a tool error",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_error_surface.py:62"
+      ]
+    },
+    {
+      "id": "CONN-EGERIA-MCP-ERROR-SURFACE-R002",
+      "title": "In-body Egeria errors are tool errors",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_error_surface.py:81"
+      ]
+    },
+    {
+      "id": "CONN-EGERIA-MCP-ERROR-SURFACE-R003",
+      "title": "Success and empty results are unchanged",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_error_surface.py:107"
+      ]
+    }
+  ]
+}

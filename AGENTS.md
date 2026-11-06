@@ -32,7 +32,7 @@ Two hard invariants of the federation:
 ## Project Structure
 - `egeria_mcp/api/api_client_egeria.py` — `EgeriaApi`, a tolerant **raw-httpx REST**
   facade over the Egeria View Server (OMVS). Organized by OMVS service; every call
-  degrades to `[]` / a clear error rather than raising.
+  raises a typed `EgeriaUnavailableError` / `EgeriaApiError` (a fastmcp `ToolError`) on failure; only a genuine empty result returns `[]`.
 - `egeria_mcp/mcp/mcp_egeria.py` — thin FastMCP tool wrappers (read, write-gated,
   harvest, governed-routing). No business logic — all API surface lives in `api/`.
 - `egeria_mcp/governed_routing.py` — `governed_route()`: the federation delivering a

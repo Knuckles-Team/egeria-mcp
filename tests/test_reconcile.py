@@ -169,6 +169,9 @@ class FakeReconcileApi:
         self._last_term = body["searchString"]
         return _Resp(self._catalog.get(self._last_term, []))
 
+    def _request(self, url, body, *, check=True, params=""):
+        return self.post(url, content=_json.dumps(body))
+
     def _elements(self, resp: _Resp) -> list[dict]:
         return resp._items
 

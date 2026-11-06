@@ -24,6 +24,15 @@ The `egeria-mcp` server serves its packaged skills, prompts and ontology to any 
 
 1. **Given** the connector is configured, **When** the behaviour of row `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001` (default content) is exercised, **Then** `resources/list` includes `skill://` and `ontology://`; `prompts/list` includes each packaged prompt.
 
+### User Story 2 - The engine syncs this system as a federated secondary (Priority: P2)
+
+The engine reads this system's documents or records through the connector and sends governed changes back.
+
+**Acceptance Scenarios**:
+
+1. **Given** the connector is configured, **When** the behaviour of row `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R002` is exercised, **Then** its rollup test passes.
+2. **Given** the connector is configured, **When** the behaviour of row `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003` is exercised, **Then** its rollup test passes.
+
 ### Edge Cases
 
 - If `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001` is not met, its proving test fails: default content.
@@ -31,6 +40,8 @@ The `egeria-mcp` server serves its packaged skills, prompts and ontology to any 
 ## Requirements
 
 - **FR-001**: Default content. Rows: `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001`.
+- **FR-002**: Glossary, asset and lineage records as federated pack sources. Rows: `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R002`.
+- **FR-003**: Version-checked write sink for catalog changes. Rows: `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003`.
 
 ## Success Criteria
 

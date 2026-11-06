@@ -3,12 +3,14 @@
 import pytest
 
 
-def test_api_client_import_safe_without_pyegeria(monkeypatch):
-    """EgeriaApi constructs and degrades to [] without pyegeria / a platform.
+def test_api_client_unreachable_platform_raises_typed_error(monkeypatch):
+    """EgeriaApi constructs without pyegeria; an unreachable platform raises.
 
-    CONCEPT:EA-KG.compute.raw-rest-omvs-facade — Raw-REST OMVS Facade. CONCEPT:EA-KG.compute.bidirectional-kg-federation-powers — Bidirectional KG
-    Federation (``list_data_flows``).
+    CONCEPT:EA-KG.compute.raw-rest-omvs-facade — Raw-REST OMVS Facade. An
+    unreachable platform must surface as ``EgeriaUnavailableError`` (a tool error),
+    never as an empty success.
     """
+    from egeria_mcp.api.api_client_egeria import EgeriaUnavailableError
     from egeria_mcp.api_client import EgeriaApi
 
     def unavailable_http(self):
@@ -20,11 +22,11 @@ def test_api_client_import_safe_without_pyegeria(monkeypatch):
         user_id="test-user",
         user_pwd="test-password",
     )
-    # No network, no pyegeria required: list methods return empty, not raise.
-    assert api.list_assets() == []
-    assert api.list_glossary_terms() == []
-    assert api.list_data_flows() == []
-    assert api.lineage("guid-x").get("guid") == "guid-x"
+    for call in (api.list_assets, api.list_glossary_terms, api.list_data_flows):
+        with pytest.raises(EgeriaUnavailableError):
+            call()
+    with pytest.raises(EgeriaUnavailableError):
+        api.lineage("guid-x")
 
 
 @pytest.mark.parametrize(

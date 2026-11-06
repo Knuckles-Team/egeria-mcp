@@ -13,8 +13,9 @@ Endpoints (confirmed against Egeria 6.0):
   ``SearchStringRequestBody`` — note ``searchString`` is a **regex** (use ``.*``).
 
 It exposes the normalized ``list_*`` methods the KG ``egeria`` extractor consumes
-and the granular query/write methods the MCP tools call. Every call degrades to
-``[]`` / a clear error rather than raising at import or on a transient failure.
+and the granular query/write methods the MCP tools call. A failing call raises a
+typed ``EgeriaUnavailableError`` / ``EgeriaApiError`` (a ``ToolError``); only a
+genuine empty result returns ``[]``.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ from __future__ import annotations
 import json as _json
 from typing import Any
 
+from fastmcp.exceptions import ToolError
 from scion_sdk.tls.profile import ResolvedTLSProfile
 from scion_sdk.tls.resolve import resolve_tls_profile
 
@@ -29,6 +31,26 @@ from egeria_mcp.governed_http import governed_client
 
 # Back-compat flag some callers/tests import; REST path needs no pyegeria.
 PYEGERIA_AVAILABLE = False
+
+
+class EgeriaError(ToolError):
+    """Base for Egeria call failures; a ``ToolError`` so MCP clients get isError=true."""
+
+
+class EgeriaUnavailableError(EgeriaError):
+    """The Egeria platform is unreachable, timed out, or answered 5xx/503."""
+
+
+class EgeriaApiError(EgeriaError):
+    """Egeria answered but reported an error (HTTP non-2xx or in-body failure).
+
+    Egeria REST often returns HTTP 200 with ``relatedHTTPCode`` != 200 and an
+    ``exceptionClassName`` / ``exceptionErrorMessage`` in the JSON body.
+    """
+
+    def __init__(self, message: str, *, related_http_code: int | None = None):
+        super().__init__(message)
+        self.related_http_code = related_http_code
 
 
 class EgeriaWriteDisabled(RuntimeError):
@@ -92,7 +114,7 @@ class EgeriaApi:
 
     CONCEPT:EA-KG.compute.raw-rest-omvs-facade — Raw-REST OMVS Facade. A tolerant httpx client over the View
     Server; no ``pyegeria`` runtime dep (its ``asyncio.get_event_loop()`` raises on
-    3.14). Every call degrades to ``[]`` / a clear error rather than raising.
+    3.14). Failures raise typed tool errors; only a genuine empty result is ``[]``.
     """
 
     def __init__(
@@ -132,13 +154,87 @@ class EgeriaApi:
         """Fetch (and cache) a bearer token from the platform token endpoint."""
         if self._token:
             return self._token
-        r = self._http().post(
-            f"{self.platform_url}/api/token",
-            json={"userId": self.user_id, "password": self.user_pwd},
-        )
-        r.raise_for_status()
+        try:
+            r = self._http().post(
+                f"{self.platform_url}/api/token",
+                json={"userId": self.user_id, "password": self.user_pwd},
+            )
+        except Exception as e:
+            raise EgeriaUnavailableError(
+                f"Egeria platform unreachable at {self.platform_url}: "
+                f"{type(e).__name__}"
+            ) from e
+        if r.status_code >= 500:
+            raise EgeriaUnavailableError(
+                f"Egeria platform unavailable (token endpoint HTTP {r.status_code})"
+            )
+        if r.status_code >= 400:
+            raise EgeriaApiError(
+                f"Egeria token request rejected (HTTP {r.status_code})",
+                related_http_code=r.status_code,
+            )
         self._token = r.text.strip()
         return self._token
+
+    @staticmethod
+    def _check_response(r: Any) -> None:
+        """Raise a typed error for non-2xx or an in-body Egeria failure.
+
+        The single chokepoint every OMVS call passes through: 5xx -> unavailable,
+        other non-2xx -> API error, and HTTP 200 with ``relatedHTTPCode`` != 200 or
+        ``exceptionClassName`` in the body -> API error (503 -> unavailable).
+        """
+        code = r.status_code
+        if code >= 500:
+            raise EgeriaUnavailableError(f"Egeria platform unavailable (HTTP {code})")
+        if code >= 300:
+            raise EgeriaApiError(
+                f"Egeria request failed (HTTP {code})", related_http_code=code
+            )
+        try:
+            data = r.json()
+        except Exception:
+            return
+        if not isinstance(data, dict):
+            return
+        related = data.get("relatedHTTPCode")
+        if (isinstance(related, int) and related != 200) or data.get(
+            "exceptionClassName"
+        ):
+            msg = (
+                data.get("exceptionErrorMessage")
+                or data.get("exceptionClassName")
+                or "Egeria reported an error"
+            )
+            if isinstance(related, int) and related >= 500:
+                raise EgeriaUnavailableError(f"Egeria reported HTTP {related}: {msg}")
+            raise EgeriaApiError(
+                f"Egeria error (relatedHTTPCode={related}): {msg}",
+                related_http_code=related if isinstance(related, int) else None,
+            )
+
+    def _request(
+        self, url: str, body: dict, *, check: bool = True, params: str = ""
+    ) -> Any:
+        """Authenticated POST; raises typed errors instead of swallowing failures."""
+        tok = self._bearer()
+        try:
+            r = self._http().post(
+                f"{url}{params}",
+                headers={
+                    "Authorization": f"Bearer {tok}",
+                    "Content-Type": "application/json",
+                },
+                content=_json.dumps(body),
+            )
+        except Exception as e:
+            raise EgeriaUnavailableError(
+                f"Egeria platform unreachable at {self.platform_url}: "
+                f"{type(e).__name__}"
+            ) from e
+        if check:
+            self._check_response(r)
+        return r
 
     def _omvs(self, service: str, sub_path: str) -> str:
         return (
@@ -171,12 +267,13 @@ class EgeriaApi:
         sub_path: str,
         search: str = _SEARCH_ALL,
         page_size: int = 100,
+        start_from: int = 0,
     ) -> list[dict]:
-        """POST an OMVS by-search-string query, returning normalized records."""
-        try:
-            tok = self._bearer()
-        except Exception:
-            return []
+        """POST an OMVS by-search-string query, returning normalized records.
+
+        Raises :class:`EgeriaUnavailableError` / :class:`EgeriaApiError` on failure;
+        only a genuine empty result returns ``[]``.
+        """
         url = self._omvs(service, sub_path)
         # Egeria by-search-string: empty searchString = match-all; a non-empty value
         # is a contains/regex match. The startsWith/endsWith/ignoreCase flags break
@@ -187,31 +284,13 @@ class EgeriaApi:
         }
         if search:
             body["ignoreCase"] = True
-        try:
-            r = self._http().post(
-                f"{url}?startFrom=0&pageSize={page_size}",
-                headers={
-                    "Authorization": f"Bearer {tok}",
-                    "Content-Type": "application/json",
-                },
-                content=_json.dumps(body),
-            )
-        except Exception:
-            return []
-        if r.status_code != 200:
-            return []
+        r = self._request(
+            url, body, params=f"?startFrom={start_from}&pageSize={page_size}"
+        )
         return self._elements(r)
 
     def _post(self, url: str, body: dict) -> Any:
-        tok = self._bearer()
-        return self._http().post(
-            url,
-            headers={
-                "Authorization": f"Bearer {tok}",
-                "Content-Type": "application/json",
-            },
-            content=_json.dumps(body),
-        )
+        return self._request(url, body, check=False)
 
     # ── normalized list methods (consumed by the KG extractor) ───────────────
     def list_assets(self) -> list[dict]:
@@ -266,12 +345,9 @@ class EgeriaApi:
         low-cardinality hubs, so it captures every cross-layer edge without walking
         all assets.
         """
-        try:
-            from egeria_mcp.lineage_scan import catalog_lineage_edges
+        from egeria_mcp.lineage_scan import catalog_lineage_edges
 
-            return catalog_lineage_edges(self)
-        except Exception:
-            return []
+        return catalog_lineage_edges(self)
 
     # ── comprehensive OMVS coverage (find by-search-string per service) ───────
     # Each method targets a confirmed (view-service marker, noun) pair. They share
@@ -424,18 +500,13 @@ class EgeriaApi:
         Unwraps the response envelope to the inner graph element, which carries
         the connected edges in ``lineageLinkage`` (and ``lineageRelationships``).
         """
-        try:
-            url = self._omvs("asset-catalog", f"assets/{asset_guid}/as-lineage-graph")
-            # Egeria's AssetLineageGraphRequestBody rejects unknown fields; send the
-            # minimal valid body (it defaults effective time / traversal itself).
-            r = self._post(url, {"class": "AssetLineageGraphRequestBody"})
-            if r.status_code == 200:
-                el = (r.json() or {}).get("element") or {}
-                el.setdefault("guid", asset_guid)
-                return el
-            return {"guid": asset_guid, "httpCode": r.status_code, "lineageLinkage": []}
-        except Exception:
-            return {"error": "Operation failed", "guid": asset_guid}
+        url = self._omvs("asset-catalog", f"assets/{asset_guid}/as-lineage-graph")
+        # Egeria's AssetLineageGraphRequestBody rejects unknown fields; send the
+        # minimal valid body (it defaults effective time / traversal itself).
+        r = self._request(url, {"class": "AssetLineageGraphRequestBody"})
+        el = (r.json() or {}).get("element") or {}
+        el.setdefault("guid", asset_guid)
+        return el
 
     def _retrieve_element(self, guid: str) -> dict:
         """Retrieve a full asset element (incl. its classifications).
@@ -445,15 +516,10 @@ class EgeriaApi:
         entry (``elementHeader.confidentiality`` …), an ``ElementClassification``
         — not a ``classifications`` list.
         """
-        try:
-            r = self._post(
-                self._omvs("asset-maker", f"assets/{guid}/retrieve"),
-                {"class": "AnyTimeRequestBody"},
-            )
-        except Exception:
-            return {"error": "Operation failed"}
-        if r.status_code != 200:
-            return {"httpCode": r.status_code}
+        r = self._request(
+            self._omvs("asset-maker", f"assets/{guid}/retrieve"),
+            {"class": "AnyTimeRequestBody"},
+        )
         try:
             return (r.json() or {}).get("element") or {}
         except Exception:
@@ -575,10 +641,9 @@ class EgeriaApi:
     def _create(self, service: str, sub_path: str, body: dict) -> dict:
         """POST a create request; return ``{guid?, httpCode, error?}``."""
         self._require_write()
-        try:
-            r = self._post(self._omvs(service, sub_path), body)
-        except Exception:
-            return {"error": "Operation failed"}
+        r = self._post(self._omvs(service, sub_path), body)
+        if r.status_code >= 500:
+            self._check_response(r)  # platform down -> typed error, not a dict
         out: dict[str, Any] = {"httpCode": r.status_code}
         try:
             j = r.json() or {}
@@ -600,6 +665,7 @@ class EgeriaApi:
     ) -> dict:
         """Create (or reuse) a business glossary; returns ``{guid, reused?}``."""
         qn = f"Glossary::{_slug(display_name)}"
+        self._require_write()  # refuse before any read when writes are off
         existing = self.find_glossary(qn)
         if existing:
             return {"guid": existing, "httpCode": 200, "reused": True}
@@ -631,6 +697,7 @@ class EgeriaApi:
         prose. Returns ``{guid, reused?}``.
         """
         qn = f"Term::{_slug(name)}"
+        self._require_write()  # refuse before any read when writes are off
         existing = self.find_term(qn)
         if existing:
             return {"guid": existing, "httpCode": 200, "reused": True}
@@ -674,6 +741,7 @@ class EgeriaApi:
         with a ``Confidentiality`` classification at that level. Returns
         ``{guid, reused?}``.
         """
+        self._require_write()  # refuse before any read when writes are off
         existing = self.find_asset(qualified_name)
         if existing:
             if confidentiality_level is not None:
@@ -780,6 +848,7 @@ class EgeriaApi:
     ) -> dict:
         """Create (or reuse) a collection (e.g. a digital-product folder)."""
         qn = f"Collection::{_slug(display_name)}"
+        self._require_write()  # refuse before any read when writes are off
         existing = self.find_glossary(qn)  # collections share the find endpoint
         if existing:
             return {"guid": existing, "httpCode": 200, "reused": True}

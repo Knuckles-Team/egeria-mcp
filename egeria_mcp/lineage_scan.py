@@ -8,7 +8,6 @@ edges incident on those assets (directed, with their semantic label).
 
 from __future__ import annotations
 
-import json as _json
 from typing import Any
 
 # Low-cardinality "hub" prefixes — every cross-layer edge touches one of these, so
@@ -46,32 +45,18 @@ ALL_PREFIXES = HUB_PREFIXES + [
 def paginated_search(api: Any, term: str, *, max_total: int = 2000) -> list[dict]:
     """Page through asset-catalog by-search-string for one (prefix) term."""
     out: list[dict] = []
-    try:
-        tok = api._bearer()
-    except Exception:
-        return out
     url = api._omvs("asset-catalog", "assets/in-domain/by-search-string")
     start, page = 0, 100
     while len(out) < max_total:
-        try:
-            r = api._http().post(
-                f"{url}?startFrom={start}&pageSize={page}",
-                headers={
-                    "Authorization": f"Bearer {tok}",
-                    "Content-Type": "application/json",
-                },
-                content=_json.dumps(
-                    {
-                        "class": "SearchStringRequestBody",
-                        "searchString": term,
-                        "ignoreCase": True,
-                    }
-                ),
-            )
-        except Exception:
-            break
-        if r.status_code != 200:
-            break
+        r = api._request(
+            url,
+            {
+                "class": "SearchStringRequestBody",
+                "searchString": term,
+                "ignoreCase": True,
+            },
+            params=f"?startFrom={start}&pageSize={page}",
+        )
         batch = api._elements(r)
         if not batch:
             break

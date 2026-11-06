@@ -1,0 +1,11 @@
+# CONN-EGERIA-MCP-ERROR-SURFACE — Requirements
+
+Governing spec: [spec.md](spec.md).
+
+Each row is one requirement. A row names the file it touches and the test that proves it. The generator sets each row's state in `status.json`.
+
+| ID | Requirement | Acceptance |
+|---|---|---|
+| `CONN-EGERIA-MCP-ERROR-SURFACE-R001` | **Unreachable platform is a tool error.** A connection failure, timeout, or HTTP 5xx from Egeria must raise `EgeriaUnavailableError`, a fastmcp `ToolError`, so the tool result has isError=true and a clear message. Chokepoint: `EgeriaApi._request` and `_bearer` in `egeria_mcp/api/api_client_egeria.py`, used by every OMVS search, retrieve, lineage and write call and by the paginated lineage and reconcile scans. Caller chain: any MCP tool such as egeria_catalog or egeria_metadata (egeria_mcp/mcp/mcp_egeria.py) calls an EgeriaApi method, which calls `_request`. | `tests/test_error_surface.py::test_connection_refused_is_a_tool_error` and `test_http_503_is_unavailable` must pass. |
+| `CONN-EGERIA-MCP-ERROR-SURFACE-R002` | **In-body Egeria errors are tool errors.** An HTTP 200 whose JSON body carries `relatedHTTPCode` other than 200 or an `exceptionClassName` must raise `EgeriaApiError` carrying `relatedHTTPCode` and `exceptionErrorMessage`; a body code of 500 or above raises `EgeriaUnavailableError`. Other non-2xx statuses raise `EgeriaApiError`. Chokepoint: `EgeriaApi._check_response`. Caller chain: same as R001. | `tests/test_error_surface.py::test_in_body_503_is_a_tool_error` and `test_in_body_client_error_is_api_error` must pass. |
+| `CONN-EGERIA-MCP-ERROR-SURFACE-R003` | **Success and empty results are unchanged.** A normal 200 response returns the normalized records, and a genuine empty result still returns an empty list without error. Chokepoint: `EgeriaApi._search` and `_elements`. Caller chain: same as R001. | `tests/test_error_surface.py::test_normal_200_returns_data` and `test_genuine_empty_result_is_not_an_error` must pass. |

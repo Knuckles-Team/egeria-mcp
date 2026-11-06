@@ -26,7 +26,6 @@ one direction (au → Egeria).
 
 from __future__ import annotations
 
-import json as _json
 import re
 from collections.abc import Callable
 from typing import Any
@@ -148,31 +147,17 @@ def _paginated_search(api: Any, term: str, *, max_total: int = 1000) -> list[dic
     out: list[dict] = []
     start = 0
     page = 100
-    try:
-        tok = api._bearer()
-    except Exception:
-        return out
     url = api._omvs("asset-catalog", "assets/in-domain/by-search-string")
     while len(out) < max_total:
-        try:
-            r = api._http().post(
-                f"{url}?startFrom={start}&pageSize={page}",
-                headers={
-                    "Authorization": f"Bearer {tok}",
-                    "Content-Type": "application/json",
-                },
-                content=_json.dumps(
-                    {
-                        "class": "SearchStringRequestBody",
-                        "searchString": term,
-                        "ignoreCase": True,
-                    }
-                ),
-            )
-        except Exception:
-            break
-        if r.status_code != 200:
-            break
+        r = api._request(
+            url,
+            {
+                "class": "SearchStringRequestBody",
+                "searchString": term,
+                "ignoreCase": True,
+            },
+            params=f"?startFrom={start}&pageSize={page}",
+        )
         batch = api._elements(r)
         if not batch:
             break

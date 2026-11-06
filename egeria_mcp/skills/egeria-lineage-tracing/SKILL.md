@@ -109,3 +109,85 @@ egeria_asset_for_kg_node  node_id="egeria:DataAsset:<guid>"
 - **KG ingestion:** the `egeria_ingest_catalog` tool mirrors DataFlow edges into the
   epistemic-graph as `:flowsTo` links between `:DataAsset` nodes; `egeria_asset_for_kg_node`
   is its reverse lookup.
+
+## Task workflows
+
+Every step below is one typed tool call; there is no `action` or JSON-string argument. Resolve ids by name first, read before you change, and ask for approval before anything destructive.
+
+## Register data asset
+
+Register a data asset once, with its confidentiality.
+
+1. `egeria_find_asset` (qualified_name)
+2. `egeria_create_asset` (type_name, qualified_name, display_name, description, deployed_implementation_type, confidentiality_level, additional_properties)
+3. `egeria_set_confidentiality` (element_guid, level)
+4. `egeria_classify` (element_guid, classification, properties)
+5. `egeria_get_element` (guid)
+
+## Find data elements
+
+Search the catalog for assets, schemas, fields, values, connections and technology.
+
+1. `egeria_asset_search` (query, type_filter)
+2. `egeria_find_data_assets` (search)
+3. `egeria_find_metadata_elements` (search)
+4. `egeria_find_data_structures` (search)
+5. `egeria_find_schema_types` (search)
+6. `egeria_find_schema_attributes` (search)
+7. `egeria_find_data_fields` (search)
+8. `egeria_find_data_value_specifications` (search)
+9. `egeria_find_valid_values` (search)
+10. `egeria_find_external_references` (search)
+11. `egeria_find_connections` (search)
+12. `egeria_find_connector_types` (search)
+13. `egeria_find_endpoints` (search)
+14. `egeria_find_technology_types` (search)
+15. `egeria_find_infrastructure_assets` (search)
+16. `egeria_find_locations` (search)
+
+## Trace lineage
+
+Trace where an asset's data comes from and goes to.
+
+1. `egeria_asset_search` (query, type_filter)
+2. `egeria_lineage` (asset_guid, direction, depth)
+3. `egeria_list_data_flows`
+4. `egeria_lineage_scan` (max_total)
+5. `egeria_asset_for_kg_node` (node_id)
+
+## Record lineage
+
+Record a data flow from a source through a process to a target, or reconcile an OpenLineage dataset.
+
+1. `egeria_find_asset` (qualified_name)
+2. `egeria_assert_lineage` (source_guid, process_guid, target_guid)
+3. `egeria_link_data_flow` (source_guid, target_guid, label, description)
+4. `egeria_reconcile_openlineage_asset` (dataset_name, job_name, produced_from)
+
+## Harvest estate
+
+Catalog the estate into Egeria layer by layer, cross-link the layers and audit completeness.
+
+1. `egeria_harvest` (layer)
+2. `egeria_harvest_datastores`
+3. `egeria_harvest_processes`
+4. `egeria_harvest_erpnext`
+5. `egeria_harvest_repositories`
+6. `egeria_harvest_github`
+7. `egeria_harvest_containers`
+8. `egeria_harvest_servicenow`
+9. `egeria_harvest_identity`
+10. `egeria_harvest_finance`
+11. `egeria_harvest_projects`
+12. `egeria_harvest_aris`
+13. `egeria_harvest_archer`
+14. `egeria_harvest_crm`
+15. `egeria_harvest_odoo`
+16. `egeria_reconcile`
+17. `egeria_audit`
+
+## Guardrails
+
+- Never print tokens, passwords or webhook secrets.
+- Public or destructive actions need the requester's confirmation of the target and text.
+- Report ids (and refusal codes) for every call.

@@ -88,3 +88,43 @@ egeria_classify  element_guid="<guid>"  classification="Confidentiality"  proper
 - **Lineage:** `egeria-lineage-tracing`.
 - **KG ingestion:** the `egeria_ingest_catalog` tool mirrors governance definitions
   into the epistemic-graph as typed `:GovernanceRule` nodes.
+
+## Task workflows
+
+Every step below is one typed tool call; there is no `action` or JSON-string argument. Resolve ids by name first, read before you change, and ask for approval before anything destructive.
+
+## Register data asset
+
+Register a data asset once, with its confidentiality.
+
+1. `egeria_find_asset` (qualified_name)
+2. `egeria_create_asset` (type_name, qualified_name, display_name, description, deployed_implementation_type, confidentiality_level, additional_properties)
+3. `egeria_set_confidentiality` (element_guid, level)
+4. `egeria_classify` (element_guid, classification, properties)
+5. `egeria_get_element` (guid)
+
+## Govern asset
+
+Read the classifications, policies and routing decision for an asset, and classify it.
+
+1. `egeria_get_element` (guid)
+2. `egeria_governance_for` (element_guid)
+3. `egeria_list_policies` (domain)
+4. `egeria_list_governance_definitions`
+5. `egeria_governed_route` (asset_guid)
+6. `egeria_set_classification` (element_guid, classification, properties)
+7. `egeria_classify` (element_guid, classification, properties)
+8. `egeria_set_confidentiality` (element_guid, level)
+
+## Mirror catalog to graph
+
+Land the Egeria catalog in the knowledge graph.
+
+1. `egeria_ingest_catalog`
+2. `egeria_asset_for_kg_node` (node_id)
+
+## Guardrails
+
+- Never print tokens, passwords or webhook secrets.
+- Public or destructive actions need the requester's confirmation of the target and text.
+- Report ids (and refusal codes) for every call.

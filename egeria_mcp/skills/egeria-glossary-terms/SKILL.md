@@ -81,3 +81,33 @@ egeria_create_term  glossary_name="Business Glossary"  display_name="Churn Rate"
 - **Governance:** `egeria-governance-classification` (confidentiality + policy).
 - **KG ingestion:** the `egeria_ingest_catalog` tool mirrors glossary terms into the
   epistemic-graph as typed `:GlossaryTerm` nodes + definition `:Document`s.
+
+## Task workflows
+
+Every step below is one typed tool call; there is no `action` or JSON-string argument. Resolve ids by name first, read before you change, and ask for approval before anything destructive.
+
+## Manage glossary
+
+Create a glossary and its terms, look terms up and browse categories.
+
+1. `egeria_find_glossary` (qualified_name)
+2. `egeria_create_glossary` (display_name, description, usage, language)
+3. `egeria_find_term` (qualified_name)
+4. `egeria_create_term` (glossary, name, definition, description)
+5. `egeria_glossary_lookup` (term, glossary)
+6. `egeria_glossary_categories`
+7. `egeria_list_glossary_terms`
+8. `egeria_list_glossary_categories`
+
+## Mirror catalog to graph
+
+Land the Egeria catalog in the knowledge graph.
+
+1. `egeria_ingest_catalog`
+2. `egeria_asset_for_kg_node` (node_id)
+
+## Guardrails
+
+- Never print tokens, passwords or webhook secrets.
+- Public or destructive actions need the requester's confirmation of the target and text.
+- Report ids (and refusal codes) for every call.

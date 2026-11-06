@@ -22,6 +22,7 @@ Code: ../../egeria_mcp/api/api_client_egeria.py ../../egeria_mcp/lineage_scan.py
 | FR-001 | plan.md#architecture | T-001 | `tests/test_error_surface.py` |
 | FR-002 | plan.md#architecture | T-002 | `tests/test_error_surface.py` |
 | FR-003 | plan.md#architecture | T-003 | `tests/test_error_surface.py` |
+| FR-004 | plan.md#architecture | T-004 | `tests/test_error_surface.py` |
 
 ## Open questions
 
@@ -38,24 +39,28 @@ An operator must be told when the Egeria platform is down. A tool call against a
 1. **Given** the connector is configured, **When** the behaviour of row `CONN-EGERIA-MCP-ERROR-SURFACE-R001` (unreachable platform is a tool error) is exercised, **Then** `tests/test_error_surface.py::test_connection_refused_is_a_tool_error` and `test_http_503_is_unavailable` must pass.
 2. **Given** the connector is configured, **When** the behaviour of row `CONN-EGERIA-MCP-ERROR-SURFACE-R002` (in-body egeria errors are tool errors) is exercised, **Then** `tests/test_error_surface.py::test_in_body_503_is_a_tool_error` and `test_in_body_client_error_is_api_error` must pass.
 3. **Given** the connector is configured, **When** the behaviour of row `CONN-EGERIA-MCP-ERROR-SURFACE-R003` (success and empty results are unchanged) is exercised, **Then** `tests/test_error_surface.py::test_normal_200_returns_data` and `test_genuine_empty_result_is_not_an_error` must pass.
+4. **Given** the connector is configured, **When** the behaviour of row `CONN-EGERIA-MCP-ERROR-SURFACE-R004` (request timeout is configurable and named) is exercised, **Then** `tests/test_error_surface.py::test_read_timeout_is_named_and_timeout_is_configurable` must pass.
 
 ### Edge Cases
 
 - If `CONN-EGERIA-MCP-ERROR-SURFACE-R001` is not met, its proving test fails: unreachable platform is a tool error.
 - If `CONN-EGERIA-MCP-ERROR-SURFACE-R002` is not met, its proving test fails: in-body egeria errors are tool errors.
 - If `CONN-EGERIA-MCP-ERROR-SURFACE-R003` is not met, its proving test fails: success and empty results are unchanged.
+- If `CONN-EGERIA-MCP-ERROR-SURFACE-R004` is not met, its proving test fails: request timeout is configurable and named.
 
 ## Requirements
 
 - **FR-001**: Unreachable platform is a tool error. Rows: `CONN-EGERIA-MCP-ERROR-SURFACE-R001`.
 - **FR-002**: In-body Egeria errors are tool errors. Rows: `CONN-EGERIA-MCP-ERROR-SURFACE-R002`.
 - **FR-003**: Success and empty results are unchanged. Rows: `CONN-EGERIA-MCP-ERROR-SURFACE-R003`.
+- **FR-004**: Request timeout is configurable and named. Rows: `CONN-EGERIA-MCP-ERROR-SURFACE-R004`.
 
 ## Success Criteria
 
 - **SC-001**: `tests/test_error_surface.py::test_connection_refused_is_a_tool_error` and `test_http_503_is_unavailable` must pass. Rows: `CONN-EGERIA-MCP-ERROR-SURFACE-R001`.
 - **SC-002**: `tests/test_error_surface.py::test_in_body_503_is_a_tool_error` and `test_in_body_client_error_is_api_error` must pass. Rows: `CONN-EGERIA-MCP-ERROR-SURFACE-R002`.
 - **SC-003**: `tests/test_error_surface.py::test_normal_200_returns_data` and `test_genuine_empty_result_is_not_an_error` must pass. Rows: `CONN-EGERIA-MCP-ERROR-SURFACE-R003`.
+- **SC-004**: `tests/test_error_surface.py::test_read_timeout_is_named_and_timeout_is_configurable` must pass. Rows: `CONN-EGERIA-MCP-ERROR-SURFACE-R004`.
 
 ## Assumptions
 
@@ -69,3 +74,4 @@ An operator must be told when the Egeria platform is down. A tool call against a
 | FR-001 | `CONN-EGERIA-MCP-ERROR-SURFACE-R001` | [plan.md](plan.md) | T-001 | [test-spec.md](test-spec.md) |
 | FR-002 | `CONN-EGERIA-MCP-ERROR-SURFACE-R002` | [plan.md](plan.md) | T-002 | [test-spec.md](test-spec.md) |
 | FR-003 | `CONN-EGERIA-MCP-ERROR-SURFACE-R003` | [plan.md](plan.md) | T-003 | [test-spec.md](test-spec.md) |
+| FR-004 | `CONN-EGERIA-MCP-ERROR-SURFACE-R004` | [plan.md](plan.md) | T-004 | [test-spec.md](test-spec.md) |

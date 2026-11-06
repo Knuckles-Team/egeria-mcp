@@ -6,7 +6,8 @@
   "requirement_ids": [
     "CONN-EGERIA-MCP-ERROR-SURFACE-R001",
     "CONN-EGERIA-MCP-ERROR-SURFACE-R002",
-    "CONN-EGERIA-MCP-ERROR-SURFACE-R003"
+    "CONN-EGERIA-MCP-ERROR-SURFACE-R003",
+    "CONN-EGERIA-MCP-ERROR-SURFACE-R004"
   ],
   "requirements": [
     {
@@ -34,6 +35,15 @@
       "landed_in": [],
       "verified_by": [
         "tests/test_error_surface.py:107"
+      ]
+    },
+    {
+      "id": "CONN-EGERIA-MCP-ERROR-SURFACE-R004",
+      "title": "Request timeout is configurable and named",
+      "delivery_state": "SPECIFIED",
+      "landed_in": [],
+      "verified_by": [
+        "tests/test_error_surface.py:124"
       ]
     }
   ]

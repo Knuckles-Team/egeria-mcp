@@ -126,7 +126,7 @@ class EgeriaApi:
         *,
         tls_profile: ResolvedTLSProfile | None = None,
         enable_write: bool = False,
-        timeout: float = 30.0,
+        timeout: float = 120.0,
     ) -> None:
         self.platform_url = platform_url.rstrip("/")
         self.view_server = view_server
@@ -150,6 +150,19 @@ class EgeriaApi:
             )
         return self._client
 
+    def _transport_error(self, e: Exception) -> EgeriaUnavailableError:
+        """Typed error for a transport failure; a timeout is reported as such."""
+        err: BaseException | None = e
+        while err is not None:
+            if "Timeout" in type(err).__name__:
+                return EgeriaUnavailableError(
+                    f"Egeria platform did not answer within {self.timeout:g}s"
+                )
+            err = err.__cause__ or err.__context__
+        return EgeriaUnavailableError(
+            f"Egeria platform unreachable at {self.platform_url}: {type(e).__name__}"
+        )
+
     def _bearer(self) -> str:
         """Fetch (and cache) a bearer token from the platform token endpoint."""
         if self._token:
@@ -160,10 +173,7 @@ class EgeriaApi:
                 json={"userId": self.user_id, "password": self.user_pwd},
             )
         except Exception as e:
-            raise EgeriaUnavailableError(
-                f"Egeria platform unreachable at {self.platform_url}: "
-                f"{type(e).__name__}"
-            ) from e
+            raise self._transport_error(e) from e
         if r.status_code >= 500:
             raise EgeriaUnavailableError(
                 f"Egeria platform unavailable (token endpoint HTTP {r.status_code})"
@@ -228,10 +238,7 @@ class EgeriaApi:
                 content=_json.dumps(body),
             )
         except Exception as e:
-            raise EgeriaUnavailableError(
-                f"Egeria platform unreachable at {self.platform_url}: "
-                f"{type(e).__name__}"
-            ) from e
+            raise self._transport_error(e) from e
         if check:
             self._check_response(r)
         return r

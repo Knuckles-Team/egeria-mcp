@@ -19,6 +19,7 @@ def get_client() -> EgeriaApi:
         ``EGERIA_USER``           User id (required)
         ``EGERIA_USER_PASSWORD``  Password / token (required)
         ``EGERIA_TLS_PROFILE``    Runtime TLS profile selector (optional)
+        ``EGERIA_TIMEOUT_SECONDS`` Per-request timeout in seconds (default 120)
         ``EGERIA_ENABLE_WRITE``   Allow classify/create/lineage writes (default ``False``)
     """
     return EgeriaApi(
@@ -31,4 +32,5 @@ def get_client() -> EgeriaApi:
             profile_name=setting("EGERIA_TLS_PROFILE"),
         ),
         enable_write=setting("EGERIA_ENABLE_WRITE", False),
+        timeout=setting("EGERIA_TIMEOUT_SECONDS", 120.0),
     )

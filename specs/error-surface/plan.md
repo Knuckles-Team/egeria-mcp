@@ -16,7 +16,7 @@ Every vendor call passes one chokepoint that raises typed errors instead of retu
 - **Project Type**: connector (MCP server)
 - **Performance Goals**: N/A
 - **Constraints**: one tool per API operation; shared capabilities come from the SDK
-- **Scale/Scope**: 3 rows
+- **Scale/Scope**: 4 rows
 
 ## Constitution Check
 
@@ -71,6 +71,7 @@ The repository pre-commit hooks apply: `ruff-format`, `connector-standard`, `sec
 1. `CONN-EGERIA-MCP-ERROR-SURFACE-R001`: any MCP tool such as egeria_catalog or egeria_metadata (egeria_mcp/mcp/mcp_egeria.py) calls an EgeriaApi method, which calls `_request`.
 2. `CONN-EGERIA-MCP-ERROR-SURFACE-R002`: same as R001.
 3. `CONN-EGERIA-MCP-ERROR-SURFACE-R003`: same as R001.
+4. `CONN-EGERIA-MCP-ERROR-SURFACE-R004`: same chain as R001; get_client in egeria_mcp/auth.py builds the client with the configured timeout.
 
 ## Cross-repo seams
 

@@ -38,6 +38,10 @@ No unknowns. Each row names the code it touches.
 
 The rows are delivered in place; the design is the caller chain below.
 
+### Catalog record sources and the version-checked sink (R002, R003)
+
+The engine catalog is the system of record and Egeria is a federated secondary. The connector serves glossary terms, data assets and lineage relationships with their instance header (GUID, type name, version) through access contracts. `CatalogWriteSink` executes released change sets; every update carries the expected version and refuses on a concurrent change.
+
 ## Phase 2: Task approach
 
 `tasks.md` holds one task line per row, producer first.

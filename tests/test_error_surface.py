@@ -119,3 +119,23 @@ def test_genuine_empty_result_is_not_an_error(monkeypatch):
     empty = {"relatedHTTPCode": 200, "elements": []}
     api = _api(monkeypatch, _handler(lambda r: httpx.Response(200, json=empty)))
     assert api.list_glossary_terms() == []
+
+
+@pytest.mark.spec("CONN-EGERIA-MCP-ERROR-SURFACE-R004")
+def test_read_timeout_is_named_and_timeout_is_configurable(monkeypatch):
+    def slow(request):
+        raise httpx.ReadTimeout("slow")
+
+    api = _api(monkeypatch, slow)
+    api.timeout = 7
+    with pytest.raises(EgeriaUnavailableError, match="did not answer within 7s"):
+        api.list_glossary_terms()
+
+    from egeria_mcp.auth import get_client
+
+    monkeypatch.setenv("EGERIA_USER", "u")
+    monkeypatch.setenv("EGERIA_USER_PASSWORD", "p")
+    monkeypatch.delenv("EGERIA_TIMEOUT_SECONDS", raising=False)
+    assert get_client().timeout == 120.0
+    monkeypatch.setenv("EGERIA_TIMEOUT_SECONDS", "45")
+    assert get_client().timeout == 45.0

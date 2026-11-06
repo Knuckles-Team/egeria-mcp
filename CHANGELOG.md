@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Require `scion-sdk>=0.6.4,<0.7.0`; `uv.lock` relocked.
 
+## [2.3.9] - 2026-11-06
+
+### Changed
+- Request timeout defaults to 120s and is set by `EGERIA_TIMEOUT_SECONDS`; a read timeout reports "Egeria platform did not answer within Ns". Spec `CONN-EGERIA-MCP-ERROR-SURFACE`.
+
 ## [2.3.8] - 2026-11-06
 
 ### Fixed

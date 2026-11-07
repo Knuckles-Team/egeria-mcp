@@ -14,3 +14,6 @@ Each task line reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. Order is pr
 - [ ] T008 [US2] CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003.1 Catalog write sink.
 - [ ] T009 [US2] CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003.2 Catalog write refusal and evidence.
 - [ ] T010 [US2] CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003.3 Register the catalog sink and prove the path.
+- [ ] T011 [US3] CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004.1 Verify the REST contract and type names against Egeria 6.3.
+- [ ] T012 [US3] CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004.2 Check the platform version at startup.
+- [ ] T013 [US3] CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004.3 Docs and examples run the current release.

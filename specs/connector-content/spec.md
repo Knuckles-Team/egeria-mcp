@@ -42,6 +42,7 @@ The engine reads this system's documents or records through the connector and se
 - **FR-001**: Default content. Rows: `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R001`.
 - **FR-002**: Glossary, asset and lineage records as federated pack sources. Rows: `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R002`.
 - **FR-003**: Version-checked write sink for catalog changes. Rows: `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003`.
+- **FR-004**: Egeria 6.3 is the supported platform. Rows: `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004`.
 
 ## Success Criteria
 

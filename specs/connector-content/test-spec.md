@@ -17,3 +17,7 @@ Governing spec: [spec.md](spec.md).
 - `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003.1`: planned proof `tests/test_catalog_write_sink.py::test_released_changes_apply_with_version_check`. Expected: A released create and a released update each make one store call.
 - `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003.2`: planned proof `tests/test_catalog_write_sink.py::test_version_conflict_refuses_without_write`. Expected: A version conflict makes no write call.
 - `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R003.3`: planned proof `tests/test_catalog_write_sink.py::test_registered_sink_round_trips_version`. Expected: The read-back version is one higher.
+- `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004`: planned proof `tests/test_egeria_63_contract.py::test_tools_round_trip_against_the_63_type_system`. Expected: Rollup closes when `.1` to `.3` are verified.
+- `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004.1`: planned proof `tests/test_egeria_63_contract.py::test_tools_round_trip_against_the_63_type_system`. Expected: Recorded 6.3 fixtures round-trip; a removed type yields `UNSUPPORTED_TYPE`.
+- `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004.2`: planned proof `tests/test_egeria_63_contract.py::test_older_platform_refuses_writes_and_names_versions`. Expected: A 5.x platform refuses writes with `PLATFORM_VERSION_UNSUPPORTED` and makes no write call.
+- `CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004.3`: planned proof `tests/test_egeria_63_contract.py::test_docs_name_no_5x_platform`. Expected: No `egeria-platform:5.` reference remains in docs.

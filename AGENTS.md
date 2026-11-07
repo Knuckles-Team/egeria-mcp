@@ -47,9 +47,9 @@ Two hard invariants of the federation:
 - Python 3.11+ (raw `httpx` REST — **no pyegeria runtime dependency**; pyegeria's
   sync wrappers call `asyncio.get_event_loop()`, which raises on Python 3.14).
 - scion-sdk `[mcp]` (FastMCP, `create_mcp_server`).
-- Apache Egeria 6.0 OMAG platform / View Server (OMVS) REST.
+- Apache Egeria 6.x (6.2 floor, verified against 6.3) OMAG platform / View Server (OMVS) REST.
 
-## Egeria REST contract (confirmed against Egeria 6.0)
+## Egeria REST contract (verified against Egeria 6.2 and 6.3; writes refuse below 6.2)
 - Token: `POST {platform}/api/token` `{userId,password}` → bearer JWT.
 - Find: `POST {platform}/servers/{view_server}/api/open-metadata/{service}/{noun}/by-search-string`
   with `{"class":"SearchStringRequestBody","searchString": <term>}`. **Empty string =

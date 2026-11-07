@@ -107,11 +107,14 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
         Shows which catalogued assets still have no lineage connections (what
         reconciliation/harvest is still missing), with a coverage percentage per
-        layer. Read-only.
+        layer, and the platform version beside the supported floor. Read-only.
         """
         from egeria_mcp.audit import audit
 
-        return audit(get_client())
+        api = get_client()
+        result = audit(api)
+        result["platform"] = api._platform_status()
+        return result
 
     @mcp.tool(tags={"kg", "ingest"})
     async def egeria_ingest_catalog() -> Any:

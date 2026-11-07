@@ -14,19 +14,19 @@ of `EGERIA_PLATFORM_URL`. For production topologies, follow the upstream
 
 ## Single-node deployment (Compose)
 
-Egeria publishes the `egeria/egeria-platform` image. The following stack runs one
-OMAG Server Platform on `:9443` with the persistent quick-start runtime:
+Egeria publishes the `odpi/egeria-platform` image; the connector targets the 6.x line (6.2 current, 6.3 at its release) and has no 5.x fallback. The following stack runs one
+OMAG Server Platform (listening on `:7443` in the image, published as `:9443`) with the persistent quick-start runtime:
 
 ```yaml
 # docker/egeria-platform.compose.yml
 services:
   egeria-platform:
-    image: docker.io/egeria/egeria-platform:5.3
+    image: docker.io/odpi/egeria-platform:6.2
     container_name: egeria-platform
     hostname: egeria-platform
     restart: unless-stopped
     ports:
-      - "9443:9443"            # OMAG platform / View Server (HTTPS, self-signed)
+      - "9443:7443"            # OMAG platform / View Server (HTTPS, self-signed)
     environment:
       - JAVA_DEBUG=false
       # Pre-load the quick-start config documents on boot
@@ -34,7 +34,7 @@ services:
     volumes:
       - egeria_data:/deployments/data
     healthcheck:
-      test: ["CMD", "curl", "-kfsS", "https://localhost:9443/open-metadata/platform-services/users/garygeeke/server-platform/origin"]
+      test: ["CMD", "curl", "-kfsS", "https://localhost:7443/api/public/app/info"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -47,9 +47,28 @@ volumes:
 ```bash
 docker compose -f docker/egeria-platform.compose.yml up -d
 
-# Wait for the platform origin to answer (self-signed TLS → -k)
-curl -k https://localhost:9443/open-metadata/platform-services/users/garygeeke/server-platform/origin
+# Wait for the platform to answer (self-signed TLS → -k)
+curl -k https://localhost:9443/api/public/app/info
 ```
+
+## Platform version
+
+On first use the connector reads the platform origin
+(`GET /open-metadata/platform-services/server-platform/origin`, bearer token) and
+reports it with the supported floor in the `egeria_audit` result under `platform`. A
+platform older than 6.2 refuses every write with `PLATFORM_VERSION_UNSUPPORTED`; reads
+still answer. A type the platform does not serve fails with `UNSUPPORTED_TYPE`; renamed
+types are mapped in one table (`TYPE_RENAMES`) in `egeria_mcp/api/api_client_egeria.py`.
+
+## 6.3 smoke run
+
+The request bodies, element headers and type names were replayed against
+`odpi/egeria-platform:6.3-SNAPSHOT` (image id
+`9b55307041770d16064e0e76abcf7a8c47ca2372649a8d4697cade9d7eca8a63`, build 2026-11-07)
+with a view server on an in-memory metadata store; the recorded responses are
+`tests/fixtures/egeria_63.json`. The contract is unchanged; `KafkaTopic`,
+`DatabaseServer` and `APIEndpoint` are not served by 6.3. Re-run against the 6.3 release
+image when it is published and record its digest here.
 
 ## Connect egeria-mcp
 
@@ -73,9 +92,9 @@ server reaches Egeria by container name:
 # docker/stack.compose.yml
 services:
   egeria-platform:
-    image: docker.io/egeria/egeria-platform:5.3
+    image: docker.io/odpi/egeria-platform:6.2
     hostname: egeria-platform
-    ports: ["9443:9443"]
+    ports: ["9443:7443"]
     environment:
       - STARTUP_SERVERS=qs-metadata-store,qs-view-server
     volumes: ["egeria_data:/deployments/data"]
@@ -84,7 +103,7 @@ services:
     image: example/egeria-mcp@sha256:<digest>
     depends_on: [egeria-platform]
     environment:
-      - EGERIA_PLATFORM_URL=https://egeria-platform:9443
+      - EGERIA_PLATFORM_URL=https://egeria-platform:7443
       - EGERIA_VIEW_SERVER=qs-view-server
       - EGERIA_TLS_PROFILE=private-pki
       - SSL_CERT_FILE=/run/secrets/private-ca-bundle.pem

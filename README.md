@@ -47,7 +47,7 @@ orchestrates**.
   action-dispatch readers across 11 OMVS services, `governed_route`, the data-store
   harvest, and write-gated create/classify/lineage tools. See
   [`docs/overview.md`](docs/overview.md) for the full list and the verified Egeria
-  6.0 REST contract.
+  6.x REST contract (verified against 6.2 and 6.3).
 
 ## Available MCP Tools
 

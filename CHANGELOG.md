@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-11-07
+
+### Changed
+- Egeria 6.x is the supported platform (6.2 floor, request bodies and type names verified against 6.3 with recorded fixtures). Writes refuse below 6.2 with `PLATFORM_VERSION_UNSUPPORTED`; a type the platform does not serve fails with `UNSUPPORTED_TYPE`; renamed types map through one table. The platform version is reported by `egeria_audit`. Docs and examples use the 6.2 image; no 5.x fallback (CONN-EGERIA-MCP-CONNECTOR-CONTENT-R004).
+
 ## [2.3.10] - 2026-11-06
 
 ### Changed

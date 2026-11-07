@@ -1,0 +1,893 @@
+{
+ "_recorded_from": "odpi/egeria-platform:6.3-SNAPSHOT image id 9b55307041770d16064e0e76abcf7a8c47ca2372649a8d4697cade9d7eca8a63 (platform version 6.3-SNAPSHOT, build 2026-11-07), view-server on an in-memory simple-metadata-store, 2026-11-07. Trimmed of audit/mermaid/origin noise.",
+ "classify_confidentiality": {
+  "class": "VoidResponse",
+  "relatedHTTPCode": 200
+ },
+ "create_asset": {
+  "class": "GUIDResponse",
+  "guid": "RelationalDatabase-8c9f75aa-fb9d-45fc-9efd-4aa681009e7c",
+  "relatedHTTPCode": 200
+ },
+ "create_removed_type": {
+  "actionDescription": "createMetadataElementInStore",
+  "class": "GUIDResponse",
+  "exceptionClassName": "org.odpi.openmetadata.frameworks.openmetadata.ffdc.InvalidParameterException",
+  "exceptionErrorMessage": "OMAG-COMMON-400-018 The type name KafkaTopic passed on method createMetadataElementInStore of service Open Metadata Store Services is not recognized",
+  "exceptionErrorMessageId": "OMAG-COMMON-400-018",
+  "exceptionErrorMessageParameters": [
+   "KafkaTopic",
+   "createMetadataElementInStore",
+   "Open Metadata Store Services"
+  ],
+  "exceptionProperties": {
+   "parameterName": "typeName"
+  },
+  "exceptionURL": "https://egeria-project.org/services/ffdc-services/",
+  "relatedHTTPCode": 400
+ },
+ "find_assets": {
+  "class": "OpenMetadataRootElementsResponse",
+  "elements": [
+   {
+    "class": "AssetSearchMatches",
+    "elementHeader": {
+     "anchor": {
+      "class": "ElementClassification",
+      "classificationName": "Anchors",
+      "classificationOrigin": "ASSIGNED",
+      "classificationProperties": {
+       "anchorDomainName": "Asset",
+       "anchorTypeName": "Process",
+       "class": "AnchorsProperties",
+       "typeName": "Anchors"
+      },
+      "headerVersion": 0,
+      "status": "ACTIVE",
+      "type": {
+       "typeCategory": "CLASSIFICATION_DEF",
+       "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+       "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+       "typeName": "Anchors",
+       "typeVersion": 1
+      }
+     },
+     "class": "ElementHeader",
+     "confidentiality": {
+      "class": "ElementClassification",
+      "classificationName": "Confidentiality",
+      "classificationOrigin": "ASSIGNED",
+      "classificationProperties": {
+       "class": "ConfidentialityProperties",
+       "confidence": 100,
+       "confidentialityLevel": 3,
+       "statusIdentifier": 1,
+       "typeName": "Confidentiality"
+      },
+      "headerVersion": 0,
+      "status": "ACTIVE",
+      "type": {
+       "typeCategory": "CLASSIFICATION_DEF",
+       "typeDescription": "Defines the level of confidentiality of related data items.",
+       "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+       "typeName": "Confidentiality",
+       "typeVersion": 1
+      }
+     },
+     "guid": "Process-4657ca3d-9110-4fe1-97e9-eb7db2e6a3e9",
+     "headerVersion": 0,
+     "status": "ACTIVE",
+     "type": {
+      "superTypeNames": [
+       "Asset",
+       "Referenceable",
+       "OpenMetadataRoot"
+      ],
+      "typeCategory": "ENTITY_DEF",
+      "typeDescription": "Well-defined sequence of activities performed by digital resources.",
+      "typeId": "d8f33bd7-afa9-4a11-a8c7-07dcec83c050",
+      "typeName": "Process",
+      "typeVersion": 1
+     }
+    },
+    "lineageLinkage": [
+     {
+      "class": "RelatedMetadataElementSummary",
+      "relatedElement": {
+       "elementHeader": {
+        "anchor": {
+         "class": "ElementClassification",
+         "classificationName": "Anchors",
+         "classificationOrigin": "ASSIGNED",
+         "classificationProperties": {
+          "anchorDomainName": "Asset",
+          "anchorTypeName": "RelationalDatabase",
+          "class": "AnchorsProperties",
+          "typeName": "Anchors"
+         },
+         "headerVersion": 0,
+         "status": "ACTIVE",
+         "type": {
+          "typeCategory": "CLASSIFICATION_DEF",
+          "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+          "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+          "typeName": "Anchors",
+          "typeVersion": 1
+         }
+        },
+        "class": "ElementHeader",
+        "confidentiality": {
+         "class": "ElementClassification",
+         "classificationName": "Confidentiality",
+         "classificationOrigin": "ASSIGNED",
+         "classificationProperties": {
+          "class": "ConfidentialityProperties",
+          "confidence": 100,
+          "confidentialityLevel": 2,
+          "statusIdentifier": 1,
+          "typeName": "Confidentiality"
+         },
+         "headerVersion": 0,
+         "status": "ACTIVE",
+         "type": {
+          "typeCategory": "CLASSIFICATION_DEF",
+          "typeDescription": "Defines the level of confidentiality of related data items.",
+          "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+          "typeName": "Confidentiality",
+          "typeVersion": 1
+         }
+        },
+        "guid": "RelationalDatabase-8c9f75aa-fb9d-45fc-9efd-4aa681009e7c",
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "superTypeNames": [
+          "Database",
+          "DataStore",
+          "DataAsset",
+          "Asset",
+          "Referenceable",
+          "OpenMetadataRoot"
+         ],
+         "typeCategory": "ENTITY_DEF",
+         "typeDescription": "A data store organized to facilitate a relational data model.",
+         "typeId": "6a28e242-4eca-4664-81cb-e2096d769568",
+         "typeName": "RelationalDatabase",
+         "typeVersion": 1
+        }
+       },
+       "properties": {
+        "class": "RelationalDatabaseProperties",
+        "deployedImplementationType": "PostgreSQL Database",
+        "description": "d",
+        "displayName": "db2",
+        "qualifiedName": "fx:db2",
+        "typeName": "RelationalDatabase"
+       }
+      },
+      "relatedElementAtEnd1": true,
+      "relationshipHeader": {
+       "class": "ElementHeader",
+       "guid": "DataFlow-06c82f3c-1d50-4101-b730-fda10bb04887",
+       "headerVersion": 0,
+       "status": "ACTIVE",
+       "type": {
+        "superTypeNames": [
+         "DataLineageRelationship",
+         "LineageRelationship",
+         "LabeledRelationship"
+        ],
+        "typeCategory": "RELATIONSHIP_DEF",
+        "typeDescription": "Shows that data flows in one direction from one element to another.",
+        "typeId": "d2490c0c-06cc-458a-add2-33cf2f5dd724",
+        "typeName": "DataFlow",
+        "typeVersion": 2
+       }
+      },
+      "relationshipProperties": {
+       "class": "DataFlowProperties",
+       "label": "produces",
+       "typeName": "DataFlow"
+      }
+     }
+    ],
+    "matchingElements": [
+     {
+      "elementHeader": {
+       "anchor": {
+        "class": "ElementClassification",
+        "classificationName": "Anchors",
+        "classificationOrigin": "ASSIGNED",
+        "classificationProperties": {
+         "anchorDomainName": "Asset",
+         "anchorTypeName": "Process",
+         "class": "AnchorsProperties",
+         "typeName": "Anchors"
+        },
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "typeCategory": "CLASSIFICATION_DEF",
+         "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+         "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+         "typeName": "Anchors",
+         "typeVersion": 1
+        }
+       },
+       "class": "ElementHeader",
+       "confidentiality": {
+        "class": "ElementClassification",
+        "classificationName": "Confidentiality",
+        "classificationOrigin": "ASSIGNED",
+        "classificationProperties": {
+         "class": "ConfidentialityProperties",
+         "confidence": 100,
+         "confidentialityLevel": 3,
+         "statusIdentifier": 1,
+         "typeName": "Confidentiality"
+        },
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "typeCategory": "CLASSIFICATION_DEF",
+         "typeDescription": "Defines the level of confidentiality of related data items.",
+         "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+         "typeName": "Confidentiality",
+         "typeVersion": 1
+        }
+       },
+       "guid": "Process-4657ca3d-9110-4fe1-97e9-eb7db2e6a3e9",
+       "headerVersion": 0,
+       "status": "ACTIVE",
+       "type": {
+        "superTypeNames": [
+         "Asset",
+         "Referenceable",
+         "OpenMetadataRoot"
+        ],
+        "typeCategory": "ENTITY_DEF",
+        "typeDescription": "Well-defined sequence of activities performed by digital resources.",
+        "typeId": "d8f33bd7-afa9-4a11-a8c7-07dcec83c050",
+        "typeName": "Process",
+        "typeVersion": 1
+       }
+      },
+      "properties": {
+       "class": "ProcessProperties",
+       "displayName": "proc",
+       "qualifiedName": "fx:proc",
+       "typeName": "Process"
+      }
+     }
+    ],
+    "properties": {
+     "class": "ProcessProperties",
+     "displayName": "proc",
+     "qualifiedName": "fx:proc",
+     "typeName": "Process"
+    }
+   },
+   {
+    "class": "AssetSearchMatches",
+    "elementHeader": {
+     "anchor": {
+      "class": "ElementClassification",
+      "classificationName": "Anchors",
+      "classificationOrigin": "ASSIGNED",
+      "classificationProperties": {
+       "anchorDomainName": "Asset",
+       "anchorTypeName": "RelationalDatabase",
+       "class": "AnchorsProperties",
+       "typeName": "Anchors"
+      },
+      "headerVersion": 0,
+      "status": "ACTIVE",
+      "type": {
+       "typeCategory": "CLASSIFICATION_DEF",
+       "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+       "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+       "typeName": "Anchors",
+       "typeVersion": 1
+      }
+     },
+     "class": "ElementHeader",
+     "confidentiality": {
+      "class": "ElementClassification",
+      "classificationName": "Confidentiality",
+      "classificationOrigin": "ASSIGNED",
+      "classificationProperties": {
+       "class": "ConfidentialityProperties",
+       "confidence": 100,
+       "confidentialityLevel": 2,
+       "statusIdentifier": 1,
+       "typeName": "Confidentiality"
+      },
+      "headerVersion": 0,
+      "status": "ACTIVE",
+      "type": {
+       "typeCategory": "CLASSIFICATION_DEF",
+       "typeDescription": "Defines the level of confidentiality of related data items.",
+       "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+       "typeName": "Confidentiality",
+       "typeVersion": 1
+      }
+     },
+     "guid": "RelationalDatabase-8c9f75aa-fb9d-45fc-9efd-4aa681009e7c",
+     "headerVersion": 0,
+     "status": "ACTIVE",
+     "type": {
+      "superTypeNames": [
+       "Database",
+       "DataStore",
+       "DataAsset",
+       "Asset",
+       "Referenceable",
+       "OpenMetadataRoot"
+      ],
+      "typeCategory": "ENTITY_DEF",
+      "typeDescription": "A data store organized to facilitate a relational data model.",
+      "typeId": "6a28e242-4eca-4664-81cb-e2096d769568",
+      "typeName": "RelationalDatabase",
+      "typeVersion": 1
+     }
+    },
+    "lineageLinkage": [
+     {
+      "class": "RelatedMetadataElementSummary",
+      "relatedElement": {
+       "elementHeader": {
+        "anchor": {
+         "class": "ElementClassification",
+         "classificationName": "Anchors",
+         "classificationOrigin": "ASSIGNED",
+         "classificationProperties": {
+          "anchorDomainName": "Asset",
+          "anchorTypeName": "Process",
+          "class": "AnchorsProperties",
+          "typeName": "Anchors"
+         },
+         "headerVersion": 0,
+         "status": "ACTIVE",
+         "type": {
+          "typeCategory": "CLASSIFICATION_DEF",
+          "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+          "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+          "typeName": "Anchors",
+          "typeVersion": 1
+         }
+        },
+        "class": "ElementHeader",
+        "confidentiality": {
+         "class": "ElementClassification",
+         "classificationName": "Confidentiality",
+         "classificationOrigin": "ASSIGNED",
+         "classificationProperties": {
+          "class": "ConfidentialityProperties",
+          "confidence": 100,
+          "confidentialityLevel": 3,
+          "statusIdentifier": 1,
+          "typeName": "Confidentiality"
+         },
+         "headerVersion": 0,
+         "status": "ACTIVE",
+         "type": {
+          "typeCategory": "CLASSIFICATION_DEF",
+          "typeDescription": "Defines the level of confidentiality of related data items.",
+          "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+          "typeName": "Confidentiality",
+          "typeVersion": 1
+         }
+        },
+        "guid": "Process-4657ca3d-9110-4fe1-97e9-eb7db2e6a3e9",
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "superTypeNames": [
+          "Asset",
+          "Referenceable",
+          "OpenMetadataRoot"
+         ],
+         "typeCategory": "ENTITY_DEF",
+         "typeDescription": "Well-defined sequence of activities performed by digital resources.",
+         "typeId": "d8f33bd7-afa9-4a11-a8c7-07dcec83c050",
+         "typeName": "Process",
+         "typeVersion": 1
+        }
+       },
+       "properties": {
+        "class": "ProcessProperties",
+        "displayName": "proc",
+        "qualifiedName": "fx:proc",
+        "typeName": "Process"
+       }
+      },
+      "relatedElementAtEnd1": false,
+      "relationshipHeader": {
+       "class": "ElementHeader",
+       "guid": "DataFlow-06c82f3c-1d50-4101-b730-fda10bb04887",
+       "headerVersion": 0,
+       "status": "ACTIVE",
+       "type": {
+        "superTypeNames": [
+         "DataLineageRelationship",
+         "LineageRelationship",
+         "LabeledRelationship"
+        ],
+        "typeCategory": "RELATIONSHIP_DEF",
+        "typeDescription": "Shows that data flows in one direction from one element to another.",
+        "typeId": "d2490c0c-06cc-458a-add2-33cf2f5dd724",
+        "typeName": "DataFlow",
+        "typeVersion": 2
+       }
+      },
+      "relationshipProperties": {
+       "class": "DataFlowProperties",
+       "label": "produces",
+       "typeName": "DataFlow"
+      }
+     }
+    ],
+    "matchingElements": [
+     {
+      "elementHeader": {
+       "anchor": {
+        "class": "ElementClassification",
+        "classificationName": "Anchors",
+        "classificationOrigin": "ASSIGNED",
+        "classificationProperties": {
+         "anchorDomainName": "Asset",
+         "anchorTypeName": "RelationalDatabase",
+         "class": "AnchorsProperties",
+         "typeName": "Anchors"
+        },
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "typeCategory": "CLASSIFICATION_DEF",
+         "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+         "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+         "typeName": "Anchors",
+         "typeVersion": 1
+        }
+       },
+       "class": "ElementHeader",
+       "confidentiality": {
+        "class": "ElementClassification",
+        "classificationName": "Confidentiality",
+        "classificationOrigin": "ASSIGNED",
+        "classificationProperties": {
+         "class": "ConfidentialityProperties",
+         "confidence": 100,
+         "confidentialityLevel": 2,
+         "statusIdentifier": 1,
+         "typeName": "Confidentiality"
+        },
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "typeCategory": "CLASSIFICATION_DEF",
+         "typeDescription": "Defines the level of confidentiality of related data items.",
+         "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+         "typeName": "Confidentiality",
+         "typeVersion": 1
+        }
+       },
+       "guid": "RelationalDatabase-8c9f75aa-fb9d-45fc-9efd-4aa681009e7c",
+       "headerVersion": 0,
+       "status": "ACTIVE",
+       "type": {
+        "superTypeNames": [
+         "Database",
+         "DataStore",
+         "DataAsset",
+         "Asset",
+         "Referenceable",
+         "OpenMetadataRoot"
+        ],
+        "typeCategory": "ENTITY_DEF",
+        "typeDescription": "A data store organized to facilitate a relational data model.",
+        "typeId": "6a28e242-4eca-4664-81cb-e2096d769568",
+        "typeName": "RelationalDatabase",
+        "typeVersion": 1
+       }
+      },
+      "properties": {
+       "class": "RelationalDatabaseProperties",
+       "deployedImplementationType": "PostgreSQL Database",
+       "description": "d",
+       "displayName": "db2",
+       "qualifiedName": "fx:db2",
+       "typeName": "RelationalDatabase"
+      }
+     }
+    ],
+    "properties": {
+     "class": "RelationalDatabaseProperties",
+     "deployedImplementationType": "PostgreSQL Database",
+     "description": "d",
+     "displayName": "db2",
+     "qualifiedName": "fx:db2",
+     "typeName": "RelationalDatabase"
+    }
+   }
+  ],
+  "relatedHTTPCode": 200
+ },
+ "find_terms": {
+  "class": "OpenMetadataRootElementsResponse",
+  "elements": [
+   {
+    "class": "OpenMetadataRootElement",
+    "elementHeader": {
+     "anchor": {
+      "class": "ElementClassification",
+      "classificationName": "Anchors",
+      "classificationOrigin": "ASSIGNED",
+      "classificationProperties": {
+       "anchorDomainName": "AuthoredReferenceable",
+       "anchorTypeName": "GlossaryTerm",
+       "class": "AnchorsProperties",
+       "typeName": "Anchors"
+      },
+      "headerVersion": 0,
+      "status": "ACTIVE",
+      "type": {
+       "typeCategory": "CLASSIFICATION_DEF",
+       "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+       "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+       "typeName": "Anchors",
+       "typeVersion": 1
+      }
+     },
+     "class": "ElementHeader",
+     "guid": "GlossaryTerm-9167feb2-059d-4b68-a262-83c5e4a6de56",
+     "headerVersion": 0,
+     "status": "ACTIVE",
+     "type": {
+      "superTypeNames": [
+       "AuthoredReferenceable",
+       "Referenceable",
+       "OpenMetadataRoot"
+      ],
+      "typeCategory": "ENTITY_DEF",
+      "typeDescription": "A semantic description of something, such as a concept, object, asset, technology, role or group.",
+      "typeId": "0db3e6ec-f5ef-4d75-ae38-b7ee6fd6ec0a",
+      "typeName": "GlossaryTerm",
+      "typeVersion": 1
+     }
+    },
+    "memberOfCollections": [
+     {
+      "class": "RelatedMetadataElementSummary",
+      "relatedElement": {
+       "elementHeader": {
+        "anchor": {
+         "class": "ElementClassification",
+         "classificationName": "Anchors",
+         "classificationOrigin": "ASSIGNED",
+         "classificationProperties": {
+          "anchorDomainName": "AuthoredReferenceable",
+          "anchorTypeName": "Glossary",
+          "class": "AnchorsProperties",
+          "typeName": "Anchors"
+         },
+         "headerVersion": 0,
+         "status": "ACTIVE",
+         "type": {
+          "typeCategory": "CLASSIFICATION_DEF",
+          "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+          "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+          "typeName": "Anchors",
+          "typeVersion": 1
+         }
+        },
+        "class": "ElementHeader",
+        "guid": "Glossary-5a54ff55-c387-4e43-b327-0f60c6eae3c5",
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "superTypeNames": [
+          "Collection",
+          "AuthoredReferenceable",
+          "Referenceable",
+          "OpenMetadataRoot"
+         ],
+         "typeCategory": "ENTITY_DEF",
+         "typeDescription": "A collection of related glossary terms.",
+         "typeId": "36f66863-9726-4b41-97ee-714fd0dc6fe4",
+         "typeName": "Glossary",
+         "typeVersion": 1
+        }
+       },
+       "properties": {
+        "class": "GlossaryProperties",
+        "description": "d",
+        "displayName": "G1",
+        "language": "English",
+        "qualifiedName": "Glossary::G1",
+        "typeName": "Glossary",
+        "usage": "u"
+       }
+      },
+      "relatedElementAtEnd1": true,
+      "relationshipHeader": {
+       "class": "ElementHeader",
+       "guid": "CollectionMembership-9b69fdec-a4d2-469d-8a04-805ec218e01b",
+       "headerVersion": 0,
+       "status": "ACTIVE",
+       "type": {
+        "typeCategory": "RELATIONSHIP_DEF",
+        "typeDescription": "Identifies a member of a collection.",
+        "typeId": "5cabb76a-e25b-4bb5-8b93-768bbac005af",
+        "typeName": "CollectionMembership",
+        "typeVersion": 1
+       }
+      }
+     }
+    ],
+    "properties": {
+     "class": "GlossaryTermProperties",
+     "description": "d",
+     "displayName": "T1",
+     "qualifiedName": "Term::T1",
+     "summary": "s",
+     "typeName": "GlossaryTerm"
+    }
+   }
+  ],
+  "relatedHTTPCode": 200
+ },
+ "lineage_graph": {
+  "class": "OpenMetadataRootElementResponse",
+  "element": {
+   "class": "AssetLineageGraph",
+   "elementHeader": {
+    "anchor": {
+     "class": "ElementClassification",
+     "classificationName": "Anchors",
+     "classificationOrigin": "ASSIGNED",
+     "classificationProperties": {
+      "anchorDomainName": "Asset",
+      "anchorTypeName": "RelationalDatabase",
+      "class": "AnchorsProperties",
+      "typeName": "Anchors"
+     },
+     "headerVersion": 0,
+     "status": "ACTIVE",
+     "type": {
+      "typeCategory": "CLASSIFICATION_DEF",
+      "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+      "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+      "typeName": "Anchors",
+      "typeVersion": 1
+     }
+    },
+    "class": "ElementHeader",
+    "confidentiality": {
+     "class": "ElementClassification",
+     "classificationName": "Confidentiality",
+     "classificationOrigin": "ASSIGNED",
+     "classificationProperties": {
+      "class": "ConfidentialityProperties",
+      "confidence": 100,
+      "confidentialityLevel": 2,
+      "statusIdentifier": 1,
+      "typeName": "Confidentiality"
+     },
+     "headerVersion": 0,
+     "status": "ACTIVE",
+     "type": {
+      "typeCategory": "CLASSIFICATION_DEF",
+      "typeDescription": "Defines the level of confidentiality of related data items.",
+      "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+      "typeName": "Confidentiality",
+      "typeVersion": 1
+     }
+    },
+    "guid": "RelationalDatabase-8c9f75aa-fb9d-45fc-9efd-4aa681009e7c",
+    "headerVersion": 0,
+    "status": "ACTIVE",
+    "type": {
+     "superTypeNames": [
+      "Database",
+      "DataStore",
+      "DataAsset",
+      "Asset",
+      "Referenceable",
+      "OpenMetadataRoot"
+     ],
+     "typeCategory": "ENTITY_DEF",
+     "typeDescription": "A data store organized to facilitate a relational data model.",
+     "typeId": "6a28e242-4eca-4664-81cb-e2096d769568",
+     "typeName": "RelationalDatabase",
+     "typeVersion": 1
+    }
+   },
+   "lineageLinkage": [
+    {
+     "class": "RelatedMetadataElementSummary",
+     "relatedElement": {
+      "elementHeader": {
+       "anchor": {
+        "class": "ElementClassification",
+        "classificationName": "Anchors",
+        "classificationOrigin": "ASSIGNED",
+        "classificationProperties": {
+         "anchorDomainName": "Asset",
+         "anchorTypeName": "Process",
+         "class": "AnchorsProperties",
+         "typeName": "Anchors"
+        },
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "typeCategory": "CLASSIFICATION_DEF",
+         "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+         "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+         "typeName": "Anchors",
+         "typeVersion": 1
+        }
+       },
+       "class": "ElementHeader",
+       "confidentiality": {
+        "class": "ElementClassification",
+        "classificationName": "Confidentiality",
+        "classificationOrigin": "ASSIGNED",
+        "classificationProperties": {
+         "class": "ConfidentialityProperties",
+         "confidence": 100,
+         "confidentialityLevel": 3,
+         "statusIdentifier": 1,
+         "typeName": "Confidentiality"
+        },
+        "headerVersion": 0,
+        "status": "ACTIVE",
+        "type": {
+         "typeCategory": "CLASSIFICATION_DEF",
+         "typeDescription": "Defines the level of confidentiality of related data items.",
+         "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+         "typeName": "Confidentiality",
+         "typeVersion": 1
+        }
+       },
+       "guid": "Process-4657ca3d-9110-4fe1-97e9-eb7db2e6a3e9",
+       "headerVersion": 0,
+       "status": "ACTIVE",
+       "type": {
+        "superTypeNames": [
+         "Asset",
+         "Referenceable",
+         "OpenMetadataRoot"
+        ],
+        "typeCategory": "ENTITY_DEF",
+        "typeDescription": "Well-defined sequence of activities performed by digital resources.",
+        "typeId": "d8f33bd7-afa9-4a11-a8c7-07dcec83c050",
+        "typeName": "Process",
+        "typeVersion": 1
+       }
+      },
+      "properties": {
+       "class": "ProcessProperties",
+       "displayName": "proc",
+       "qualifiedName": "fx:proc",
+       "typeName": "Process"
+      }
+     },
+     "relatedElementAtEnd1": false,
+     "relationshipHeader": {
+      "class": "ElementHeader",
+      "guid": "DataFlow-06c82f3c-1d50-4101-b730-fda10bb04887",
+      "headerVersion": 0,
+      "status": "ACTIVE",
+      "type": {
+       "superTypeNames": [
+        "DataLineageRelationship",
+        "LineageRelationship",
+        "LabeledRelationship"
+       ],
+       "typeCategory": "RELATIONSHIP_DEF",
+       "typeDescription": "Shows that data flows in one direction from one element to another.",
+       "typeId": "d2490c0c-06cc-458a-add2-33cf2f5dd724",
+       "typeName": "DataFlow",
+       "typeVersion": 2
+      }
+     },
+     "relationshipProperties": {
+      "class": "DataFlowProperties",
+      "label": "produces",
+      "typeName": "DataFlow"
+     }
+    }
+   ],
+   "properties": {
+    "class": "RelationalDatabaseProperties",
+    "deployedImplementationType": "PostgreSQL Database",
+    "description": "d",
+    "displayName": "db2",
+    "qualifiedName": "fx:db2",
+    "typeName": "RelationalDatabase"
+   }
+  },
+  "relatedHTTPCode": 200
+ },
+ "link_dataflow": {
+  "class": "GUIDResponse",
+  "guid": "DataFlow-06c82f3c-1d50-4101-b730-fda10bb04887",
+  "relatedHTTPCode": 200
+ },
+ "platform_origin_53": "Egeria OMAG Server Platform (version 5.3)",
+ "platform_origin_62": "Egeria OMAG Server Platform (version 6.2)",
+ "platform_origin_63": "Egeria OMAG Server Platform (version 6.3-SNAPSHOT)",
+ "retrieve_classified": {
+  "class": "OpenMetadataRootElementResponse",
+  "element": {
+   "class": "OpenMetadataRootElement",
+   "elementHeader": {
+    "anchor": {
+     "class": "ElementClassification",
+     "classificationName": "Anchors",
+     "classificationOrigin": "ASSIGNED",
+     "classificationProperties": {
+      "anchorDomainName": "Asset",
+      "anchorTypeName": "Process",
+      "class": "AnchorsProperties",
+      "typeName": "Anchors"
+     },
+     "headerVersion": 0,
+     "status": "ACTIVE",
+     "type": {
+      "typeCategory": "CLASSIFICATION_DEF",
+      "typeDescription": "Identifies the anchor entity for an element that is part of a large composite object such as an asset.",
+      "typeId": "aa44f302-2e43-4669-a1e7-edaae414fc6e",
+      "typeName": "Anchors",
+      "typeVersion": 1
+     }
+    },
+    "class": "ElementHeader",
+    "confidentiality": {
+     "class": "ElementClassification",
+     "classificationName": "Confidentiality",
+     "classificationOrigin": "ASSIGNED",
+     "classificationProperties": {
+      "class": "ConfidentialityProperties",
+      "confidence": 100,
+      "confidentialityLevel": 3,
+      "statusIdentifier": 1,
+      "typeName": "Confidentiality"
+     },
+     "headerVersion": 0,
+     "status": "ACTIVE",
+     "type": {
+      "typeCategory": "CLASSIFICATION_DEF",
+      "typeDescription": "Defines the level of confidentiality of related data items.",
+      "typeId": "742ddb7d-9a4a-4eb5-8ac2-1d69953bd2b6",
+      "typeName": "Confidentiality",
+      "typeVersion": 1
+     }
+    },
+    "guid": "Process-4657ca3d-9110-4fe1-97e9-eb7db2e6a3e9",
+    "headerVersion": 0,
+    "status": "ACTIVE",
+    "type": {
+     "superTypeNames": [
+      "Asset",
+      "Referenceable",
+      "OpenMetadataRoot"
+     ],
+     "typeCategory": "ENTITY_DEF",
+     "typeDescription": "Well-defined sequence of activities performed by digital resources.",
+     "typeId": "d8f33bd7-afa9-4a11-a8c7-07dcec83c050",
+     "typeName": "Process",
+     "typeVersion": 1
+    }
+   },
+   "properties": {
+    "class": "ProcessProperties",
+    "displayName": "proc",
+    "qualifiedName": "fx:proc",
+    "typeName": "Process"
+   }
+  },
+  "relatedHTTPCode": 200
+ }
+}

@@ -15,3 +15,9 @@ The tests make no network call.
 ## Quality and release proof
 
 Run `pytest tests/test_sdk_centralization.py` and the full suite.
+
+## Adoption of scion-sdk 0.10.0 (`CONN-EGERIA-MCP-SDK-CENTRALIZATION-R004`)
+
+| Requirement | Test | Observation |
+|---|---|---|
+| `CONN-EGERIA-MCP-SDK-CENTRALIZATION-R004` | `tests/test_scion_sdk_0_10_imports.py::test_every_scion_sdk_import_resolves_on_the_pinned_release` | Every `scion_sdk` import resolves on the pinned release; a removed path fails the test. |

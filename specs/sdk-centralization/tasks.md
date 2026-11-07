@@ -7,3 +7,4 @@ Each task line reads `- [ ] T001 [P] [US1] <ID>-R012.4 description`. Order is pr
 - [x] T001 [US1] CONN-EGERIA-MCP-SDK-CENTRALIZATION-R001 Governed HTTP client.
 - [x] T002 [US1] CONN-EGERIA-MCP-SDK-CENTRALIZATION-R002 OpenBao token by reference.
 - [x] T003 [US1] CONN-EGERIA-MCP-SDK-CENTRALIZATION-R003 Database driver from the SDK extra.
+- [ ] T004 [US1] CONN-EGERIA-MCP-SDK-CENTRALIZATION-R004 Adopt scion-sdk 0.10.0 import paths. Size: S, 1 PR, 30 minutes.

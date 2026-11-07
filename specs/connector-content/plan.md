@@ -61,3 +61,7 @@ The repository pre-commit hooks apply: `ruff-format`, `connector-standard`, `sec
 ## Cross-repo seams
 
 none. The cited owner rows are library capabilities the connector calls in process; spec.md names them.
+
+### Egeria 6.3 platform support (R004)
+
+Egeria 6.3 refactors the open-metadata type system and drops 5.x compatibility. The connector keeps one type-name table in the API client, verifies every request body, header field and type name against recorded 6.3 fixtures, refuses writes on a platform older than 6.2 with a typed refusal, and moves docs and examples to the current platform image. There is no 5.x fallback.

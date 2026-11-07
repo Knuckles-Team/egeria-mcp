@@ -119,7 +119,9 @@ def test_removed_and_renamed_types(monkeypatch):
     # recorded 6.3 refusal for a type the platform no longer serves
     platform = _Platform(FX["platform_origin_63"], create=FX["create_removed_type"])
     api = _api(monkeypatch, platform)
-    with pytest.raises(EgeriaUnsupportedTypeError, match="UNSUPPORTED_TYPE.*KafkaTopic"):
+    with pytest.raises(
+        EgeriaUnsupportedTypeError, match="UNSUPPORTED_TYPE.*KafkaTopic"
+    ):
         api.create_asset("Unknown", "fx:kt", "kt")
 
     # a mapped rename is applied before the call; a removed type never calls
@@ -128,7 +130,9 @@ def test_removed_and_renamed_types(monkeypatch):
         before = len(platform.calls)
         with pytest.raises(EgeriaUnsupportedTypeError, match=removed):
             api.create_asset(removed, f"fx:{removed}", removed)
-        assert [c for c in platform.calls[before:] if "assets" in c[1] and c[0] == "POST"] == []
+        assert [
+            c for c in platform.calls[before:] if "assets" in c[1] and c[0] == "POST"
+        ] == []
     assert EgeriaUnsupportedTypeError.code == "UNSUPPORTED_TYPE"
 
 
@@ -159,4 +163,7 @@ def test_docs_name_no_5x_platform():
     assert not [f.name for f in files if pattern.search(f.read_text())]
     platform_doc = (ROOT / "docs" / "platform.md").read_text()
     assert "odpi/egeria-platform:6." in platform_doc
-    assert "9b55307041770d16064e0e76abcf7a8c47ca2372649a8d4697cade9d7eca8a63" in platform_doc
+    assert (
+        "9b55307041770d16064e0e76abcf7a8c47ca2372649a8d4697cade9d7eca8a63"
+        in platform_doc
+    )

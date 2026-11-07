@@ -6,7 +6,7 @@ because pyegeria 6.0.x's synchronous wrappers rely on ``asyncio.get_event_loop()
 which **raises on Python 3.14** (no implicit loop), breaking every call. Plain
 ``httpx`` works identically on 3.11 and 3.14, so this facade is runtime-robust.
 
-Endpoints (confirmed against Egeria 6.0):
+Endpoints (verified against Egeria 6.2 and 6.3, see ``tests/fixtures/egeria_63.json``):
 * token  ``POST {platform}/api/token``  → bearer JWT (body ``{userId,password}``)
 * OMVS   ``{platform}/servers/{view_server}/api/open-metadata/{service}/...``
 * search ``.../{service}/.../by-search-string?startFrom&pageSize`` with a
@@ -21,6 +21,7 @@ genuine empty result returns ``[]``.
 from __future__ import annotations
 
 import json as _json
+import re
 from typing import Any
 
 from fastmcp.exceptions import ToolError
@@ -53,8 +54,57 @@ class EgeriaApiError(EgeriaError):
         self.related_http_code = related_http_code
 
 
+class EgeriaUnsupportedTypeError(EgeriaError):
+    """The platform's type system does not serve this open-metadata type.
+
+    Refusal code ``UNSUPPORTED_TYPE``; the message names the type.
+    """
+
+    code = "UNSUPPORTED_TYPE"
+
+
+class EgeriaPlatformVersionError(EgeriaError):
+    """The platform is older than the supported floor; writes are refused.
+
+    Refusal code ``PLATFORM_VERSION_UNSUPPORTED``.
+    """
+
+    code = "PLATFORM_VERSION_UNSUPPORTED"
+
+
 class EgeriaWriteDisabled(RuntimeError):
     """Raised when a write method is called but EGERIA_ENABLE_WRITE is false."""
+
+
+# Oldest platform line the connector writes to; Egeria 6.3 refactored the type
+# system and is not 5.x compatible, so there is no 5.x fallback.
+SUPPORTED_FLOOR = (6, 2)
+_ORIGIN_PATH = "/open-metadata/platform-services/server-platform/origin"
+_VERSION_RE = re.compile(r"version\s+(\d+)\.(\d+)")
+# 6.x answers an unknown type name on create with this message id.
+_UNKNOWN_TYPE_MESSAGE_ID = "OMAG-COMMON-400-018"
+
+# The one type-name table. ``TYPE_RENAMES`` maps a name an older type system
+# used to the name the 6.3 type system serves (applied before the call);
+# ``REMOVED_TYPES`` are names 6.3 no longer serves and fail with a typed
+# ``UNSUPPORTED_TYPE`` refusal naming the type, never an empty result.
+TYPE_RENAMES: dict[str, str] = {
+    "KafkaTopic": "Topic",
+    "DatabaseServer": "SoftwareServer",
+}
+REMOVED_TYPES: frozenset[str] = frozenset({"APIEndpoint"})
+
+
+def resolve_type_name(type_name: str) -> str:
+    """The type name the platform serves for ``type_name`` (renames applied).
+
+    Raises :class:`EgeriaUnsupportedTypeError` for a removed type.
+    """
+    if type_name in REMOVED_TYPES:
+        raise EgeriaUnsupportedTypeError(
+            f"UNSUPPORTED_TYPE: Egeria 6.3 does not serve the type {type_name}"
+        )
+    return TYPE_RENAMES.get(type_name, type_name)
 
 
 _SEARCH_ALL = (
@@ -139,6 +189,7 @@ class EgeriaApi:
         self.timeout = timeout
         self._client: Any = None
         self._token: str | None = None
+        self._version_cache: tuple[int, int] | None = None
 
     # ── HTTP plumbing ────────────────────────────────────────────────────────
     def _http(self) -> Any:
@@ -185,6 +236,35 @@ class EgeriaApi:
             )
         self._token = r.text.strip()
         return self._token
+
+    def _platform_version(self) -> tuple[int, int]:
+        """The platform's ``(major, minor)``, read once beside the token fetch."""
+        if self._version_cache is not None:
+            return self._version_cache
+        tok = self._bearer()
+        try:
+            r = self._http().get(
+                f"{self.platform_url}{_ORIGIN_PATH}",
+                headers={"Authorization": f"Bearer {tok}"},
+            )
+        except Exception as e:
+            raise self._transport_error(e) from e
+        self._check_response(r)
+        m = _VERSION_RE.search(r.text or "")
+        if not m:
+            raise EgeriaApiError("Egeria platform origin did not report a version")
+        self._version_cache = (int(m.group(1)), int(m.group(2)))
+        return self._version_cache
+
+    def _platform_status(self) -> dict[str, Any]:
+        """Platform version, the supported floor and whether writes are allowed."""
+        found = self._platform_version()
+        return {
+            "platformVersion": f"{found[0]}.{found[1]}",
+            "supportedFloor": f"{SUPPORTED_FLOOR[0]}.{SUPPORTED_FLOOR[1]}",
+            "writeEnabled": self.enable_write,
+            "writesAllowed": self.enable_write and found >= SUPPORTED_FLOOR,
+        }
 
     @staticmethod
     def _check_response(r: Any) -> None:
@@ -644,6 +724,12 @@ class EgeriaApi:
             raise EgeriaWriteDisabled(
                 "Egeria writes are disabled — set EGERIA_ENABLE_WRITE=true to enable."
             )
+        found = self._platform_version()
+        if found < SUPPORTED_FLOOR:
+            raise EgeriaPlatformVersionError(
+                f"PLATFORM_VERSION_UNSUPPORTED: found Egeria {found[0]}.{found[1]}, "
+                f"required {SUPPORTED_FLOOR[0]}.{SUPPORTED_FLOOR[1]} or newer"
+            )
 
     def _create(self, service: str, sub_path: str, body: dict) -> dict:
         """POST a create request; return ``{guid?, httpCode, error?}``."""
@@ -654,12 +740,18 @@ class EgeriaApi:
         out: dict[str, Any] = {"httpCode": r.status_code}
         try:
             j = r.json() or {}
-            if j.get("guid"):
-                out["guid"] = j["guid"]
-            if j.get("exceptionErrorMessage"):
-                out["error"] = j["exceptionErrorMessage"]
         except Exception:
             out["body"] = r.text[:300]
+            return out
+        if j.get("exceptionErrorMessageId") == _UNKNOWN_TYPE_MESSAGE_ID:
+            params = j.get("exceptionErrorMessageParameters") or ["?"]
+            raise EgeriaUnsupportedTypeError(
+                f"UNSUPPORTED_TYPE: the platform does not serve the type {params[0]}"
+            )
+        if j.get("guid"):
+            out["guid"] = j["guid"]
+        if j.get("exceptionErrorMessage"):
+            out["error"] = j["exceptionErrorMessage"]
         return out
 
     def create_glossary(
@@ -744,11 +836,12 @@ class EgeriaApi:
 
         ``type_name`` is an Egeria open-metadata asset type (e.g.
         ``SoftwareServer``, ``RelationalDatabase``, ``DeployedDatabaseSchema``,
-        ``KafkaTopic``). When ``confidentiality_level`` is given the asset is born
+        ``Topic``). When ``confidentiality_level`` is given the asset is born
         with a ``Confidentiality`` classification at that level. Returns
         ``{guid, reused?}``.
         """
         self._require_write()  # refuse before any read when writes are off
+        type_name = resolve_type_name(type_name)
         existing = self.find_asset(qualified_name)
         if existing:
             if confidentiality_level is not None:

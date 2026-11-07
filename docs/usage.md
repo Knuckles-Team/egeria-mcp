@@ -2,7 +2,7 @@
 
 `egeria-mcp` exposes the same capability three ways: as **MCP tools** an agent calls,
 as a **Python API** (`EgeriaApi`) the operator import, and as a **harvest CLI**. The complete
-tool surface and the verified Egeria 6.0 REST contract are in [Overview](overview.md).
+tool surface and the verified Egeria 6.x REST contract are in [Overview](overview.md).
 
 ## As an MCP server
 

@@ -62,7 +62,7 @@ an insecure TLS escape hatch or a credential/endpoint dump. Keep write
 operations disabled by default and require
 `EGERIA_ENABLE_WRITE=true` for intentional writes. Do not reintroduce a
 `pyegeria` runtime dependency: the committed client uses raw `httpx` against
-the Apache Egeria 6.0 OMAG View Server (OMVS).
+the Apache Egeria 6.x OMAG View Server (OMVS).
 
 ## Rapid delivery: the 5-minute contract
 

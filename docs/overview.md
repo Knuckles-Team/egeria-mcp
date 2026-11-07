@@ -97,7 +97,7 @@ example**. Point the harvest at the operator's real data stores with the
 shape) — keep that file outside any public repository so internal
 hostnames/addresses are never published.
 
-## Egeria 6.0 REST contract (verified)
+## Egeria 6.x REST contract (verified against 6.2 and 6.3)
 
 | Operation | Endpoint | Notes |
 |---|---|---|

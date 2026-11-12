@@ -1,11 +1,12 @@
 @prefix fibo-fi: <https://spec.edmcouncil.org/fibo/ontology/FBC/FinancialInstruments/FinancialInstruments/> .
+@prefix core: <https://knuckles-team.github.io/ontology/core#> .
 @prefix fibo-org: <https://spec.edmcouncil.org/fibo/ontology/FND/Organizations/Organizations/> .
 @prefix bibo: <http://purl.org/ontology/bibo/> .
 @prefix time: <http://www.w3.org/2006/time#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix dc: <http://purl.org/dc/terms/> .
-@prefix : <http://knuckles.team/kg#> .
+@prefix : <https://knuckles-team.github.io/ontology/connector/egeria#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -16,7 +17,7 @@
     coordinates through which a data resource is reached. Technology-layer
     artifact; may be folded into :DataConnector where endpoint granularity is not
     needed. Egeria: Endpoint. ArchiMate: Technology → CommunicationPath.""" ;
-    rdfs:subClassOf :TechnologyLayer .
+    rdfs:subClassOf core:TechnologyLayer .
 
 :GlossaryCategory a owl:Class ;
     rdfs:label "Glossary Category" ;
@@ -24,7 +25,7 @@
     A thin distinction kept above :Concept so term/category can be told apart in
     SPARQL while glossary terms themselves federate as plain :Concept nodes.
     Egeria: GlossaryCategory. ArchiMate: Strategy → (taxonomy of) Concept.""" ;
-    rdfs:subClassOf :Concept .
+    rdfs:subClassOf core:Concept .
 
 :GlossaryTerm a owl:Class ;
     rdfs:label "Glossary Term" ;
@@ -33,9 +34,10 @@
     :GlossaryCategory (the grouping) so the native egeria-mcp extractor can push
     terms as first-class nodes carrying their definition text, while still
     federating with the broader :Concept vocabulary. Egeria: GlossaryTerm.""" ;
-    rdfs:subClassOf :Concept .
+    rdfs:subClassOf core:Concept .
 
-:GovernanceRule a owl:Class .
+:GovernanceRule a owl:Class ;
+    rdfs:subClassOf core:GovernanceRule .
 
 
 :DataAsset a owl:Class ;
@@ -45,7 +47,7 @@
     Egeria GUID as :externalToolId and the :qualifiedName federation key; the
     endpoints of :flowsTo / :dependsOn lineage edges. Egeria: Asset (and subtypes).
     Folds into the enterprise :DataConnector / :DataObject vocabulary.""" ;
-    rdfs:subClassOf :DataConnector .
+    rdfs:subClassOf core:SourceBackend .
 
 :confidentialityLevel a owl:DatatypeProperty ;
     rdfs:label "confidentiality level" ;
@@ -90,7 +92,7 @@
     Retention classification (e.g. an ISO-8601 duration or a named schedule).""" ;
     rdfs:range xsd:string .
 
-<http://knuckles.team/kg/egeria> a owl:Ontology ;
+<https://knuckles-team.github.io/ontology/connector/egeria> a owl:Ontology ;
     rdfs:label "Apache Egeria Open Metadata Federation Ontology" ;
     rdfs:comment """Crosswalk that folds Apache Egeria Open Metadata Types into the
     existing ArchiMate-aligned enterprise vocabulary, so Egeria's metadata /

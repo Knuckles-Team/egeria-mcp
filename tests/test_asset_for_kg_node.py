@@ -3,7 +3,7 @@
 Split out from test_lineage_reconcile.py because ``egeria_mcp.kg_ingest``
 (needed for ``asset_for_kg_node``) transitively imports
 the knowledge-graph ingest path, which requires the
-certified ``epistemic_graph.numeric`` native kernel wheel — not importable in
+certified ``medulla.numeric`` native kernel wheel — not importable in
 every environment (pre-existing: ``tests/test_kg_ingest.py`` hits the identical
 ``ImportError`` at collection). Isolating the dependency here means only these
 tests skip when it's missing, not the whole reconcile/scan test suite.
@@ -16,7 +16,7 @@ import pytest
 kg_ingest = pytest.importorskip(
     "egeria_mcp.kg_ingest",
     reason=(
-        "the SDK ingest path requires the epistemic_graph native numeric "
+        "the SDK ingest path requires the medulla native numeric "
         "kernel wheel, not importable in this environment"
     ),
     exc_type=ImportError,  # the kernel gap raises ImportError, not ModuleNotFoundError

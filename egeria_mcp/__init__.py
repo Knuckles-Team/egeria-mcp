@@ -5,7 +5,7 @@ Granular, typed Egeria tools (lineage / glossary / asset / governance) plus the
 ``egeria`` enrichment extractor.
 
 CONCEPT:EA-KG.compute.egeria-metadata-federation-apache — Egeria Metadata Federation. Apache Egeria is the
-metadata/governance/lineage system-of-record, federated with the epistemic-graph
+metadata/governance/lineage system-of-record, federated with the medulla
 KG. Two invariants: the KG is never the lineage store; Egeria never orchestrates.
 """
 

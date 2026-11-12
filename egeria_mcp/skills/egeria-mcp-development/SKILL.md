@@ -52,7 +52,7 @@ changing a connector surface.
 ## Federation and safety boundary
 
 Egeria is the metadata, governance, and lineage system of record. The
-epistemic-graph KG consumes Egeria records; it does not become the lineage
+medulla KG consumes Egeria records; it does not become the lineage
 store, and Egeria does not become the orchestration engine. Preserve
 `externalToolId`/`domain="egeria"` identity on Egeria-sourced KG records.
 

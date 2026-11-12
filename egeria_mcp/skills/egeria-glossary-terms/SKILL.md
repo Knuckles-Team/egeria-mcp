@@ -80,7 +80,7 @@ egeria_create_term  glossary_name="Business Glossary"  display_name="Churn Rate"
 - **Lineage:** `egeria-lineage-tracing` (assets + flows).
 - **Governance:** `egeria-governance-classification` (confidentiality + policy).
 - **KG ingestion:** the `egeria_ingest_catalog` tool mirrors glossary terms into the
-  epistemic-graph as typed `:GlossaryTerm` nodes + definition `:Document`s.
+  medulla as typed `:GlossaryTerm` nodes + definition `:Document`s.
 
 ## Task workflows
 

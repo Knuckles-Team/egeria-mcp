@@ -107,7 +107,7 @@ egeria_asset_for_kg_node  node_id="egeria:DataAsset:<guid>"
 - **Glossary:** `egeria-glossary-terms`.
 - **Governance:** `egeria-governance-classification`.
 - **KG ingestion:** the `egeria_ingest_catalog` tool mirrors DataFlow edges into the
-  epistemic-graph as `:flowsTo` links between `:DataAsset` nodes; `egeria_asset_for_kg_node`
+  medulla as `:flowsTo` links between `:DataAsset` nodes; `egeria_asset_for_kg_node`
   is its reverse lookup.
 
 ## Task workflows

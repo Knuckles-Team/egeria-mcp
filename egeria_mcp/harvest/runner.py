@@ -93,7 +93,7 @@ async def harvest_all(api: Any, layers: list[str] | None = None) -> dict[str, An
     """Run all (or the named) harvest layers; return ``{layer: report}``.
 
     After harvesting sources into Egeria, natively mirror the resulting catalog
-    (glossary terms, governance rules, assets, lineage) into the epistemic-graph
+    (glossary terms, governance rules, assets, lineage) into the medulla
     KG as typed OWL nodes (CONCEPT:AU-KG.ingest.enterprise-source-extractor).
     Default-on; set ``EGERIA_KG_INGEST=false`` to skip. When enabled, native
     ingestion is authoritative and failures propagate.

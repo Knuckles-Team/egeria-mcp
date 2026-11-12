@@ -27,7 +27,7 @@ Apache Egeria open-metadata **API + MCP Server** for the Arbora ecosystem.
 > in the [official documentation](https://knuckles-team.github.io/egeria-mcp/).
 
 Egeria is federated as the **metadata / governance / lineage system-of-record**
-alongside the epistemic-graph Knowledge Graph (the cognition/orchestration plane).
+alongside the medulla Knowledge Graph (the cognition/orchestration plane).
 This package provides the *typed, deterministic* Egeria tools a policy router calls,
 the bottom-up harvest that **populates** Egeria from the data estate, and the
 `governed_route` decision that is the federation delivering value.
@@ -87,7 +87,7 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 | `egeria_harvest_projects` | intent | Catalog Plane/Jira projects into Egeria as Projects. |
 | `egeria_harvest_repositories` | intent | Catalog GitLab projects into Egeria (code/CI layer). |
 | `egeria_harvest_servicenow` | intent | Catalog ServiceNow CMDB configuration items into Egeria. |
-| `egeria_ingest_catalog` | intent | Natively ingest the Egeria catalog into epistemic-graph as typed OWL nodes. |
+| `egeria_ingest_catalog` | intent | Natively ingest the Egeria catalog into medulla as typed OWL nodes. |
 | `egeria_lineage` | intent | Return the data-lineage graph (upstream/downstream assets + processes). |
 | `egeria_lineage_scan` | intent | Scan the catalog's hub prefixes and return every DataFlow lineage edge. |
 | `egeria_list_policies` | intent | List Egeria governance policies/rules (optionally filtered by domain). |
@@ -122,7 +122,7 @@ Pick the extra that matches what the operator want to run:
 
 | Extra | Installs | Use when |
 |-------|----------|----------|
-| `egeria-mcp[mcp]` | Connector-focused MCP server (`scion-sdk[mcp]` — FastMCP/FastAPI + `epistemic-graph[full]`) | The operator run the **MCP server** (smallest install / image) |
+| `egeria-mcp[mcp]` | Connector-focused MCP server (`scion-sdk[mcp]` — FastMCP/FastAPI + `medulla[full]`) | The operator run the **MCP server** (smallest install / image) |
 | `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | The operator run the data-store / connector harvests |
 | `egeria-mcp[all]` | Everything (`mcp` + `agent` + `harvest`) | Development / full surface |
 
@@ -148,19 +148,19 @@ EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
   python -m egeria_mcp.harvest
 ```
 
-### Knowledge-graph database (`epistemic-graph`)
+### Knowledge-graph database (`medulla`)
 
-Both `[mcp]` and `[agent]` carry `epistemic-graph[full]` through the required
-Agent Utilities core. The `[mcp]` surface is connector-focused; `[agent]` also
+Both `[mcp]` and `[agent]` carry `medulla[full]` through the required
+Meristem core. The `[mcp]` surface is connector-focused; `[agent]` also
 enables model orchestration.
 
-Egeria is federated alongside the **epistemic-graph** Knowledge Graph: Egeria is the
+Egeria is federated alongside the **medulla** Knowledge Graph: Egeria is the
 metadata / governance / lineage system-of-record, the KG is the cognition / orchestration
 plane (the **KG never becomes the lineage store**; **Egeria never orchestrates**). For
-production — or to share one knowledge graph across multiple agents — run **epistemic-graph
+production — or to share one knowledge graph across multiple agents — run **medulla
 as its own database container**. Deployment recipes (single-node + Raft HA), connection
 config, and the full database architecture (with diagrams) are documented in the
-[epistemic-graph deployment guide](https://knuckles-team.github.io/epistemic-graph/deployment/).
+[medulla deployment guide](https://knuckles-team.github.io/medulla/deployment/).
 
 ## MCP config
 

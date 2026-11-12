@@ -1,8 +1,8 @@
-"""Native epistemic-graph ingestion for Egeria open-metadata records.
+"""Native medulla ingestion for Egeria open-metadata records.
 
 CONCEPT:AU-KG.ingest.enterprise-source-extractor. The record-source twin of the
 gitlab/media connectors: egeria-mcp natively pushes Egeria's metadata /
-governance / lineage system-of-record into the ONE epistemic-graph engine as
+governance / lineage system-of-record into the ONE medulla engine as
 **typed OWL nodes** (``:GlossaryTerm``, ``:GovernanceRule``, ``:DataAsset``,
 ``:GlossaryCategory``) plus ``:flowsTo`` / ``:dependsOn`` **lineage edges**, and
 the term/policy definition text as ``:Document`` nodes (semantic-search fodder).

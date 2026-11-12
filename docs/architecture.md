@@ -2,7 +2,7 @@
 
 How the federation fits together: a raw-REST OMVS client, 34 bottom-up harvesters, a
 cross-layer reconciliation pass, a completeness audit, and bidirectional federation
-with the epistemic-graph knowledge graph.
+with the medulla knowledge graph.
 
 ## The federation pipeline
 
@@ -22,7 +22,7 @@ flowchart LR
     Sources -->|"harvest_*<br/>(config-driven, tolerant)"| EG[("Apache Egeria<br/>metadata SoR")]
     EG -->|"reconcile()<br/>13 matchers"| EG
     EG -->|"audit()"| RPT["coverage report<br/>+ island assets"]
-    EG -->|"list_data_flows()"| KG[("epistemic-graph KG<br/>cognition / orchestration")]
+    EG -->|"list_data_flows()"| KG[("medulla KG<br/>cognition / orchestration")]
     KG -.->|"governed_route() queries"| EG
 
     classDef store fill:#dae8fe,stroke:#6c8ebf;
@@ -78,7 +78,7 @@ sequenceDiagram
     participant API as EgeriaApi
     participant EG as Egeria (SoR)
     participant EXT as KG 'egeria' extractor
-    participant KG as epistemic-graph
+    participant KG as medulla
 
     SRC->>API: harvest (read)
     API->>EG: create assets + classifications

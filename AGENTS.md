@@ -19,7 +19,7 @@ Tool-neutral rules for any AI agent or human working in this repository. This bl
 
 `egeria-mcp` is the **API + MCP server** for Apache Egeria (the OMAG open-metadata
 platform), federated into the Arbora ecosystem as the
-**metadata / governance / lineage system-of-record** alongside the epistemic-graph
+**metadata / governance / lineage system-of-record** alongside the medulla
 Knowledge Graph (the cognition/orchestration plane).
 
 Two hard invariants of the federation:
@@ -179,7 +179,7 @@ why rather than bypassing it.
 ## Working with Git Worktrees (multi-session)
 
 Multiple agents/sessions work the `agent-packages/*` repos concurrently. **Do not
-edit the canonical checkout** (`$AGENT_CONNECTOR_SDK_WORKSPACE_ROOT/agent-packages/<repo>`) — a
+edit the canonical checkout** (`$SCION_SDK_WORKSPACE_ROOT/agent-packages/<repo>`) — a
 background `repository-manager` sync can reset its working tree and discard
 uncommitted edits. Take the operator's own git worktree on the operator's own branch instead:
 
@@ -217,7 +217,7 @@ Working in parallel with other sessions/worktrees? **Reserve a concept id before
 scion-sdk --json concept reserve --ns EG-KG.compute.backend   # or a package prefix, e.g. KEY
 ```
 
-Full protocol (ledger, merge=union, reconcile, MCP/REST): <https://knuckles-team.github.io/agent-connector-sdk/concept_coordination/>
+Full protocol (ledger, merge=union, reconcile, MCP/REST): <https://knuckles-team.github.io/scion-sdk/concept_coordination/>
 <!-- END concept-coordination (generated) -->
 
 ## Version & lockfile drift edict (keep the version mirrors AND the lock in sync)

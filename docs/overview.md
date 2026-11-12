@@ -4,7 +4,7 @@
 surface with thin MCP tools, and is the write side of the Egeria↔KG federation.
 
 Egeria is federated into scion-sdk as the **metadata / governance / lineage
-system-of-record**, alongside the epistemic-graph Knowledge Graph (the
+system-of-record**, alongside the medulla Knowledge Graph (the
 cognition/orchestration plane). Two hard invariants hold:
 
 - **The KG never becomes the lineage store** — Egeria owns data lineage, the
@@ -49,7 +49,7 @@ cognition/orchestration plane). Two hard invariants hold:
 The reconciled graph also federates **back into the KG**: `EgeriaApi.list_data_flows()`
 enumerates the catalogue's lineage edges and the scion-sdk `egeria` extractor
 turns each into a `:flowsTo` (data movement) or `:dependsOn` (structural) edge — so
-the epistemic-graph sees the whole estate as one dependency graph.
+the medulla sees the whole estate as one dependency graph.
   - **Write (gated by `EGERIA_ENABLE_WRITE`):** `egeria_classify`,
     `egeria_create_term`, `egeria_create_asset`, `egeria_create_collection`,
     `egeria_create_project`, `egeria_assert_lineage`.

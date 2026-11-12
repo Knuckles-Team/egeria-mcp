@@ -1,4 +1,4 @@
-"""Native epistemic-graph typed-node ingestion — Wire-First coverage.
+"""Native medulla typed-node ingestion — Wire-First coverage.
 
 Exercises the real ``egeria_mcp.kg_ingest`` seam against a fake SDK transport (no
 engine required): the ``scion_sdk.ingest`` request/receipt shape, the

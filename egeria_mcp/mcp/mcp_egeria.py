@@ -117,7 +117,7 @@ def register_egeria_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(tags={"kg", "ingest"})
     async def egeria_ingest_catalog() -> Any:
-        """Natively ingest the Egeria catalog into epistemic-graph as typed OWL nodes.
+        """Natively ingest the Egeria catalog into medulla as typed OWL nodes.
 
         Lists glossary terms, glossary categories, governance definitions, assets,
         and DataFlow lineage edges via the Egeria client and pushes them into the

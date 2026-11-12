@@ -21,7 +21,7 @@ Egeria↔Knowledge-Graph federation. It provides:
 
 - **`EgeriaApi`** — a tolerant raw-`httpx` REST facade over the View Server (no
   `pyegeria` runtime dependency; works on Python 3.11 → 3.14).
-- **21 MCP tools** — granular and broad action-dispatch readers across 11 OMVS
+- **21 MCP tools** — one typed reader per operation across 11 OMVS
   services, `governed_route`, and write-gated create/classify/lineage/harvest tools.
 - **A 34-source bottom-up harvest** that *populates* Egeria from the data estate.
 

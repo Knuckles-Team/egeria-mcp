@@ -24,10 +24,9 @@ def _p(params_json: str) -> dict[str, Any]:
 def register_egeria_tools(mcp: FastMCP) -> None:
     """Register Egeria open-metadata / glossary / lineage / governance tools.
 
-    CONCEPT:EA-KG.maintenance.broad-omvs-coverage-action — Broad OMVS Coverage. Action-dispatch tools (``egeria_catalog``,
-    ``egeria_data_design``, ``egeria_collection``, ``egeria_solution``,
-    ``egeria_governance_catalog``, ``egeria_actors``, ``egeria_metadata``) span 11
-    View Services without a tool per noun.
+    CONCEPT:EA-KG.maintenance.broad-omvs-coverage-action — Broad OMVS Coverage. The View Service
+    find and get operations are typed per-operation tools derived from ``EgeriaApi``
+    (``egeria_find_data_assets``, ``egeria_find_actor_profiles``, ``egeria_get_element``, ...).
     """
 
     # ── Read tools ───────────────────────────────────────────────────────────
@@ -152,148 +151,6 @@ def register_egeria_tools(mcp: FastMCP) -> None:
         from egeria_mcp.kg_ingest import asset_for_kg_node
 
         return asset_for_kg_node(get_client(), node_id)
-
-    # ── Broad OMVS coverage (action-dispatch domain tools) ───────────────────
-    # Each tool fans an ``action`` out to the matching EgeriaApi find method,
-    # keeping the catalogue browsable without a separate tool per noun.
-    def _dispatch(actions: dict[str, str], action: str, query: str) -> Any:
-        method = actions.get(action)
-        if not method:
-            return {
-                "error": f"unknown action '{action}'",
-                "valid_actions": sorted(actions),
-            }
-        return getattr(get_client(), method)(query)
-
-    _CATALOG = {
-        "data_assets": "find_data_assets",
-        "connections": "find_connections",
-        "connector_types": "find_connector_types",
-        "endpoints": "find_endpoints",
-        "infrastructure_assets": "find_infrastructure_assets",
-        "technology_types": "find_technology_types",
-        "schema_types": "find_schema_types",
-        "schema_attributes": "find_schema_attributes",
-    }
-
-    @mcp.tool(tags={"asset"})
-    async def egeria_catalog(
-        action: str = Field(
-            description=f"One of: {', '.join(repr(a) for a in sorted(_CATALOG))}."
-        ),
-        query: str = Field(default="", description="Search string ('' = match-all)."),
-    ) -> Any:
-        """Browse the technical catalog: assets, connections, endpoints, schema."""
-        return _dispatch(_CATALOG, action, query)
-
-    _DATA_DESIGN = {
-        "data_structures": "find_data_structures",
-        "data_fields": "find_data_fields",
-        "data_value_specifications": "find_data_value_specifications",
-    }
-
-    @mcp.tool(tags={"data-design"})
-    async def egeria_data_design(
-        action: str = Field(
-            description=f"One of: {', '.join(repr(a) for a in sorted(_DATA_DESIGN))}."
-        ),
-        query: str = Field(default="", description="Search string ('' = match-all)."),
-    ) -> Any:
-        """Browse data-designer artifacts: data structures, fields, value specs."""
-        return _dispatch(_DATA_DESIGN, action, query)
-
-    _COLLECTION = {
-        "collections": "find_collections",
-        "digital_products": "find_digital_products",
-    }
-
-    @mcp.tool(tags={"collection"})
-    async def egeria_collection(
-        action: str = Field(
-            description=f"One of: {', '.join(repr(a) for a in sorted(_COLLECTION))}."
-        ),
-        query: str = Field(default="", description="Search string ('' = match-all)."),
-    ) -> Any:
-        """Browse collections and digital products."""
-        return _dispatch(_COLLECTION, action, query)
-
-    _SOLUTION = {
-        "information_supply_chains": "find_information_supply_chains",
-        "solution_blueprints": "find_solution_blueprints",
-        "solution_components": "find_solution_components",
-    }
-
-    @mcp.tool(tags={"solution-architecture"})
-    async def egeria_solution(
-        action: str = Field(
-            description=f"One of: {', '.join(repr(a) for a in sorted(_SOLUTION))}."
-        ),
-        query: str = Field(default="", description="Search string ('' = match-all)."),
-    ) -> Any:
-        """Browse solution architecture: supply chains, blueprints, components."""
-        return _dispatch(_SOLUTION, action, query)
-
-    _GOV_CATALOG = {
-        "governance_definitions": "list_governance_definitions",
-        "external_references": "find_external_references",
-        "valid_values": "find_valid_values",
-    }
-
-    @mcp.tool(tags={"governance"})
-    async def egeria_governance_catalog(
-        action: str = Field(
-            description=f"One of: {', '.join(repr(a) for a in sorted(_GOV_CATALOG))}."
-        ),
-        query: str = Field(default="", description="Search string ('' = match-all)."),
-    ) -> Any:
-        """Browse governance definitions, external references, valid-value sets."""
-        actions = _GOV_CATALOG
-        method = actions.get(action)
-        if not method:
-            return {
-                "error": f"unknown action '{action}'",
-                "valid_actions": sorted(actions),
-            }
-        fn = getattr(get_client(), method)
-        # list_governance_definitions takes no arg
-        return fn() if action == "governance_definitions" else fn(query)
-
-    _ACTORS = {
-        "actor_profiles": "find_actor_profiles",
-        "actor_roles": "find_actor_roles",
-        "user_identities": "find_user_identities",
-        "projects": "find_projects",
-        "communities": "find_communities",
-        "locations": "find_locations",
-        "cohorts": "find_cohorts",
-    }
-
-    @mcp.tool(tags={"actor"})
-    async def egeria_actors(
-        action: str = Field(
-            description=f"One of: {', '.join(repr(a) for a in sorted(_ACTORS))}."
-        ),
-        query: str = Field(default="", description="Search string ('' = match-all)."),
-    ) -> Any:
-        """Browse people/teams, projects, communities, locations, cohorts."""
-        return _dispatch(_ACTORS, action, query)
-
-    @mcp.tool(tags={"metadata"})
-    async def egeria_metadata(
-        action: str = Field(
-            description="'find' (search any element type) or 'get' (by GUID)."
-        ),
-        query: str = Field(
-            default="", description="Search string for 'find', or a GUID for 'get'."
-        ),
-    ) -> Any:
-        """Generic open-metadata access: search across all types, or get by GUID."""
-        client = get_client()
-        if action == "get":
-            return client.get_element(query)
-        if action == "find":
-            return client.find_metadata_elements(query)
-        return {"error": f"unknown action '{action}'", "valid_actions": ["find", "get"]}
 
     # ── Harvest tools (gated by EGERIA_ENABLE_WRITE) ─────────────────────────
     @mcp.tool(tags={"harvest", "write"})

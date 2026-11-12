@@ -26,14 +26,7 @@ cognition/orchestration plane). Two hard invariants hold:
   - **Read (granular):** `egeria_asset_search`, `egeria_glossary_lookup`,
     `egeria_glossary_categories`, `egeria_lineage`, `egeria_governance_for`,
     `egeria_list_policies`.
-  - **Read (broad, action-dispatch):** `egeria_catalog` (assets, connections,
-    connector-types, endpoints, infrastructure, technology types, schema
-    types/attributes), `egeria_data_design` (data structures/fields/value specs),
-    `egeria_collection` (collections, digital products), `egeria_solution`
-    (information provide chains, blueprints, components), `egeria_governance_catalog`
-    (governance definitions, external references, valid values), `egeria_actors`
-    (actor profiles/roles, user identities, projects, communities, locations,
-    cohorts), `egeria_metadata` (generic find/get across all element types).
+  - **Read (broad, typed):** one `egeria_find_*` tool per View Service noun (assets, connections, connector types, endpoints, schema types and attributes, data structures, fields, value specifications, collections, digital products, supply chains, blueprints, components, external references, valid values, actor profiles and roles, user identities, projects, communities, locations, cohorts), plus `egeria_list_governance_definitions`, `egeria_find_metadata_elements` and `egeria_get_element`.
   - **Routing:** `egeria_governed_route` — the federation delivering a decision.
   - **Harvest (write-gated):** `egeria_harvest(layer)` dispatches any of **34
     bottom-up source layers** (or `all`) via the runner — spanning infrastructure

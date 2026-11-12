@@ -44,7 +44,7 @@ orchestrates**.
   the KG `egeria` enrichment extractor and backs all MCP tools. Every call degrades
   to `[]` / a clear error rather than raising.
 - **21 MCP tools** (`egeria-mcp` console script): granular reads, broad
-  action-dispatch readers across 11 OMVS services, `governed_route`, the data-store
+  typed per-operation readers across 11 OMVS services, `governed_route`, the data-store
   harvest, and write-gated create/classify/lineage tools. See
   [`docs/overview.md`](docs/overview.md) for the full list and the verified Egeria
   6.x REST contract (verified against 6.2 and 6.3).
@@ -59,22 +59,17 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 
 | MCP Tool | Kind | Description |
 |----------|------|-------------|
-| `egeria_actors` | intent | Browse people/teams, projects, communities, locations, cohorts. |
 | `egeria_assert_lineage` | intent | Assert a data-flow lineage edge (requires EGERIA_ENABLE_WRITE=true). |
 | `egeria_asset_for_kg_node` | intent | Resolve a KG node id to its Egeria GUID. |
 | `egeria_asset_search` | intent | Search the Egeria asset catalog; returns flat asset records with GUIDs. |
 | `egeria_audit` | intent | Completeness audit: report unlinked 'island' assets + per-layer coverage. |
-| `egeria_catalog` | intent | Browse the technical catalog: assets, connections, endpoints, schema. |
 | `egeria_classify` | intent | Apply a classification to an element (requires EGERIA_ENABLE_WRITE=true). |
-| `egeria_collection` | intent | Browse collections and digital products. |
 | `egeria_create_asset` | intent | Create a data asset, optionally classified (requires EGERIA_ENABLE_WRITE=true). |
 | `egeria_create_collection` | intent | Create a collection / digital-product folder (requires EGERIA_ENABLE_WRITE=true). |
 | `egeria_create_project` | intent | Create a project (requires EGERIA_ENABLE_WRITE=true). |
 | `egeria_create_term` | intent | Create a glossary term (requires EGERIA_ENABLE_WRITE=true). |
-| `egeria_data_design` | intent | Browse data-designer artifacts: data structures, fields, value specs. |
 | `egeria_glossary_categories` | intent | List the glossary category tree. |
 | `egeria_glossary_lookup` | intent | Look up business glossary terms (definitions, categories, relationships). |
-| `egeria_governance_catalog` | intent | Browse governance definitions, external references, valid-value sets. |
 | `egeria_governance_for` | intent | Return governance definitions + classifications applying to an element. |
 | `egeria_governed_route` | intent | Policy-aware routing decision for acting on an Egeria-catalogued asset. |
 | `egeria_harvest` | intent | Run a bottom-up harvest layer (or 'all') into Egeria. |
@@ -96,10 +91,8 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 | `egeria_lineage` | intent | Return the data-lineage graph (upstream/downstream assets + processes). |
 | `egeria_lineage_scan` | intent | Scan the catalog's hub prefixes and return every DataFlow lineage edge. |
 | `egeria_list_policies` | intent | List Egeria governance policies/rules (optionally filtered by domain). |
-| `egeria_metadata` | intent | Generic open-metadata access: search across all types, or get by GUID. |
 | `egeria_reconcile` | intent | Cross-link the harvested layers into one connected lineage/governance graph. |
 | `egeria_reconcile_openlineage_asset` | intent | Reconcile one OpenLineage dataset into Egeria (requires EGERIA_ENABLE_WRITE=true). |
-| `egeria_solution` | intent | Browse solution architecture: supply chains, blueprints, components. |
 
 _41 intent tool(s) · 0 operation(s). Call an operation as `act(action='<operation>', params={...})` (`ask` for reads); `find(action='describe', params={'action': '<operation>'})` returns its arguments. An operation is enabled unless its `<DOMAIN>TOOL` toggle is set false. Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->

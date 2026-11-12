@@ -41,7 +41,7 @@
         "make confidentiality-gated routing decisions"
       ],
       "kg": [
-        "mirror the catalog into epistemic-graph: terms->:GlossaryTerm, definitions->:GovernanceRule, assets->:DataAsset, categories->:GlossaryCategory, DataFlow->:flowsTo edges, definition text->:Document"
+        "mirror the catalog into medulla: terms->:GlossaryTerm, definitions->:GovernanceRule, assets->:DataAsset, categories->:GlossaryCategory, DataFlow->:flowsTo edges, definition text->:Document"
       ]
     },
     "workflow": [

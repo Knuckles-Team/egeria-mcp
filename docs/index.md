@@ -2,7 +2,7 @@
 
 Apache Egeria open-metadata **API + MCP Server** for the Arbora ecosystem
 — the metadata / governance / lineage **system-of-record** federated with the
-epistemic-graph Knowledge Graph.
+medulla Knowledge Graph.
 
 !!! info "Official documentation"
     This site is the canonical reference for `egeria-mcp`, maintained alongside every

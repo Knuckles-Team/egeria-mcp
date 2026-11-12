@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import httpx
-from scion_sdk.http.client import create_http_client
+from scion_sdk.http.client import build_http_client
 from scion_sdk.http.options import HttpClientOptions
 from scion_sdk.tls.profile import ResolvedTLSProfile
 from scion_sdk.tls.resolve import resolve_tls_profile
@@ -21,7 +21,7 @@ def governed_client(
 
     Harvest sources sit on the internal network, so plaintext HTTP is allowed.
     """
-    return create_http_client(
+    return build_http_client(
         HttpClientOptions(
             base_url=base_url,
             timeout=timeout,

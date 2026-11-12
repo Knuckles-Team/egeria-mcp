@@ -94,7 +94,7 @@
     rdfs:label "Apache Egeria Open Metadata Federation Ontology" ;
     rdfs:comment """Crosswalk that folds Apache Egeria Open Metadata Types into the
     existing ArchiMate-aligned enterprise vocabulary, so Egeria's metadata /
-    governance / lineage system-of-record federates with the epistemic-graph KG
+    governance / lineage system-of-record federates with the medulla KG
     rather than duplicating it.
 
     Egeria → KG mapping (reuses enterprise/leanix/servicenow classes; only the

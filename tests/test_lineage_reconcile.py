@@ -21,7 +21,7 @@ from egeria_mcp.reconcile import (
 
 # egeria_asset_for_kg_node's round-trip tests live in test_asset_for_kg_node.py —
 # egeria_mcp.kg_ingest (which it needs) transitively requires the certified
-# epistemic_graph.numeric native kernel wheel, which is not importable in every
+# medulla.numeric native kernel wheel, which is not importable in every
 # environment (pre-existing: tests/test_kg_ingest.py hits the identical
 # ImportError at collection); keeping that dependency isolated to its own file
 # means it alone skips there, rather than this whole file's collection failing.

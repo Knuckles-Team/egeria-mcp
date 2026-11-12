@@ -74,4 +74,4 @@ egeria_classify  element_guid="<guid>"  classification="Confidentiality"  proper
 - **Glossary:** `egeria-glossary-terms`.
 - **Lineage:** `egeria-lineage-tracing`.
 - **KG ingestion:** the `egeria_ingest_catalog` tool mirrors governance definitions
-  into the epistemic-graph as typed `:GovernanceRule` nodes.
+  into the medulla as typed `:GovernanceRule` nodes.

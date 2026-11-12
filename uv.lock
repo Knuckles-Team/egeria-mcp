@@ -385,7 +385,7 @@ wheels = [
 
 [[package]]
 name = "egeria-mcp"
-version = "2.4.0"
+version = "2.4.1"
 source = { editable = "." }
 dependencies = [
     { name = "defusedxml" },

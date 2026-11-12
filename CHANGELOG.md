@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.1] - 2026-11-12
+
+### Removed
+- The seven action-routed read tools (`egeria_catalog`, `egeria_data_design`, `egeria_collection`, `egeria_solution`, `egeria_governance_catalog`, `egeria_actors`, `egeria_metadata`). Every operation they routed to is already a typed per-operation tool (`egeria_find_data_assets`, `egeria_find_actor_profiles`, `egeria_list_governance_definitions`, `egeria_get_element`, and the other `egeria_find_*` tools), so callers switch to the typed name. This brings the served surface under the connector surface standard.
+
 ## [2.4.0] - 2026-11-07
 
 ### Changed

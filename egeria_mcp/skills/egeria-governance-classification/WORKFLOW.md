@@ -33,7 +33,9 @@ Connect via the `mcp-client` skill against the **`egeria-mcp`** MCP server.
 |------|---------|
 | `egeria_governance_for` | Classifications + confidentiality level for an `element_guid` |
 | `egeria_list_policies` | List governance definitions (optional `domain`) |
-| `egeria_governance_catalog` | Browse governance definitions (action-dispatch) |
+| `egeria_list_governance_definitions` | Browse governance definitions |
+| `egeria_find_external_references` | Browse external references (`search`) |
+| `egeria_find_valid_values` | Browse valid-value sets (`search`) |
 | `egeria_governed_route` | Confidentiality-gated routing decision for an `asset_guid` |
 | `egeria_classify` | Apply a classification (write) |
 

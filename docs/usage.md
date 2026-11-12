@@ -12,7 +12,7 @@ configuration beyond the platform connection; writes require `EGERIA_ENABLE_WRIT
 | Group | Tools |
 |---|---|
 | Granular reads | `egeria_asset_search`, `egeria_glossary_lookup`, `egeria_glossary_categories`, `egeria_lineage`, `egeria_governance_for`, `egeria_list_policies` |
-| Broad action-dispatch reads | `egeria_catalog`, `egeria_data_design`, `egeria_collection`, `egeria_solution`, `egeria_governance_catalog`, `egeria_actors`, `egeria_metadata` |
+| Typed OMVS reads | `egeria_find_data_assets`, `egeria_find_data_structures`, `egeria_find_collections`, `egeria_find_digital_products`, `egeria_find_actor_profiles`, `egeria_find_valid_values`, `egeria_find_metadata_elements`, `egeria_get_element` and the other `egeria_find_*` tools |
 | Routing | `egeria_governed_route` |
 | Write-gated | `egeria_classify`, `egeria_create_term`, `egeria_assert_lineage`, `egeria_harvest` |
 

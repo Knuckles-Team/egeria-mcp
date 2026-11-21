@@ -11,14 +11,6 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-:Endpoint a owl:Class ;
-    rdfs:label "Endpoint" ;
-    rdfs:comment """An Egeria Endpoint — the network address / connection
-    coordinates through which a data resource is reached. Technology-layer
-    artifact; may be folded into :DataConnector where endpoint granularity is not
-    needed. Egeria: Endpoint. ArchiMate: Technology → CommunicationPath.""" ;
-    rdfs:subClassOf core:TechnologyLayer .
-
 :GlossaryCategory a owl:Class ;
     rdfs:label "Glossary Category" ;
     rdfs:comment """An Egeria GlossaryCategory — a grouping of glossary terms.
@@ -26,28 +18,6 @@
     SPARQL while glossary terms themselves federate as plain :Concept nodes.
     Egeria: GlossaryCategory. ArchiMate: Strategy → (taxonomy of) Concept.""" ;
     rdfs:subClassOf core:Concept .
-
-:GlossaryTerm a owl:Class ;
-    rdfs:label "Glossary Term" ;
-    rdfs:comment """An Egeria GlossaryTerm — a defined business/semantic concept in a
-    glossary (name + summary/description + qualifiedName). Typed distinctly from
-    :GlossaryCategory (the grouping) so the native egeria-mcp extractor can push
-    terms as first-class nodes carrying their definition text, while still
-    federating with the broader :Concept vocabulary. Egeria: GlossaryTerm.""" ;
-    rdfs:subClassOf core:Concept .
-
-:GovernanceRule a owl:Class ;
-    rdfs:subClassOf core:GovernanceRule .
-
-
-:DataAsset a owl:Class ;
-    rdfs:label "Data Asset" ;
-    rdfs:comment """An Egeria Asset catalogued in the open-metadata repository (a
-    DataStore, DataSet, database, file, API, server capability, …). Carries the
-    Egeria GUID as :externalToolId and the :qualifiedName federation key; the
-    endpoints of :flowsTo / :dependsOn lineage edges. Egeria: Asset (and subtypes).
-    Folds into the enterprise :DataConnector / :DataObject vocabulary.""" ;
-    rdfs:subClassOf core:SourceBackend .
 
 :confidentialityLevel a owl:DatatypeProperty ;
     rdfs:label "confidentiality level" ;
@@ -57,27 +27,11 @@
     gate routing on it without a separate node lookup.""" ;
     rdfs:range xsd:string .
 
-:dependsOn a owl:ObjectProperty ;
-    rdfs:label "depends on" ;
-    rdfs:comment """Structural cross-layer dependency (not data movement): the
-    source element relies on the target — a service realizing a store, a store
-    hosted on a node, an access policy securing a service, a monitor watching a
-    target. Materialized from Egeria DataFlow edges created by the cross-layer
-    reconciliation pass (egeria-mcp reconcile, CONCEPT:EG-006), so the KG sees the
-    whole estate as one dependency graph alongside :flowsTo lineage.""" .
-
 :derivesFrom a owl:ObjectProperty ;
     rdfs:label "derives from" ;
     rdfs:comment """Data-lineage edge: the target asset is produced/derived by the
     source process. Inverse-style complement of :flowsTo for downstream lineage
     traversal. Egeria: ProcessPort → PortSchema lineage.""" .
-
-:flowsTo a owl:ObjectProperty ;
-    rdfs:label "flows to" ;
-    rdfs:comment """Data-lineage edge: the source asset (or process port) feeds
-    into the target process. Carries Egeria DataFlow / lineage-relationship
-    semantics — the unique payload Egeria contributes that the KG does not model
-    natively.""" .
 
 :qualifiedName a owl:DatatypeProperty ;
     rdfs:label "qualified name" ;

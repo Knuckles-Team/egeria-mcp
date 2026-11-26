@@ -2,14 +2,7 @@
 name: egeria-glossary-terms
 skill_type: skill
 description: >-
-  Business-glossary operations on Apache Egeria via the egeria-mcp MCP server —
-  look up GlossaryTerms and GlossaryCategories, and author new terms in the
-  open-metadata repository with the domain-typed tools (not raw OMVS calls). Use
-  when the agent must resolve the business meaning of a term, browse the glossary
-  taxonomy, or create/curate a semantic definition. Do NOT use for asset lineage
-  (egeria-lineage-tracing), governance classification / confidentiality routing
-  (egeria-governance-classification), or bulk KG mirroring (use the
-  egeria_ingest_catalog tool); prefer those.
+  Business-glossary operations on Apache Egeria via the egeria-mcp MCP server — look up GlossaryTerms and GlossaryCategories, and author new terms in the open-metadata repository with the domain-typed tools (not raw OMVS calls). Use when the agent must resolve the business meaning of a term, browse the glossary taxonomy, or create/curate a semantic definition.
 license: MIT
 tags: [egeria, glossary, open-metadata, governance, mcp]
 metadata:
@@ -17,6 +10,8 @@ metadata:
   version: '0.1.0'
 ---
 # Egeria Glossary Terms
+
+Scope: Business-glossary operations on Apache Egeria via the egeria-mcp MCP server — look up GlossaryTerms and GlossaryCategories, and author new terms in the open-metadata repository with the domain-typed tools (not raw OMVS calls). Use when the agent must resolve the business meaning of a term, browse the glossary taxonomy, or create/curate a semantic definition. Do NOT use for asset lineage (egeria-lineage-tracing), governance classification / confidentiality routing (egeria-governance-classification), or bulk KG mirroring (use the egeria_ingest_catalog tool); prefer those.
 
 Domain-typed access to Apache Egeria's **business glossary** (GlossaryTerm /
 GlossaryCategory) through the Glossary Manager OMVS. Prefer these tools over raw
@@ -45,6 +40,22 @@ Connect via the `mcp-client` skill against the **`egeria-mcp`** MCP server.
 | `EGERIA_ENABLE_WRITE` | for writes | Gates `egeria_create_term` (default `False`) |
 
 `MCP_TOOL_MODE` (`condensed`|`verbose`|`both`) selects the tool surface.
+
+## Steps
+
+1. Confirm the connection by calling `egeria_glossary_categories`. Verify it returns category records with a `guid` and `displayName` rather than an authentication error.
+2. Look up the term with `egeria_glossary_lookup` (query, glossary). Verify the result lists matching records, and note the `guid` of an exact `displayName` match.
+3. If no exact match exists, browse the taxonomy with `egeria_list_glossary_terms`. Verify the term is truly absent before authoring a new one.
+4. Author a missing term with `egeria_create_term` (glossary_name, display_name, description) only when `EGERIA_ENABLE_WRITE=true`. Verify the response carries a new `guid` and `qualifiedName`.
+5. Re-read the term with `egeria_glossary_lookup` (query). Verify the returned `summary` or `description` matches the text you wrote.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| `EgeriaWriteDisabled` from `egeria_create_term` | `EGERIA_ENABLE_WRITE` is not `true` | Ask the operator to set `EGERIA_ENABLE_WRITE=true` for the server, or report the term as not created |
+| Authentication or connection error on any call | `EGERIA_USER`, `EGERIA_USER_PASSWORD`, `EGERIA_PLATFORM_URL` or `EGERIA_VIEW_SERVER` missing or wrong | Check the four variables in the Prerequisites table and report which is unset; do not guess values |
+| `egeria_glossary_lookup` returns an empty list | `query` misspelled or the wrong `glossary` named | Call `egeria_glossary_lookup` with `query=""` to list all terms, then pick the exact `displayName` |
 
 ## Tools & actions
 | Tool | Purpose |

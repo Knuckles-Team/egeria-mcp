@@ -1,5 +1,5 @@
 # Egeria Mcp
-## API | MCP Server
+## API | MCP
 
 ![PyPI - Version](https://img.shields.io/pypi/v/egeria-mcp)
 ![MCP Server](https://badge.mcpx.dev?type=server 'MCP Server')
@@ -20,11 +20,15 @@
 ![PyPI - Wheel](https://img.shields.io/pypi/wheel/egeria-mcp)
 ![PyPI - Implementation](https://img.shields.io/pypi/implementation/egeria-mcp)
 
-Apache Egeria open-metadata **API + MCP Server** for the Arbora ecosystem.
+> **Documentation** — Installation, deployment, and usage across the API, CLI, MCP,
+> and A2A agent interfaces are maintained in the
+> [official documentation](https://knuckles-team.github.io/egeria-mcp/).
 
-> **Documentation** — Installation, deployment, usage across the API, CLI, and MCP
-> interfaces, and guidance for provisioning the Apache Egeria platform are maintained
-> in the [official documentation](https://knuckles-team.github.io/egeria-mcp/).
+---
+
+## Overview
+
+Apache Egeria open-metadata **API + MCP Server** for the Arbora ecosystem.
 
 Egeria is federated as the **metadata / governance / lineage system-of-record**
 alongside the medulla Knowledge Graph (the cognition/orchestration plane).
@@ -35,7 +39,9 @@ the bottom-up harvest that **populates** Egeria from the data estate, and the
 Two hard invariants: the **KG never becomes the lineage store**; **Egeria never
 orchestrates**.
 
-## What it provides
+---
+
+## Key Features
 
 - **`EgeriaApi`** (`egeria_mcp.api.api_client_egeria`) — a tolerant **raw-httpx REST**
   facade over the Egeria View Server (OMVS). No `pyegeria` runtime dependency
@@ -49,7 +55,11 @@ orchestrates**.
   [`docs/overview.md`](docs/overview.md) for the full list and the verified Egeria
   6.x REST contract (verified against 6.2 and 6.3).
 
-## Available MCP Tools
+---
+
+## MCP
+
+### Available MCP Tools
 
 _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hook)._
 
@@ -97,72 +107,7 @@ _Auto-generated — do not edit (synced by the `mcp-readme-table` pre-commit hoo
 _41 intent tool(s) · 0 operation(s). Call an operation as `act(action='<operation>', params={...})` (`ask` for reads); `find(action='describe', params={'action': '<operation>'})` returns its arguments. An operation is enabled unless its `<DOMAIN>TOOL` toggle is set false. Auto-generated — do not edit._
 <!-- MCP-TOOLS-TABLE:END -->
 
-## Configuration (environment)
-
-| Var | Default | Meaning |
-|---|---|---|
-| `EGERIA_PLATFORM_URL` | `https://localhost:9443` | OMAG platform URL |
-| `EGERIA_VIEW_SERVER` | `qs-view-server` | View server name |
-| `EGERIA_USER` | _(unset)_ | User id |
-| `EGERIA_USER_PASSWORD` | _(unset)_ | Password / token, injected at runtime |
-| `EGERIA_TLS_PROFILE` | _(unset)_ | Optional runtime TLS profile selector; peer and hostname verification are mandatory |
-| `EGERIA_ENABLE_WRITE` | `False` | Gate every write/harvest tool |
-| `EGERIATOOL` | `True` | Register the Egeria tool set |
-
-The table above is the **required** set. The bottom-up harvest connectors
-(ServiceNow, ERPNext, GitLab, Camunda, Keycloak, Grafana, Portainer, …) each read
-their own optional credential vars — every variable, grouped by source system with
-required-vs-optional separation, is documented in [`.env.example`](.env.example).
-Copy it to `.env` and populate only the connectors the operator use; blank connector
-credentials leave the corresponding harvest inactive.
-
-## Install & run
-
-Pick the extra that matches what the operator want to run:
-
-| Extra | Installs | Use when |
-|-------|----------|----------|
-| `egeria-mcp[mcp]` | Connector-focused MCP server (`scion-sdk[mcp]` — FastMCP/FastAPI + `medulla[full]`) | The operator run the **MCP server** (smallest install / image) |
-| `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | The operator run the data-store / connector harvests |
-| `egeria-mcp[all]` | Everything (`mcp` + `agent` + `harvest`) | Development / full surface |
-
-```bash
-# Connector-focused MCP server (includes the shared graph engine)
-uv pip install "egeria-mcp[mcp]"          # or: pip install -e ".[mcp]"
-
-# Everything (development)
-uv pip install "egeria-mcp[all]"          # or: python -m pip install "egeria-mcp[all]"
-
-egeria-mcp                       # stdio MCP server (default transport)
-egeria-mcp --transport http --host 0.0.0.0 --port 8000
-```
-
-The multi-stage `docker/Dockerfile` builds one immutable image (`registry.example.invalid/egeria-mcp@sha256:<digest>`) that
-installs `egeria-mcp[all]` and runs the `egeria-mcp` console script; `docker/mcp.compose.yml`
-runs it as a streamable-http service.
-
-Run the bottom-up data-store harvest (needs write enabled):
-
-```bash
-EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
-  python -m egeria_mcp.harvest
-```
-
-### Knowledge-graph database (`medulla`)
-
-Both `[mcp]` and `[agent]` carry `medulla[full]` through the required
-Meristem core. The `[mcp]` surface is connector-focused; `[agent]` also
-enables model orchestration.
-
-Egeria is federated alongside the **medulla** Knowledge Graph: Egeria is the
-metadata / governance / lineage system-of-record, the KG is the cognition / orchestration
-plane (the **KG never becomes the lineage store**; **Egeria never orchestrates**). For
-production — or to share one knowledge graph across multiple agents — run **medulla
-as its own database container**. Deployment recipes (single-node + Raft HA), connection
-config, and the full database architecture (with diagrams) are documented in the
-[medulla deployment guide](https://knuckles-team.github.io/medulla/deployment/).
-
-## MCP config
+### MCP config
 
 Register in the multiplexer under nickname `eg` (tools surface as `eg__lineage`,
 `eg__governed_route`, `eg__catalog`, …). See `egeria_mcp/mcp_config.json`.
@@ -182,48 +127,27 @@ the detailed transport contract.
   `MCP_ALLOWED_HOSTS` in `AgentConfig`.
 <!-- END GENERATED: additional-deployment-options -->
 
-## Documentation
-
-The complete documentation is published as the
-[official documentation site](https://knuckles-team.github.io/egeria-mcp/) and is the
-recommended reference for installation, deployment, and day-to-day operation.
-
-| Page | Contents |
-|---|---|
-| [Installation](https://knuckles-team.github.io/egeria-mcp/installation/) | pip, source, extras, prebuilt Docker image |
-| [Deployment](https://knuckles-team.github.io/egeria-mcp/deployment/) | run the MCP server, Compose, Caddy + Technitium, env config |
-| [Usage](https://knuckles-team.github.io/egeria-mcp/usage/) | the MCP tools, the `EgeriaApi` client, the harvest CLI |
-| [Backing Platform](https://knuckles-team.github.io/egeria-mcp/platform/) | deploy Apache Egeria with Docker |
-| [Overview](https://knuckles-team.github.io/egeria-mcp/overview/) | tools, REST contract, harvest, federation |
-| [Architecture](https://knuckles-team.github.io/egeria-mcp/architecture/) | pipeline, layered client, KG federation diagrams |
-| [Concepts](https://knuckles-team.github.io/egeria-mcp/concepts/) | concept registry (`CONCEPT:EG-*`) |
-
-`AGENTS.md` is the canonical contributor/agent guidance.
-
-
-<!-- BEGIN scion-sdk-deployment (generated; do not edit between markers) -->
-
-## Deploy with `scion-sdk-deployment`
-
-Provision this package with the consolidated **`scion-sdk-deployment`**
-workflow. It selects an installed-package, editable-source, or immutable-container
-path; records only runtime secret and TLS-profile references in `AgentConfig`; and
-runs doctor, registration, policy, observability, and rollback gates. Ask your agent
-to **"deploy `egeria-mcp` with scion-sdk-deployment"**.
-
-| Install mode | Command |
-|------|---------|
-| Installed package | `uv tool install "egeria-mcp[mcp]"`, then run `egeria-mcp` |
-| Editable source | `uv pip install -e ".[agent]"`, then run `egeria-mcp` |
-| Immutable container | deploy `registry.example.invalid/egeria-mcp@sha256:<digest>` through the operator-selected orchestrator |
-
-The repository embeds no deployment profile, credential value, certificate path, or
-environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
-configured secret provider.
-
-<!-- END scion-sdk-deployment -->
+---
 
 ## Environment Variables
+
+| Var | Default | Meaning |
+|---|---|---|
+| `EGERIA_PLATFORM_URL` | `https://localhost:9443` | OMAG platform URL |
+| `EGERIA_VIEW_SERVER` | `qs-view-server` | View server name |
+| `EGERIA_USER` | _(unset)_ | User id |
+| `EGERIA_USER_PASSWORD` | _(unset)_ | Password / token, injected at runtime |
+| `EGERIA_TLS_PROFILE` | _(unset)_ | Optional runtime TLS profile selector; peer and hostname verification are mandatory |
+| `EGERIA_ENABLE_WRITE` | `False` | Gate every write/harvest tool |
+| `EGERIATOOL` | `True` | Register the Egeria tool set |
+
+The table above is the **required** set. The bottom-up harvest connectors
+(ServiceNow, ERPNext, GitLab, Camunda, Keycloak, Grafana, Portainer, …) each read
+their own optional credential vars — every variable, grouped by source system with
+required-vs-optional separation, is documented in [`.env.example`](.env.example).
+Copy it to `.env` and populate only the connectors the operator use; blank connector
+credentials leave the corresponding harvest inactive.
+
 
 <!-- ENV-VARS-TABLE:START -->
 
@@ -392,6 +316,115 @@ configured secret provider.
 
 _136 package + 17 inherited variable(s). Auto-generated from `.env.example` + the shared scion-sdk set — do not edit._
 <!-- ENV-VARS-TABLE:END -->
+
+---
+
+## Installation
+
+Pick the extra that matches what the operator want to run:
+
+| Extra | Installs | Use when |
+|-------|----------|----------|
+| `egeria-mcp[mcp]` | Connector-focused MCP server (`scion-sdk[mcp]` — FastMCP/FastAPI + `medulla[full]`) | The operator run the **MCP server** (smallest install / image) |
+| `egeria-mcp[harvest]` | Bottom-up harvest deps (`pymongo`, `pyyaml`) | The operator run the data-store / connector harvests |
+| `egeria-mcp[all]` | Everything (`mcp` + `agent` + `harvest`) | Development / full surface |
+
+```bash
+# Connector-focused MCP server (includes the shared graph engine)
+uv pip install "egeria-mcp[mcp]"          # or: pip install -e ".[mcp]"
+
+# Everything (development)
+uv pip install "egeria-mcp[all]"          # or: python -m pip install "egeria-mcp[all]"
+
+egeria-mcp                       # stdio MCP server (default transport)
+egeria-mcp --transport http --host 0.0.0.0 --port 8000
+```
+
+The multi-stage `docker/Dockerfile` builds one immutable image (`registry.example.invalid/egeria-mcp@sha256:<digest>`) that
+installs `egeria-mcp[all]` and runs the `egeria-mcp` console script; `docker/mcp.compose.yml`
+runs it as a streamable-http service.
+
+Run the bottom-up data-store harvest (needs write enabled):
+
+```bash
+EGERIA_PLATFORM_URL=https://your-egeria-platform:9443 EGERIA_ENABLE_WRITE=true \
+  python -m egeria_mcp.harvest
+```
+
+### Knowledge-graph database (`medulla`)
+
+Both `[mcp]` and `[agent]` carry `medulla[full]` through the required
+Meristem core. The `[mcp]` surface is connector-focused; `[agent]` also
+enables model orchestration.
+
+Egeria is federated alongside the **medulla** Knowledge Graph: Egeria is the
+metadata / governance / lineage system-of-record, the KG is the cognition / orchestration
+plane (the **KG never becomes the lineage store**; **Egeria never orchestrates**). For
+production — or to share one knowledge graph across multiple agents — run **medulla
+as its own database container**. Deployment recipes (single-node + Raft HA), connection
+config, and the full database architecture (with diagrams) are documented in the
+[medulla deployment guide](https://knuckles-team.github.io/medulla/deployment/).
+
+---
+
+## Documentation
+
+The complete documentation is published as the
+[official documentation site](https://knuckles-team.github.io/egeria-mcp/) and is the
+recommended reference for installation, deployment, and day-to-day operation.
+
+| Page | Contents |
+|---|---|
+| [Installation](https://knuckles-team.github.io/egeria-mcp/installation/) | pip, source, extras, prebuilt Docker image |
+| [Deployment](https://knuckles-team.github.io/egeria-mcp/deployment/) | run the MCP server, Compose, Caddy + Technitium, env config |
+| [Usage](https://knuckles-team.github.io/egeria-mcp/usage/) | the MCP tools, the `EgeriaApi` client, the harvest CLI |
+| [Backing Platform](https://knuckles-team.github.io/egeria-mcp/platform/) | deploy Apache Egeria with Docker |
+| [Overview](https://knuckles-team.github.io/egeria-mcp/overview/) | tools, REST contract, harvest, federation |
+| [Architecture](https://knuckles-team.github.io/egeria-mcp/architecture/) | pipeline, layered client, KG federation diagrams |
+| [Concepts](https://knuckles-team.github.io/egeria-mcp/concepts/) | concept registry (`CONCEPT:EG-*`) |
+
+`AGENTS.md` is the canonical contributor/agent guidance.
+
+---
+
+## Repository Owners
+
+<img width="100%" height="180em" src="https://github-readme-stats.vercel.app/api?username=example&show_icons=true&hide_border=true&&count_private=true&include_all_commits=true" />
+
+![GitHub followers](https://img.shields.io/github/followers/example)
+![GitHub User's stars](https://img.shields.io/github/stars/example)
+
+---
+
+## Contribute
+
+Contributions are welcome! Please ensure code quality by running local checks before submitting pull requests:
+- Format code using `ruff format .`
+- Lint code using `ruff check .`
+- Validate type-safety with `mypy .`
+- Run test suites using `pytest`
+
+<!-- BEGIN scion-sdk-deployment (generated; do not edit between markers) -->
+
+## Deploy with `scion-sdk-deployment`
+
+Provision this package with the consolidated **`scion-sdk-deployment`**
+workflow. It selects an installed-package, editable-source, or immutable-container
+path; records only runtime secret and TLS-profile references in `AgentConfig`; and
+runs doctor, registration, policy, observability, and rollback gates. Ask your agent
+to **"deploy `egeria-mcp` with scion-sdk-deployment"**.
+
+| Install mode | Command |
+|------|---------|
+| Installed package | `uv tool install "egeria-mcp[mcp]"`, then run `egeria-mcp` |
+| Editable source | `uv pip install -e ".[agent]"`, then run `egeria-mcp` |
+| Immutable container | deploy `registry.example.invalid/egeria-mcp@sha256:<digest>` through the operator-selected orchestrator |
+
+The repository embeds no deployment profile, credential value, certificate path, or
+environment-specific endpoint. Supply those at runtime through `AgentConfig` and the
+configured secret provider.
+
+<!-- END scion-sdk-deployment -->
 
 <!-- GOVERNED-CAPABILITY:START -->
 ## Governed capability contract

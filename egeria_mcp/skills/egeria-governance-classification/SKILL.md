@@ -2,15 +2,7 @@
 name: egeria-governance-classification
 skill_type: skill
 description: >-
-  Governance, classification, and confidentiality-based routing on Apache Egeria
-  via the egeria-mcp MCP server — read the classifications + confidentiality level
-  applying to an element, list governance definitions / policies, apply a
-  classification, and make a governed routing decision that gates on
-  confidentiality. Use when the agent must check whether an asset is
-  Confidential/Restricted, enforce a data-handling policy, or decide if a
-  destination may receive an element. Do NOT use for glossary definitions
-  (egeria-glossary-terms) or raw lineage tracing (egeria-lineage-tracing); prefer
-  those.
+  Governance, classification, and confidentiality-based routing on Apache Egeria via the egeria-mcp MCP server — read the classifications + confidentiality level applying to an element, list governance definitions / policies, apply a classification, and make a governed routing decision that gates on confidentiality.
 license: MIT
 tags: [egeria, governance, classification, confidentiality, policy, mcp]
 metadata:
@@ -18,6 +10,8 @@ metadata:
   version: '0.1.0'
 ---
 # Egeria Governance & Classification
+
+Scope: Governance, classification, and confidentiality-based routing on Apache Egeria via the egeria-mcp MCP server — read the classifications + confidentiality level applying to an element, list governance definitions / policies, apply a classification, and make a governed routing decision that gates on confidentiality. Use when the agent must check whether an asset is Confidential/Restricted, enforce a data-handling policy, or decide if a destination may receive an element. Do NOT use for glossary definitions (egeria-glossary-terms) or raw lineage tracing (egeria-lineage-tracing); prefer those.
 
 Domain-typed access to Apache Egeria's **governance definitions**, **element
 classifications**, and the **confidentiality-gated router**. Answer "how is this
@@ -42,6 +36,22 @@ Connect via the `mcp-client` skill against the **`egeria-mcp`** MCP server.
 | `EGERIA_VIEW_SERVER` | ✅ | View server name |
 | `EGERIA_USER` / `EGERIA_USER_PASSWORD` | ✅ | View-server credentials |
 | `EGERIA_ENABLE_WRITE` | for writes | Gates `egeria_classify` (default `False`) |
+
+## Steps
+
+1. Read the element's current state with `egeria_governance_for` (element_guid). Verify the result lists its classifications and, if present, a `confidentialityLevel`.
+2. List the applicable policies with `egeria_list_policies` (domain). Verify at least one governance definition is returned for the domain, or record that none apply.
+3. Ask for the routing decision with `egeria_governed_route` (asset_guid). Verify the response states whether the destination is allowed at the asset's confidentiality level.
+4. Apply a classification with `egeria_classify` (element_guid, classification, properties) only when `EGERIA_ENABLE_WRITE=true` and the requester confirmed the target. Verify the call returns without error.
+5. Re-run `egeria_governance_for` (element_guid). Verify the new classification and `confidentialityLevel` now appear.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| `egeria_classify` refused with a write-disabled error | `EGERIA_ENABLE_WRITE` is not `true` | Ask the operator to enable writes, or report the classification as proposed but not applied |
+| `egeria_governance_for` returns no classifications | Wrong `element_guid`, or the element is unclassified | Find the correct guid with `egeria_find_external_references` (search) or the asset catalog, then repeat step 1; a null level is ungated, not an error |
+| Authentication or connection error | `EGERIA_USER`, `EGERIA_USER_PASSWORD` or `EGERIA_PLATFORM_URL` unset or wrong | Check the Prerequisites table variables and report which is missing |
 
 ## Tools & actions
 | Tool | Purpose |

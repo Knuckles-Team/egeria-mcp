@@ -88,6 +88,22 @@ the Apache Egeria 6.x OMAG View Server (OMVS).
    successful Pages revision and public `spec-delivery/` snapshot before making
    a publication claim.
 
+## Steps
+
+1. Read the owning spec row and `AGENTS.md`, and list bound tests with `grep -rl "PIPE-CONNSPEC-R117.4" tests`. Verify at least one test file is named before editing.
+2. Make the smallest connector-owned change. Verify with `git diff --stat` that only files in the traced surface changed.
+3. Run the focused test with `uv run --locked --extra test pytest -q tests/test_egeria_development_skill.py`. Verify it exits 0.
+4. Run the repository hooks with `uvx pre-commit run --all-files`. Verify every hook reports Passed.
+5. When packaged resources changed, build with `uv build` and list the wheel with `unzip -l dist/*.whl`. Verify the `egeria_mcp/skills` files appear.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| `uv sync --locked` fails on the lock file | `uv.lock` is out of date with `pyproject.toml` | Revert the dependency edit, or change `uv.lock` only through the release process |
+| A pre-commit hook fails | Formatting, spelling or skill-budget violation in the changed files | Read the hook output, fix the named file, and re-run `uvx pre-commit run --all-files` |
+| Skill files missing from the wheel | The package-data rule in `pyproject.toml` no longer matches the skills path | Restore the existing package-data pattern for `egeria_mcp/skills/**`, rebuild, and re-list the wheel |
+
 ## Focused validation
 
 For API or MCP changes, use mock HTTP responses and exercise the smallest

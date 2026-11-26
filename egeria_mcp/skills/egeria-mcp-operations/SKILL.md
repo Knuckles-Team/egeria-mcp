@@ -27,6 +27,22 @@ Use the provider's governed MCP tools through Arbora delegation.
 - Require explicit approval for destructive, externally visible, or irreversible actions.
 - Keep runtime traces policy-scoped and privacy-sanitized.
 
+## Steps
+
+1. Discover the current tool surface with `egeria_asset_search` (query) as a probe. Verify it returns records instead of an authentication or schema error.
+2. Inspect read-only first with `egeria_list_software_servers`. Verify the expected server is listed.
+3. For a change, read the target with `egeria_get_element` (guid). Verify the returned `guid` and `displayName` match the request before acting.
+4. Execute the change with the named tool (for example `egeria_create_collection` (display_name, description, category)) after the requester approves. Verify the response carries the new `guid`.
+5. Re-read with `egeria_get_element` (guid) and report the ids. Verify the stored values match what was requested.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| Tool call refused as write-disabled | `EGERIA_ENABLE_WRITE` is not `true` | Ask the operator to enable writes, or report the change as not applied |
+| `egeria_get_element` returns not found | Wrong `guid` | Find the guid again with `egeria_asset_search` (query) and repeat step 3 |
+| `egeria_delete_element` rejected | `confirm` was not given | Show the element to the requester and pass `confirm=true` only after explicit approval |
+
 ## Specialized workflows
 
 Read [the workflow catalog](references/catalog.md) only when the request needs a

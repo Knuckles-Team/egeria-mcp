@@ -2,14 +2,7 @@
 name: egeria-lineage-tracing
 skill_type: skill
 description: >-
-  Data-lineage and asset-catalog operations on Apache Egeria via the egeria-mcp
-  MCP server — search the open-metadata asset catalog, trace an asset's upstream
-  / downstream lineage graph, assert new DataFlow edges, reconcile harvested
-  layers into one graph, and audit lineage coverage. Use when the agent must
-  answer "where does this data come from / go to", stitch cross-layer
-  dependencies, or find unlinked island assets. Do NOT use for glossary term
-  definitions (egeria-glossary-terms) or confidentiality classification
-  (egeria-governance-classification); prefer those.
+  Data-lineage and asset-catalog operations on Apache Egeria via the egeria-mcp MCP server — search the open-metadata asset catalog, trace an asset's upstream / downstream lineage graph, assert new DataFlow edges, reconcile harvested layers into one graph, and audit lineage coverage.
 license: MIT
 tags: [egeria, lineage, dataflow, asset-catalog, open-metadata, mcp]
 metadata:
@@ -17,6 +10,8 @@ metadata:
   version: '0.1.0'
 ---
 # Egeria Lineage Tracing
+
+Scope: Data-lineage and asset-catalog operations on Apache Egeria via the egeria-mcp MCP server — search the open-metadata asset catalog, trace an asset's upstream / downstream lineage graph, assert new DataFlow edges, reconcile harvested layers into one graph, and audit lineage coverage. Use when the agent must answer "where does this data come from / go to", stitch cross-layer dependencies, or find unlinked island assets. Do NOT use for glossary term definitions (egeria-glossary-terms) or confidentiality classification (egeria-governance-classification); prefer those.
 
 Domain-typed access to Apache Egeria's **asset catalog** and **DataFlow lineage**.
 Trace how a data asset connects to the rest of the estate and keep the lineage
@@ -42,6 +37,22 @@ Connect via the `mcp-client` skill against the **`egeria-mcp`** MCP server.
 | `EGERIA_VIEW_SERVER` | ✅ | View server name (default `qs-view-server`) |
 | `EGERIA_USER` / `EGERIA_USER_PASSWORD` | ✅ | View-server credentials |
 | `EGERIA_ENABLE_WRITE` | for writes | Gates `egeria_assert_lineage` + `egeria_reconcile` + `egeria_reconcile_openlineage_asset` |
+
+## Steps
+
+1. Find the asset with `egeria_asset_search` (query, type_filter). Verify at least one record returns and copy its `guid` and `qualifiedName`.
+2. Trace its flow with `egeria_lineage` (asset_guid, direction, depth). Verify `lineageLinkage` or `lineageRelationships` is non-empty, or note the asset as an island.
+3. For an estate-wide view call `egeria_lineage_scan` (max_total). Verify the response lists DataFlow edges within the `max_total` limit.
+4. Assert a missing edge with `egeria_assert_lineage` (source_guid, target_guid) only when `EGERIA_ENABLE_WRITE=true`. Verify the response returns the new relationship.
+5. Check coverage with `egeria_audit`. Verify the unlinked-island count did not rise and the asset from step 1 is no longer listed.
+
+## Failure recovery
+
+| Failure | Cause | Recovery |
+|---------|-------|----------|
+| `egeria_lineage` returns an empty graph | The asset is an unreconciled island | Run `egeria_reconcile` (needs `EGERIA_ENABLE_WRITE=true`), then repeat step 2 |
+| `egeria_assert_lineage` refused as write-disabled | `EGERIA_ENABLE_WRITE` is not `true` | Ask the operator to enable writes, or report the edge as proposed only |
+| `egeria_asset_search` finds nothing | `type_filter` treated as exact type, but it is a case-insensitive substring | Loosen `type_filter` to a shorter substring or drop it and search by `query` only |
 
 ## Tools & actions
 | Tool | Purpose |
